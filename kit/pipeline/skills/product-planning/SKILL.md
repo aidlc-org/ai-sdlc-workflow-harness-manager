@@ -2,9 +2,10 @@
 name: product-planning
 description: >-
   Invoke when the feature-development parent (or product-manager-agent) must
-  turn a feature-class ask into a signed PRD before Architect or BA.
+  turn a feature-class ask into a signed PRD before UI designer, Architect, or BA.
   Analyze the existing product, mine prior artifacts, then ask remaining
-  product decisions. Do not use for micro/minor, coding, or UI-only redesign.
+  product decisions including surfaces and UX constraints. Do not use for
+  micro/minor, coding, or UI-only redesign.
 ---
 
 # Product planning (autonomous PM loop)
@@ -15,14 +16,14 @@ description: >-
 | Audience | The named agent, or the parent when this file is on the allowlist |
 | Adapt | Change commands or paths only in deploy and testing skills. Planning skills stay product-neutral. |
 
-Turn a feature-class request into one on-disk **PRD** Architect and BA can
+Turn a feature-class request into one on-disk **PRD** UI designer, Architect, and BA can
 use without inventing scope. A shallow restatement of the ask is a failed
 step. If the PRD is thin, later stages cannot recover the missing analysis.
 
 **Parent:** spawn PM as a separate `Task`. Pass pipeline state, not a long
 chat. **PM:** write PRD + research + decisions + agent state + HANDOFF, then
 return. **Do not** write `specification.md`, implement code, or spawn
-Architect or BA.
+UI designer, Architect, or BA.
 
 **Success:** `features/{slug}/prd.md` is complete, as-is is grounded in the
 repo or explicit greenfield, child-spec split is stable, `decisions.md` is
@@ -96,8 +97,9 @@ state, and any existing PRD/questions to `decisions.md`.
   is found, write `none — {why}` and continue.
 - Do not invent market or competitor claims.
 
-**P3 Clarify** — Follow clarify-first. Run the **PM** coverage checklist.
-Ask every remaining decision. Do not prefer silent defaults.
+**P3 Clarify** — Follow clarify-first. Run the **PM** coverage checklist
+(including surfaces, screens, theme, empty/error states, integrations,
+persistence, authz). Ask every remaining decision. Do not prefer silent defaults.
 
 - One batch, **max 20**, multiple-choice with a recommended default. Format:
   questions asset.
@@ -107,19 +109,23 @@ Ask every remaining decision. Do not prefer silent defaults.
 - `ASSUMPTIONS_USED` only when the user said proceed / use defaults, or
   leftovers are cosmetic.
 
-**P4 PRD** — Load the PRD template. Fill every section. As-is and to-be
-must be specific enough that Architect can challenge them. Propose child
-specs (kebab slugs + one-line job). One child is valid. “Ready for
-sign-off” only when the split is stable. Parent next is **sign-off**, then
-Architect (or BA if `skip_architect`).
+**P4 PRD** — Load the PRD template. Fill every section including **§6.4
+Surfaces and UX constraints**. As-is and to-be must be specific enough that
+UI designer and Architect can challenge them. Propose child specs (kebab
+slugs + one-line job). One child is valid. “Ready for sign-off” only when
+the split is stable. Parent next is UI designer (when surfaces exist) or
+**sign-off**, then Architect (or BA if `skip_architect`).
 
 **P5 Self-gate** — All **blockers** below must pass. Else fix or return to P3.
 Never HANDOFF `SUCCESS` on a failing PRD.
 
 **P6 Handoff** — Write `state/product-manager-agent.json` and update
 `pipeline-state.json` ([pipeline-state.md](../feature-development/assets/pipeline-state.md)).
-Load the PM handoff template. Write `HANDOFF-pm.md`. Stop. Parent next:
-`@signoff:requirements`.
+Load the PM handoff template. Write `HANDOFF-pm.md`. Set
+`context.next_agent` to `ui-designer-agent` or `signoff-requirements` per
+[next-agent-policy.md](../feature-development/assets/next-agent-policy.md)
+and [ui-designer-policy.md](../feature-development/assets/ui-designer-policy.md).
+Stop. Parent applies UI policy; do not spawn the next agent.
 
 ---
 
@@ -143,6 +149,7 @@ Load the PM handoff template. Write `HANDOFF-pm.md`. Stop. Parent next:
 - [ ] `features/{slug}/state/product-manager-agent.json` on disk
 - [ ] `pipeline-state.json` updated for this step
 - [ ] Business context, problem, actors, as-is, to-be, success criteria, non-goals present
+- [ ] Surfaces / UX constraints filled or explicit `none`
 - [ ] As-is is factual (paths or explicit greenfield)
 - [ ] Proposed child specs listed (at least one kebab slug)
 - [ ] Assumptions labeled; no silent auth, payments, or retention invention
@@ -164,5 +171,5 @@ Load the PM handoff template. Write `HANDOFF-pm.md`. Stop. Parent next:
 
 Chat-only PRD · restating the ask without as-is · asking the repo · silent
 defaults on Must decisions · inventing competitors · writing
-`specification.md` · spawning Architect or BA from PM · Ready with blocking
+`specification.md` · spawning UI designer, Architect, or BA from PM · Ready with blocking
 open questions · pasting the PRD into chat instead of writing state JSON.

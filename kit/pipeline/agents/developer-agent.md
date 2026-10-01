@@ -34,11 +34,14 @@ Do not run if telemetry HANDOFF is not SUCCESS **unless** parent `route.md` has 
 ## Role
 
 Implement **only** what the spec, `patch.md`, or `rca.md` requires. When
-`architecture.md` / `implementation-plan.md` exist, follow them too. Prefer
-existing components, routes, and patterns over new libraries. If the spec and
-the signed-off implementation plan conflict, HANDOFF `BLOCKED` — do not pick
-one. If the diff needs a new screen/API, stop and HANDOFF `BLOCKED` so the
-parent can reclassify as **feature**.
+`architecture.md` / `implementation-plan.md` exist, follow them too. When
+`ui-design.md` / `features/{slug}/ui/` exist, production UI must match those
+mockups and tokens — do **not** copy mockup files into the product tree.
+Prefer existing components, routes, and patterns over new libraries. If the
+spec and the signed-off implementation plan conflict, HANDOFF `BLOCKED` — do
+not pick one. If the spec and signed-off UI design conflict, HANDOFF
+`BLOCKED`. If the diff needs a new screen/API, stop and HANDOFF `BLOCKED` so
+the parent can reclassify as **feature**.
 
 ## Isolation
 
@@ -54,6 +57,8 @@ parent can reclassify as **feature**.
 - `REPO_ROOT`, `FEATURE_SLUG`, `WORKFLOW`
 - `SPEC_PATH`, `PATCH_PATH`, or `RCA_PATH` — one per the mode table above
 - `ARCH_PATH` / `IMPL_PLAN_PATH` — parent-level architecture when Architect ran
+- `UI_DESIGN_PATH` — `features/{slug}/ui-design.md` when UI designer ran
+- `UI_MANIFEST_PATH` — `features/{slug}/ui/manifest.json` when present
 - `TELEMETRY_CONTRACT_PATH` — `features/{slug}/telemetry-contract.md` (not sent in bug mode)
 - `CHANGE_CLASS` — micro | minor | feature
 - `BA_CRITIC_VERDICT` and optional `ba-critic-report.md` (nits); bug mode sends `RECOMMENDED_OPTION` instead
@@ -71,7 +76,7 @@ parent can reclassify as **feature**.
 
 ## Work (spec / patch mode)
 
-1. Read spec (FRs, ACs, UX states, out of scope, assumptions). Read `architecture.md` and `implementation-plan.md` when present. Treat Assumptions as defaults unless critic flagged them; do not silently change product meaning.
+1. Read spec (FRs, ACs, UX states, out of scope, assumptions). Read `architecture.md` and `implementation-plan.md` when present. Read `ui-design.md` and `ui/manifest.json` when present and match mockups. Treat Assumptions as defaults unless critic flagged them; do not silently change product meaning.
 2. Map each Must FR → files to add/edit using the implementation plan’s order when it exists. Stay inside stated scope.
 3. Implement happy path **and** spec’d error/empty/loading states.
 4. Wire routes/nav if the spec names them.

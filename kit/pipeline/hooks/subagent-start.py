@@ -21,9 +21,13 @@ STATUS_READY = re.compile(
     re.I,
 )
 SIGNOFF_OK = re.compile(r"FEATURE_SIGNOFF:\s*passed\b", re.I)
+PLANNING_OK = re.compile(r"(?m)^\*\*SIGNOFF:\*\*\s*approved\b|^SIGNOFF:\s*approved\b", re.I)
+UI_JOB = re.compile(r"UI_JOB:\s*(full|consult)\b", re.I)
+RESUME_AGENT = re.compile(r"RESUME_AGENT:\s*(architect-agent|ba-agent)\b", re.I)
+CONSULT_UI = re.compile(r"CONSULT_UI:\s*true\b", re.I)
 SLUG = re.compile(r"FEATURE_SLUG:\s*([a-z0-9][a-z0-9-]*(?:/[a-z0-9][a-z0-9-]*)?)", re.I)
 FLAG = re.compile(
-    r"^skip_(ba|ba_critic|telemetry|developer_critic|tester|pm):\s*(true|false)\s*$",
+    r"^skip_(ba|ba_critic|telemetry|developer_critic|tester|pm|ui_designer|architect):\s*(true|false)\s*$",
     re.I | re.M,
 )
 CLASS = re.compile(r"\*\*change_class:\*\*\s*(micro|minor|feature)|change_class:\s*(micro|minor|feature)", re.I)
@@ -70,6 +74,15 @@ def _is_bug_workflow(workflow: str) -> bool:
     return isinstance(chain, list) and "bug-analyst-agent" in chain
 
 
+def _consult_cap() -> int:
+    gates = CONFIG.get("gates")
+    if isinstance(gates, dict):
+        raw = gates.get("consult_cap")
+        if isinstance(raw, int) and raw >= 0:
+            return raw
+    return 1
+
+
 def _route(slug: str) -> dict[str, str]:
     parent = _parent(slug)
     path = ROOT / "features" / parent / "route.md" if parent else Path()
@@ -111,6 +124,8 @@ def _ok(path: Path, mode: str | None) -> bool:
         return bool(STATUS_READY.search(text))
     if mode == "signoff":
         return bool(SIGNOFF_OK.search(text))
+    if mode == "planning":
+        return bool(PLANNING_OK.search(text))
     return True
 
 
@@ -154,6 +169,7 @@ def main() -> int:
     if kind in {
         "intake-agent",
         "product-manager-agent",
+        "ui-designer-agent",
         "ba-agent",
         "ba-critic-agent",
         "bug-analyst-agent",
@@ -186,6 +202,56 @@ def main() -> int:
         if not route_path.is_file():
             return emit_permission(False, f"Blocked product-manager-agent: missing {route_path}")
         return emit_permission(True, "product-manager-agent may run; found route.md")
+
+    if kind == "ui-designer-agent":
+        if change != "feature":
+            return emit_permission(
+                False, "Blocked ui-designer-agent: skip_ui_designer or change_class is not feature"
+            )
+        text = prompt_text(payload)
+        job_match = UI_JOB.search(text)
+        consult = bool(job_match and job_match.group(1).lower() == "consult")
+        consult_ui = bool(CONSULT_UI.search(text))
+        if skip.get("skip_ui_designer") and not (consult and consult_ui):
+            return emit_permission(
+                False, "Blocked ui-designer-agent: skip_ui_designer or change_class is not feature"
+            )
+        if consult:
+            if not RESUME_AGENT.search(text):
+                return emit_permission(
+                    False,
+                    "Blocked ui-designer-agent consult: RESUME_AGENT must be architect-agent or ba-agent",
+                )
+            ui_dir = _feat(parent, "ui")
+            n = len(list(ui_dir.glob("consult-*.md"))) if ui_dir.is_dir() else 0
+            cap = _consult_cap()
+            if n >= cap and not consult_ui:
+                return emit_permission(
+                    False,
+                    f"Blocked ui-designer-agent consult: consult_cap={cap} reached. Set CONSULT_UI: true to override.",
+                )
+        pm = _feat(parent, "HANDOFF-pm.md")
+        prd = _feat(parent, "prd.md")
+        if not _ok(pm, "ready"):
+            return emit_permission(False, f"Blocked ui-designer-agent: PM HANDOFF is not ready ({pm}).")
+        if not prd.is_file():
+            return emit_permission(False, f"Blocked ui-designer-agent: missing {prd}")
+        return emit_permission(True, "ui-designer-agent may run; found HANDOFF-pm.md")
+
+    if kind == "architect-agent":
+        if skip.get("skip_architect"):
+            return emit_permission(False, "Blocked architect-agent: route.md skip_architect=true")
+        if (
+            workflow == DEFAULT_WORKFLOW
+            and change == "feature"
+            and not skip.get("skip_ui_designer")
+        ):
+            ui = _feat(parent, "HANDOFF-ui.md")
+            if not _ok(ui, "ready"):
+                return emit_permission(
+                    False, f"Blocked architect-agent: UI designer HANDOFF is not ready ({ui})."
+                )
+        return emit_permission(True, "architect-agent may run")
 
     if kind == "ba-agent":
         if skip.get("skip_ba"):
@@ -243,6 +309,16 @@ def main() -> int:
         if not rca.is_file():
             return emit_permission(False, f"Blocked developer-agent: missing root cause analysis ({rca}).")
         return emit_permission(True, "developer-agent may run; root cause approved")
+
+    if kind == "developer-agent" and change == "feature":
+        gates = CONFIG.get("gates") if isinstance(CONFIG.get("gates"), dict) else {}
+        if gates.get("require_planning_signoff_before_build", True):
+            ba_sign = _feat(parent, "signoff-ba.md")
+            if not _ok(ba_sign, "planning"):
+                return emit_permission(
+                    False,
+                    f"Blocked developer-agent: require_planning_signoff_before_build needs {ba_sign}",
+                )
 
     if kind == "developer-agent" and skip.get("skip_telemetry"):
         patch = _feat(parent, "patch.md")

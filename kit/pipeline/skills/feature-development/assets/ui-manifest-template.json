@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "slug": "{slug}",
+  "surfaces": ["web"],
+  "skills_loaded": ["ui-design", "ui-web-responsive", "ui-accessibility", "ui-html-mockups"],
+  "index": "features/{slug}/ui/index.html",
+  "tokens_from": "{repo path or greenfield}",
+  "screens": [
+    {
+      "id": "S-1",
+      "name": "{screen name}",
+      "file": "features/{slug}/ui/{screen}.html",
+      "actors": [],
+      "states": ["empty", "loading", "error", "denied", "success"]
+    }
+  ]
+}

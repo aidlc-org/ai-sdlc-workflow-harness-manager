@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 HANDOFF_HINT = {
     "intake-agent": "features/{slug}/HANDOFF-intake.md",
     "product-manager-agent": "features/{slug}/HANDOFF-pm.md",
+    "ui-designer-agent": "features/{slug}/HANDOFF-ui.md",
     "ba-agent": "features/{slug}/HANDOFF.md",
     "bug-analyst-agent": "features/{slug}/HANDOFF-bug-analyst.md",
     "ba-critic-agent": "features/{slug}/HANDOFF-ba-critic.md",

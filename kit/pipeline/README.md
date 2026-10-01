@@ -18,7 +18,7 @@ When you add or edit markdown in this folder, follow
 
 | Change this | Leave this |
 |-------------|------------|
-| `config.json` — tracker, deploy target names, verify rules | `loader/` |
+| `config.json` — tracker, deploy target names, verify rules; drop or reorder `ui-designer-agent` in the feature class chain if this engagement has no UI seat | `loader/` |
 | `skills/local-deployment/assets/local-deploy-runbook.md` | `agents/*.md` (process, not stack) |
 | `skills/local-deployment/scripts/deploy-local.sh` | `workflows/*.json` unless you add a workflow |
 | Testing skills, only if runners or paths differ | Planning skill bodies |

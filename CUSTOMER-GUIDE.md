@@ -560,9 +560,10 @@ uses different names. Do not put the Jira site URL or API token in this file.
 
 | Key | Default meaning |
 |-----|-----------------|
-| `workflows.*` chains / `classes` | Delivery ladder (micro / minor / feature). Change only if you drop or add a specialist. Feature class includes `@signoff:*` and `architect-agent`. |
+| `workflows.*` chains / `classes` | Delivery ladder (micro / minor / feature). Change only if you drop or add a specialist. Feature class includes `@signoff:*`, optional `ui-designer-agent`, and `architect-agent`. Drop `ui-designer-agent` from the feature chain to disable the seat for this engagement. |
 | `product.artifact_dir` | `features/` — analysis agents write here only. |
 | `gates.retry_cap` | Critic `changes-required` retries (default 2). |
+| `gates.consult_cap` | Architect/BA UI-designer consult inserts (default 1). Override one run with `CONSULT_UI: true`. |
 | `gates.require_planning_signoff_before_build` | User must approve PM / Architect / BA artifacts before waves (default true). |
 | `waves.child_chain` | Per-child developer → critic. Telemetry only if `RUN_TELEMETRY`. |
 | `orchestrator.decider` | Orchestrator mode only. `jev` or `fixed`. Kit mode ignores this block. |
@@ -573,9 +574,30 @@ uses different names. Do not put the Jira site URL or API token in this file.
 
 PM, Architect, and BA follow **clarify-first**: they read prior `features/{slug}/`
 artifacts (`decisions.md`, plan, architecture) before asking, then ask remaining
-checklist items instead of silent defaults. Override Architect with
-`RUN_ARCHITECT: true|false`. Size policy lives in
+checklist items instead of silent defaults. Override UI designer with
+`RUN_UI_DESIGNER: true|false` (policy in
+`.pipeline/skills/feature-development/assets/ui-designer-policy.md`). Override
+Architect with `RUN_ARCHITECT: true|false`. Size policy lives in
 `.pipeline/skills/feature-development/assets/architect-policy.md`.
+
+---
+
+## Operator guardrails (do not skip)
+
+These are **process and tool policy**, not a security certification. Read them
+before anyone else runs the pack.
+
+- Do **not** set `PIPELINE_ALLOW_ALL=1` or `PIPELINE_HOOK_SKIP=1` on a shared
+  or customer machine. Those disable commit, network, MCP, and artifact gates.
+- Do **not** copy `features/{slug}/ui/` into application source. Mockups are the
+  visual contract. Developer translates them into the product stack. The write
+  hook denies HTML/CSS that look like those mockups outside `features/`.
+- Treat `ui-design.md` and `ui/*.html` as a **design contract**, not production UI.
+- Pilots and demos: no production secrets and no real PII in PRDs or mockups.
+- Honor HITL files (`signoff-requirements.md`, `signoff-ba.md`). Do not spawn
+  `developer-agent` because a specialist wrote `next_agent: developer-agent`.
+- `CONSULT_UI: true` overrides `gates.consult_cap` for one run. It is not a
+  license to skip UI policy or requirements sign-off.
 
 ---
 

@@ -77,6 +77,7 @@ def feature_development() -> WorkflowSpec:
     ]
     feature = [
         _kit_step("product-manager-agent"),
+        _kit_step("ui-designer-agent", prior_agent="product-manager-agent"),
         SignoffGate("requirements", artifact_hint="prd.md"),
         _kit_step("architect-agent", prior_agent="product-manager-agent"),
         SignoffGate("architect", artifact_hint="architecture.md"),

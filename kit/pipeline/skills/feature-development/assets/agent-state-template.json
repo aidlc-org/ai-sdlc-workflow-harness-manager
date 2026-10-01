@@ -39,6 +39,11 @@
       }
     ],
     "next_agent": "{agent-id | signoff-requirements | signoff-architect | signoff-ba | stop}",
+    "recommend_after_signoff": "{architect-agent | ba-agent | none}",
+    "consult_agent": "{ui-designer-agent | none}",
+    "consult_reason": "",
+    "consult_questions": [],
+    "resume_agent": "{architect-agent | ba-agent | none}",
     "next_must_read": [
       "features/{slug}/{artifact}"
     ]

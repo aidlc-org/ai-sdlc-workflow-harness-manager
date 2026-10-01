@@ -12,7 +12,7 @@ Owned by **feature-development**. Architect writes
 ```markdown
 # HANDOFF — architect-agent
 
-**status:** SUCCESS | BLOCKED | BLOCKED_CHALLENGE_PM | ASSUMPTIONS_USED
+**status:** SUCCESS | BLOCKED | BLOCKED_CHALLENGE_PM | ASSUMPTIONS_USED | CONSULT_REQUESTED
 **slug:** {slug}
 **architecture_path:** features/{slug}/architecture.md | none
 **implementation_plan_path:** features/{slug}/implementation-plan.md | none
@@ -53,6 +53,7 @@ Wait for @signoff:architect (present recorded concerns), then spawn ba-agent.
 Do not start developer-agent. Pass state/architect-agent.json to BA — not this body.
 If BLOCKED_CHALLENGE_PM: void signoff-requirements.md, re-spawn PM, user re-signs, then Architect again.
 If BLOCKED with user questions: wait, then re-spawn Architect.
+If CONSULT_REQUESTED: spawn ui-designer-agent (UI_JOB: consult) then re-spawn Architect.
 ```
 
 ### Status values (mandatory)
@@ -63,5 +64,4 @@ If BLOCKED with user questions: wait, then re-spawn Architect.
 | `ASSUMPTIONS_USED` | User said proceed; defaults labeled in ADRs | `true` | Same; BA critic stress-tests defaults |
 | `BLOCKED` | User questions or incomplete design | `false` | Wait; re-spawn Architect |
 | `BLOCKED_CHALLENGE_PM` | Requirements must change (feature-development only) | `false` | Void requirements sign-off; re-spawn PM |
-
-Do not report `SUCCESS` when blockers fail or Must architecture decisions are still open.
+| `CONSULT_REQUESTED` | Layout/IA gap UI must settle | `false` | One-shot UI designer, then resume Architect |

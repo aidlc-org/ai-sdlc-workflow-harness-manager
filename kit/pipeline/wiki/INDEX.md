@@ -14,6 +14,7 @@ Match **triggers** against the current request, error, or pipeline class. Read
 | Tracker issue key; which workflow; `intake.md`; `rca.md`; `epic-plan.md`; bug vs story vs epic | [orchestration-and-jira-intake.md](orchestration-and-jira-intake.md) |
 | `CHANGE_CLASS`; micro vs minor vs feature; skip PM/BA; `route.md` | [feature-pipeline-change-class.md](feature-pipeline-change-class.md) |
 | PM first gate; `prd.md`; nested `features/{slug}/{child}/`; `spec-order.md`; waves | [feature-pipeline-pm-and-multi-spec.md](feature-pipeline-pm-and-multi-spec.md) |
+| ui-designer-agent; `ui-design.md`; `skip_ui_designer`; `RUN_UI_DESIGNER`; `CONSULT_UI`; mockups | [feature-pipeline-ui-designer.md](feature-pipeline-ui-designer.md) |
 | `pipeline-state.json`; agent `state/*.json`; slim handoff; prior HANDOFF pasted | [pipeline-state-and-slim-handoffs.md](pipeline-state-and-slim-handoffs.md) |
 | Architect; `architecture.md`; implementation plan; `skip_architect`; `RUN_ARCHITECT`; planning `signoff-*.md`; `decisions.md` | [feature-pipeline-architect-and-signoff.md](feature-pipeline-architect-and-signoff.md) |
 | Telemetry contract; `EVENTS: none`; G1–G7; analytics vendor not in the spec | [telemetry-event-extraction.md](telemetry-event-extraction.md) |

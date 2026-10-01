@@ -130,6 +130,7 @@ class ModelDecider(Protocol):
 
 _JOBS = {
     "product-manager-agent": "Writes the product requirements.",
+    "ui-designer-agent": "Writes the UI design contract and mockups.",
     "intake-agent": "Turns the tracker issue into an intake.",
     "architect-agent": "Writes the architecture.",
     "ba-agent": "Writes the business analysis and handoff.",
@@ -156,7 +157,7 @@ def capability_for(step_id: str) -> str:
             "review: find gaps, contradictions, and missing acceptance criteria. "
             "Prefer a reasoning model over a fast coding model."
         )
-    if step_id in {"product-manager-agent", "intake-agent", "ba-agent"}:
+    if step_id in {"product-manager-agent", "intake-agent", "ba-agent", "ui-designer-agent"}:
         return (
             "planning: write requirements, scope, and acceptance criteria. "
             "Prefer a reasoning model. A fast coding model is a poor fit."

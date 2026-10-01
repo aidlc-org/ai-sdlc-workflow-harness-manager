@@ -31,6 +31,7 @@ Read the signed-off requirements artifact. Run Architect if **any** match:
 - New route, page, or information architecture
 - New persistence, API, MCP, or third-party SDK
 - Authn/authz, money, inventory, PII, or secrets
+- UI designer `context.recommend_after_signoff` is `architect-agent`
 - User typed `RUN_ARCHITECT: true`
 
 Skip Architect on feature class when **none** of those match (single simple

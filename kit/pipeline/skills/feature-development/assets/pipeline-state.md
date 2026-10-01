@@ -61,7 +61,7 @@ If a listed file is missing, HANDOFF `BLOCKED` `INPUT_MISSING`. Do not guess.
 
 Feature-class step ids (create rows up front; mark unused `skipped`):
 
-`product-manager-agent`, `signoff-requirements`, `architect-agent`,
+`product-manager-agent`, `ui-designer-agent`, `signoff-requirements`, `architect-agent`,
 `signoff-architect`, `ba-agent`, `ba-critic-agent`, `signoff-ba`, then per
 child under `waves.{child}.{telemetry-agent|developer-agent|developer-critic-agent}`,
 then `tester-agent`, `devops-agent`, `retro-agent`.
@@ -78,11 +78,16 @@ Micro / minor / bug: only the agents that class actually runs.
 | `context.summary` | ≤ 8 sentences. Enough to orient; not a second PRD. |
 | `context.goals` | Product or technical goals this step locked. |
 | `context.concerns` | Issues for HITL. Architect uses `severity`. |
-| `context.next_agent` | Who the parent should spawn (or `signoff` / `stop`). |
+| `context.next_agent` | Who the parent should spawn (or `signoff` / `stop`). Honor only if [next-agent-policy.md](next-agent-policy.md) lists it. |
+| `context.recommend_after_signoff` | UI designer only: `architect-agent` or `ba-agent`. Extra architect-policy trigger, not a spawn. |
+| `context.consult_agent` | When status is `CONSULT_REQUESTED`: usually `ui-designer-agent`. |
+| `context.consult_reason` | One sentence. |
+| `context.consult_questions` | Decisions the consult must settle. |
+| `context.resume_agent` | Who the parent re-spawns after consult. |
 | `context.next_must_read` | Exact files the next specialist must open. Keep short. |
 
 `status` matches the HANDOFF: `SUCCESS` | `ASSUMPTIONS_USED` | `BLOCKED` |
-`BLOCKED_CHALLENGE_PM` | `FAILED` | `NO_NEW_PAGE`.
+`BLOCKED_CHALLENGE_PM` | `CONSULT_REQUESTED` | `FAILED` | `NO_NEW_PAGE`.
 
 ## Anti-patterns
 

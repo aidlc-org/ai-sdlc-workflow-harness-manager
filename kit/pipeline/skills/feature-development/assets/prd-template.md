@@ -91,6 +91,24 @@ Approvals denied, integration down, empty result, unauthorized actor.
 |--------|-----------|------------------------|---------------|
 | … | in / out / both | … | yes (path) / no / Unknown |
 
+### 6.4 Surfaces and UX constraints
+
+Required so UI designer (and Architect) do not invent the product shape.
+`N/A — API/CLI/batch only` is valid when there is no user-facing surface.
+
+| Item | Statement | Source |
+|------|-----------|--------|
+| Surfaces | web / mobile / desktop / ERP / mixed / none | user / asked |
+| Devices / breakpoints | … | … |
+| Density | consumer / enterprise | … |
+| Navigation | … | … |
+| Must-have screens | … | … |
+| Theme | repo path or greenfield | … |
+| Accessibility bar | WCAG 2.2 AA or stated | … |
+| Empty / error / denied | … | … |
+
+If any row is Unknown and it changes screens or architecture, stop at P3 and ask.
+
 ## 7. Goals and non-goals
 
 ### Goals
@@ -162,4 +180,4 @@ explicit user confirmation recorded in `decisions.md`.
 
 Yes — as-is and to-be are grounded; split is stable; parent may request
 requirements sign-off. | No — {what is still blocking}
-```
+````

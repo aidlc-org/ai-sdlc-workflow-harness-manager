@@ -12,9 +12,9 @@ State contract: [pipeline-state.md](pipeline-state.md). Do **not** paste a prior
 
 **Always include:** `REPO_ROOT` (absolute), `FEATURE_SLUG`, `WORKFLOW`, `CHANGE_CLASS: micro|minor|feature`, the two state paths.
 
-Feature class: parent slug for PM, Architect, BA, BA critic, test-designer, tester, devops, retro. Child work uses `FEATURE_SLUG: {parent}/{child}`. When `test_design.enabled`, add `TEST_DESIGN_ENABLED: true` to Architect, BA, BA critic, test-designer, and tester. When `architecture_diagrams.enabled`, add `ARCHIFY_ENABLED: true` to Architect.
+Feature class: parent slug for PM, UI designer, Architect, BA, BA critic, test-designer, tester, devops, retro. Child work uses `FEATURE_SLUG: {parent}/{child}`. When `test_design.enabled`, add `TEST_DESIGN_ENABLED: true` to Architect, BA, BA critic, test-designer, and tester. When `architecture_diagrams.enabled`, add `ARCHIFY_ENABLED: true` to Architect.
 
-`@signoff:requirements`, `@signoff:architect`, and `@signoff:ba` are parent-only. Do not spawn a Task. Present the artifact **and recorded concerns**, wait for the user, write `signoff-*.md` from [planning-signoff-template.md](planning-signoff-template.md), update `pipeline-state.json`.
+`@signoff:requirements`, `@signoff:architect`, and `@signoff:ba` are parent-only. Do not spawn a Task. Present the artifact **and recorded concerns**, wait for the user, write `signoff-*.md` from [planning-signoff-template.md](planning-signoff-template.md), update `pipeline-state.json`. When UI designer ran, `@signoff:requirements` presents `prd.md` **and** `ui-design.md` / `ui/index.html`.
 
 ---
 
@@ -145,7 +145,43 @@ USER_REQUEST: {verbatim}
 
 Run P1–P6. Analyze as-is in the repo. Write prd.md (not a thin plan). Write state/product-manager-agent.json.
 If interactive questions are required, return BLOCKED with questions.md and stop.
-Do not call Architect, BA, or developer. Do not write specification.md.
+Do not call UI designer, Architect, BA, or developer. Do not write specification.md.
+```
+
+---
+
+## UI designer step (feature class, when skip_ui_designer is false)
+
+```text
+subagent_type: generalPurpose
+{isolation preamble}
+PRIOR_STATE_PATH: features/{slug}/state/product-manager-agent.json
+You are the UI designer. Follow .pipeline/agents/ui-designer-agent.md and .pipeline/skills/ui-design/SKILL.md exactly.
+
+UI_JOB: full
+
+Run U1–U6. Classify surfaces; Read only matching platform skills. Write ui-design.md, ui/ mockups, ui/manifest.json, state/ui-designer-agent.json.
+If interactive questions are required, return BLOCKED with questions.md and stop.
+Do not call Architect, BA, or developer. Do not edit product source.
+```
+
+---
+
+## UI designer consult (Architect or BA CONSULT_REQUESTED)
+
+```text
+subagent_type: generalPurpose
+{isolation preamble}
+PRIOR_STATE_PATH: features/{slug}/state/{architect-agent|ba-agent}.json
+You are the UI designer on a consult insert. Follow .pipeline/agents/ui-designer-agent.md and .pipeline/skills/ui-design/SKILL.md (consult job).
+
+UI_JOB: consult
+RESUME_AGENT: architect-agent | ba-agent
+CONSULT_REASON: {one sentence}
+CONSULT_QUESTIONS: {list}
+
+Answer the consult questions. Patch ui-design.md / mockups if needed. Write ui/consult-{n}.md and state/ui-designer-agent.json.
+Set context.next_agent to RESUME_AGENT. Do not re-run the full inventory. Do not spawn the requester.
 ```
 
 ---
@@ -155,16 +191,17 @@ Do not call Architect, BA, or developer. Do not write specification.md.
 ```text
 subagent_type: generalPurpose
 {isolation preamble}
-PRIOR_STATE_PATH: features/{slug}/state/product-manager-agent.json | features/{slug}/state/intake-agent.json
+PRIOR_STATE_PATH: features/{slug}/state/ui-designer-agent.json | features/{slug}/state/product-manager-agent.json | features/{slug}/state/intake-agent.json
 You are the architect. Follow .pipeline/agents/architect-agent.md and .pipeline/skills/architecture-design/SKILL.md exactly.
 
 PLAN_SOURCE_KIND: pm-plan | jira-story | jira-epic
 
 Run A1–A5. Open files from the prior state only. Raise blocking or recorded concerns.
+Read ui-design.md and ui/manifest.json when they exist. Do not invent extra screens.
 Write architecture.md, implementation-plan.md, state/architect-agent.json.
 If TEST_DESIGN_ENABLED is true, also write features/{slug}/test-design/model-delta.json or set no_test_model_change.
 If ARCHIFY_ENABLED is true, follow .pipeline/skills/architecture-visualization/SKILL.md: keep mermaid, write features/{slug}/diagrams/manifest.json (delivered or mermaid-fallback). Do not BLOCK only because Archify is missing.
-Do not call BA or developer. Do not write specification.md.
+If a layout/IA gap blocks an honest design, return CONSULT_REQUESTED. Do not call BA, UI designer, or developer. Do not write specification.md.
 ```
 
 ---

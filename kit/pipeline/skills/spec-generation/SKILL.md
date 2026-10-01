@@ -28,7 +28,7 @@ Turn a **plan source** into on-disk child specifications, a wave order, and a ca
 
 Everything after S1 is identical across the three. A defect never reaches this skill — it is specified by `rca.md` in [bug-fix](../bug-fix/SKILL.md).
 
-**Parent:** spawn BA as a separate `Task` after `@signoff:requirements` and, when Architect ran, after `@signoff:architect`. **BA:** write child specs + order + test plan + HANDOFF, then return. **Do not** implement code, spawn critic, or spawn developer.
+**Parent:** spawn BA as a separate `Task` after `@signoff:requirements` and, when Architect ran, after `@signoff:architect`. **BA:** write child specs + order + test plan + HANDOFF, then return. **Do not** implement code, spawn critic, spawn developer, or spawn UI designer.
 
 **Success:** every child `specification.md` is complete, `spec-order.md` and `test-plan.md` exist, assumptions labeled, ACs testable.  
 **Failure:** chat-only spec, silent invention, open Must questions, or no as-is evidence from the repo.
@@ -69,6 +69,8 @@ features/{slug}/
   test-plan.md         # required
   architecture.md      # when Architect ran
   implementation-plan.md
+  ui-design.md         # when UI designer ran
+  ui/manifest.json
   decisions.md
   questions.md         # if S3 ran
   HANDOFF.md           # required

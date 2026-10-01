@@ -21,6 +21,7 @@
         ],
         "feature": [
           "product-manager-agent",
+          "ui-designer-agent",
           "@signoff:requirements",
           "architect-agent",
           "@signoff:architect",
@@ -56,6 +57,7 @@
       ],
       "skips": {
         "skip_pm": true,
+        "skip_ui_designer": true,
         "skip_telemetry": true
       }
     },
@@ -78,6 +80,7 @@
       ],
       "skips": {
         "skip_pm": true,
+        "skip_ui_designer": true,
         "skip_telemetry": true
       }
     },
@@ -124,6 +127,7 @@
         "skip_ba": true,
         "skip_ba_critic": true,
         "skip_architect": true,
+        "skip_ui_designer": true,
         "skip_telemetry": true,
         "skip_developer_critic": false
       },
@@ -170,6 +174,7 @@
       "readonly_agents": [
       "intake-agent",
       "product-manager-agent",
+      "ui-designer-agent",
       "architect-agent",
       "ba-agent",
       "ba-critic-agent",
@@ -235,6 +240,7 @@
   },
   "gates": {
     "retry_cap": 2,
+    "consult_cap": 1,
     "require_signoff_before_deploy": true,
     "require_planning_signoff_before_build": true,
     "complete_after": "retro-agent"

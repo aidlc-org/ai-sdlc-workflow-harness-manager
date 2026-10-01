@@ -6,7 +6,7 @@
 | Audience | Parent (copies values into `route.md`) |
 | Adapt | Edit the table columns only. Do not add extra classes. |
 
-Owned by **feature-development**. PM (P3), Architect (A2), and BA (S3) follow this
+Owned by **feature-development**. PM (P3), UI designer (U3), Architect (A2), and BA (S3) follow this
 file. Do not invent product or technical decisions. Mine prior artifacts first,
 then ask the user every remaining decision on the coverage checklist.
 
@@ -37,25 +37,47 @@ recorded in `decisions.md` or `questions.md`.
 | Agent | Must read before asking |
 |-------|-------------------------|
 | PM | Prior state (if any), `USER_REQUEST`, `route.md`, existing `prd.md` / `research.md` / `questions.md` / `decisions.md` on a re-run, `intake.md` if present, repo facts from P2 |
-| Architect | Prior PM or intake state, then listed files: signed-off `prd.md` or `intake.md` / `epic-plan.md`, `research.md`, `decisions.md`, `signoff-requirements.md`, repo |
-| BA | Prior Architect (or PM / intake) state, then listed files: PRD/intake, `architecture.md`, `implementation-plan.md`, `architect-concerns.md`, `decisions.md`, `signoff-architect.md` (when Architect ran) |
+| UI designer | Prior PM state, then listed files: `prd.md`, `research.md`, `decisions.md`, `questions.md`, repo theme/layout paths from U2 |
+| Architect | Prior PM, UI, or intake state, then listed files: signed-off `prd.md` or `intake.md` / `epic-plan.md`, `ui-design.md` and `ui/manifest.json` if present, `research.md`, `decisions.md`, `signoff-requirements.md`, repo |
+| BA | Prior Architect (or PM / UI / intake) state, then listed files: PRD/intake, `ui-design.md` and mockup index if present, `architecture.md`, `implementation-plan.md`, `architect-concerns.md`, `decisions.md`, `signoff-architect.md` (when Architect ran) |
 
 ## Coverage checklists (ask if not already decided)
 
 **PM**
 
+Ask as if UI designer, Architect, and BA will read the PRD next. A naive
+prompt is not an excuse for a thin checklist.
+
 - Business / customer goals and why now
 - Timeline or release constraint
-- Actors and who may act
+- Actors and who may act (include roles that change views)
 - Success criteria
 - In / out of scope
 - As-is flow (how the product works today) vs to-be
 - Primary journeys and approvals
+- **Surfaces:** web / mobile / desktop / ERP / mixed / none (API-only)
+- Devices, breakpoints, density (consumer vs enterprise tables)
+- Must-have screens vs later; navigation model
+- Existing design system / theme in repo vs greenfield
+- Brand, light/dark, accessibility bar
+- Empty / error / permission-denied expectations
 - External systems / integrations
+- Persistence expectations (what is stored)
 - MVP vs later
 - Authz / PII / money / irreversible actions
+- NFRs that change design (latency, volume, offline) if the user stated them
 - Child-spec split
 - Edge cases that change product meaning
+
+**UI designer**
+
+- Surfaces not already decided in the PRD
+- Navigation model and must-have screens
+- Density and breakpoints
+- Theme: reuse repo tokens vs greenfield
+- Empty / loading / error / denied per primary journey
+- Role-different views
+- Accessibility bar if still Unknown
 
 **Architect**
 
@@ -69,11 +91,12 @@ recorded in `decisions.md` or `questions.md`.
 - Technical child-spec split
 - Failure modes
 - Requirements gaps (blocking vs recorded concerns)
+- Screen inventory in `ui-design.md` (do not invent extra screens)
 
 **BA**
 
 - Remaining acceptance criteria
-- Empty / loading / error states
+- Empty / loading / error states (must match `ui-design.md` §5 when present)
 - Acceptance edges
 - Testability (how a tester would fail the AC)
 - Anything architecture left open
@@ -83,6 +106,7 @@ recorded in `decisions.md` or `questions.md`.
 | Agent | Max questions per batch |
 |-------|-------------------------|
 | PM | 20 |
+| UI designer | 15 |
 | Architect | 15 |
 | BA | 15 |
 

@@ -28,7 +28,7 @@ ARTIFACT_DIR = (_ARTIFACT if isinstance(_ARTIFACT, str) and _ARTIFACT.strip() el
 RESTRICTED = (
     {str(name).lower() for name in _AGENTS}
     if isinstance(_AGENTS, list) and _AGENTS
-    else {"product-manager-agent", "ba-agent", "ba-critic-agent", "telemetry-agent"}
+    else {"product-manager-agent", "ui-designer-agent", "ba-agent", "ba-critic-agent", "telemetry-agent"}
 )
 
 SECRET_PATH = re.compile(
@@ -44,6 +44,8 @@ SECRET_BODY = re.compile(
     r"|console\.(log|debug|info|warn)\([^)]{0,200}\b(email|password|ssn|authorization)\b"
     r"|\b(gtag|fbq|mixpanel\.init|analytics\.load)\s*\("
 )
+UI_ARTIFACT_REF = re.compile(r"features/[a-z0-9][a-z0-9_-]*/ui/", re.I)
+_REPO = Path(__file__).resolve().parents[2]
 
 
 def _norm(path: str) -> str:
@@ -52,6 +54,28 @@ def _norm(path: str) -> str:
 
 def _is_artifact(rel: str) -> bool:
     return rel.startswith(ARTIFACT_DIR) or f"/{ARTIFACT_DIR}" in rel
+
+
+def _is_mockup_copy(rel: str, body: str) -> bool:
+    """True when product-source write looks like features/{slug}/ui/ HTML."""
+    if not rel or _is_artifact(rel):
+        return False
+    if UI_ARTIFACT_REF.search(body or ""):
+        return True
+    name = Path(rel).name.lower()
+    lowered = (body or "").lower()
+    skeleton = (
+        "<!doctype html>" in lowered
+        and "skip to content" in lowered
+        and "--focus-ring" in lowered
+    )
+    if name.endswith((".html", ".htm", ".css")) and skeleton:
+        return True
+    if name.endswith((".html", ".htm", ".css")) and name not in {"index.html", "index.htm"}:
+        root = _REPO / "features"
+        if root.is_dir() and (any(root.glob(f"*/ui/{name}")) or any(root.glob(f"*/*/ui/{name}"))):
+            return True
+    return False
 
 
 def main() -> int:
@@ -72,6 +96,13 @@ def main() -> int:
         return emit_permission(
             False,
             "Blocked write: payload looks like a hardcoded secret. Use env vars / secret stores.",
+            extra,
+        )
+    if _is_mockup_copy(rel, body):
+        return emit_permission(
+            False,
+            f"Blocked copy of pipeline UI mockups into product source ({rel}). "
+            f"Keep mockups under {ARTIFACT_DIR}{{slug}}/ui/; implement production UI in the app stack.",
             extra,
         )
     if kind in RESTRICTED and rel and not _is_artifact(rel):

@@ -14,7 +14,9 @@ description: >-
 | Audience | The named agent, or the parent when this file is on the allowlist |
 | Adapt | Change commands or paths only in deploy and testing skills. Planning skills stay product-neutral. |
 
-Use this skill when the user wants a **redesign** (layout, visual system, multiple components).
+Use this skill when the user wants a **redesign** (layout, visual system, multiple components) of an **existing** screen.
+
+**New screens or a naive app build** belong in **feature-development** `feature`: PM then `ui-designer-agent` (`ui-design` skill), not this file.
 
 **Do not use** for “add a label”, “rename a button”, or “wire this existing control” — those are **feature-development** `micro` / `minor` ([change-routing.md](../feature-development/assets/change-routing.md)).
 

@@ -18,14 +18,14 @@ description: >-
 
 ## Pipeline position
 
-`product-manager-agent → @signoff:requirements → architect-agent? → @signoff:architect → **ba-agent** → ba-critic-agent → @signoff:ba → (waves)` (text-sourced feature)
+`product-manager-agent → ui-designer-agent? → @signoff:requirements → architect-agent? → @signoff:architect → **ba-agent** → ba-critic-agent → @signoff:ba → (waves)` (text-sourced feature)
 `intake-agent → @signoff:requirements → architect-agent? → **ba-agent** → …` (tracker story or epic; PM is skipped)
 
 You are **only** this step. Return to the parent when done. The bug workflow never spawns you — a defect is specified by `rca.md`, not by you.
 
 ## Role
 
-Senior business analyst: turn the plan source (and signed-off architecture when present) into **reviewable child specs**, a **wave order**, and a **test plan** so developers never invent Must requirements and tester knows which cases are Playwright vs API vs unit. Mine `decisions.md` first; ask every remaining BA checklist item.
+Senior business analyst: turn the plan source (and signed-off architecture when present) into **reviewable child specs**, a **wave order**, and a **test plan** so developers never invent Must requirements and tester knows which cases are Playwright vs API vs unit. Mine `decisions.md` first; ask every remaining BA checklist item. When `ui-design.md` exists, empty/error/denied ACs must match it. If a visual state is missing, return `CONSULT_REQUESTED` rather than inventing UX.
 
 ## Skill (mandatory)
 
@@ -37,7 +37,7 @@ Follow [`.pipeline/skills/spec-generation/SKILL.md`](../skills/spec-generation/S
 - Read `PIPELINE_STATE_PATH` and `PRIOR_STATE_PATH` first. Open listed files only.
 - No product source edits (React/Vite app, engine, etc.).
 - No `Task` nesting. No git commit.
-- Do not spawn ba-critic, developer, tester, or devops.
+- Do not spawn UI designer, ba-critic, developer, tester, or devops.
 
 ## Inputs (parent injects)
 
@@ -48,7 +48,7 @@ Follow [`.pipeline/skills/spec-generation/SKILL.md`](../skills/spec-generation/S
 
 | `PLAN_SOURCE_KIND` | `PLAN_SOURCE_PATH` | Also read |
 |--------------------|--------------------|-----------|
-| `pm-plan` | `features/{slug}/prd.md` | `research.md`, `architecture.md` if present, `decisions.md` |
+| `pm-plan` | `features/{slug}/prd.md` | `research.md`, `ui-design.md` if present, `architecture.md` if present, `decisions.md` |
 | `jira-story` | `features/{slug}/intake.md` | — |
 | `jira-epic` | `features/{slug}/epic-plan.md` | `features/{slug}/stories/{child}.md` |
 

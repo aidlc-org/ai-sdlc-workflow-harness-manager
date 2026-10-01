@@ -20,9 +20,10 @@ Owned by **feature-development**. PM writes `features/{slug}/HANDOFF-pm.md` and 
 **decisions_path:** features/{slug}/decisions.md
 **ready_for_signoff:** true | false
 **ready_for_ba:** true | false
+**next_agent:** ui-designer-agent | signoff-requirements
 
 ## Summary
-{3–6 sentences: direction, proposed child specs, what was assumed}
+{3–6 sentences: direction, proposed child specs, surfaces, what was assumed}
 
 ## Proposed children
 - {child-slug}: {one-line job}
@@ -41,7 +42,8 @@ Owned by **feature-development**. PM writes `features/{slug}/HANDOFF-pm.md` and 
 - What the parent should do:
 
 ## Parent next step
-Wait for @signoff:requirements. Then spawn architect-agent unless skip_architect.
+Parent applies ui-designer-policy. Then spawn ui-designer-agent unless skip_ui_designer.
+Else wait for @signoff:requirements. Then spawn architect-agent unless skip_architect.
 Do not start developer-agent. Pass state/product-manager-agent.json — not this body.
 ```
 
@@ -49,7 +51,7 @@ Do not start developer-agent. Pass state/product-manager-agent.json — not this
 
 | status | When | `ready_for_ba` | Parent |
 |--------|------|----------------|--------|
-| `SUCCESS` | P5 blockers pass | `true` | `@signoff:requirements`, then Architect or BA |
+| `SUCCESS` | P5 blockers pass | `true` | UI designer or `@signoff:requirements`, then Architect or BA |
 | `ASSUMPTIONS_USED` | User said proceed; defaults labeled | `true` | Same; later agents must stress-test Assumptions |
 | `BLOCKED` | Interactive wait, unsafe ask, or missing scope | `false` | Wait for user then re-run PM, or stop |
 

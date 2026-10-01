@@ -18,12 +18,12 @@ requires `pipeline-kit obs install`.
 
 | Event | Script | Why |
 |-------|--------|-----|
-| `subagentStart` | `subagent-start.py` | Next specialist needs the previous artifact |
+| `subagentStart` | `subagent-start.py` | Next specialist needs the previous artifact. UI designer skip/consult_cap; feature-class developer needs `signoff-ba.md` |
 | `subagentStop` | `subagent-stop.py` | One HANDOFF nudge (`loop_limit: 1`) |
 | `beforeShellExecution` | `before-shell.py` | Deny commit/push, remote script pipes, disk wipe, remote ssh, non-localhost net, new deps |
 | `beforeMCPExecution` | `before-mcp.py` | Allow MCP reads/search; deny create/edit/comment/PR/push unless `PIPELINE_ALLOW_MCP=1` |
 | `beforeReadFile` | `before-read.py` | Secrets, then deny pack files not on the active allowlist |
-| `preToolUse` Write | `pre-write.py` | No secret files, no generated/VCS dirs, analysis agents write artifacts only |
+| `preToolUse` Write | `pre-write.py` | No secret files, no generated/VCS dirs, analysis agents write artifacts only, no copy of `features/{slug}/ui/` into product source |
 | `afterFileEdit` | `after-file-edit.py` | Inject the verify reminder from `config.json` |
 | `postToolUseFailure` | `post-tool-failure.py` | Do not fix failures by dropping auth, hooks, or tests |
 

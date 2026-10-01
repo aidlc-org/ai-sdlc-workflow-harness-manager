@@ -36,6 +36,8 @@ Load [tester-policy.md](tester-policy.md). Set `skip_tester` from that file’s 
 
 After requirements exist, load [architect-policy.md](architect-policy.md). Set `skip_architect` from that file (or `RUN_ARCHITECT: true|false`). Micro/minor/jira-bug are always skip. Feature-class work runs Architect only when a run trigger matches.
 
+After PM returns on feature-class **text** work, load [ui-designer-policy.md](ui-designer-policy.md). Set `skip_ui_designer` from that file (or `RUN_UI_DESIGNER: true|false`). Micro/minor/jira-bug are always skip. Honor [next-agent-policy.md](next-agent-policy.md) for legal `next_agent` values.
+
 ## `features/{slug}/route.md` (required)
 
 ```markdown
@@ -49,6 +51,7 @@ After requirements exist, load [architect-policy.md](architect-policy.md). Set `
 **reason:** {one sentence}
 
 skip_pm: true | false
+skip_ui_designer: true | false
 skip_architect: true | false
 skip_ba: true | false
 skip_ba_critic: true | false
@@ -63,6 +66,7 @@ skip_tester: true | false
 | `work_source` | orchestration O1 | `jira` means intake ran and wrote `intake.md` |
 | `jira_key` / `issue_type` | intake HANDOFF | `issue_type` is the mapped type; the raw tracker type goes in `reason` when they differ |
 | `change_class` | this file | Hard-upgrade triggers apply to every workflow, including bugs |
+| `skip_ui_designer` | ui-designer-policy after PM, or `RUN_UI_DESIGNER` | true on micro/minor/jira-bug; feature class starts tentative then refined |
 | `skip_architect` | architect-policy after requirements, or `RUN_ARCHITECT` | true on micro/minor/jira-bug; feature class starts tentative then refined |
 
 Hooks read `workflow` and the `skip_*` flags, so keep them one per line exactly as shown.
@@ -81,9 +85,11 @@ Chains below are the **text-sourced** workflow. Tracker workflows use the chain 
 
 **feature** (default)
 
-`pm → @signoff:requirements → architect? → @signoff:architect → ba → ba-critic → @signoff:ba → waves (developer → developer-critic per child; telemetry only if RUN_TELEMETRY) → tester wave → devops → retro`
+`pm → ui-designer? → @signoff:requirements → architect? → @signoff:architect → ba → ba-critic → @signoff:ba → waves (developer → developer-critic per child; telemetry only if RUN_TELEMETRY) → tester wave → devops → retro`
 
-Set `skip_pm`, `skip_ba`, `skip_ba_critic` to `false`. Set `skip_telemetry: true` unless the user typed `RUN_TELEMETRY: true`. Set `skip_architect` from [architect-policy.md](architect-policy.md) after requirements exist. Child specs live under `features/{slug}/{child}/`. One tester **wave** at the parent after all waves. Parent must not start waves without `signoff-ba.md`. When `skip_telemetry` is true, write `telemetry-contract.md` with `EVENTS: none` and `HANDOFF-telemetry.md` `STATUS: SUCCESS` (no telemetry Task). When `RUN_TELEMETRY: true`, insert `telemetry-agent` before each child’s developer.
+Set `skip_pm`, `skip_ba`, `skip_ba_critic` to `false`. Set `skip_telemetry: true` unless the user typed `RUN_TELEMETRY: true`. Set `skip_ui_designer` from [ui-designer-policy.md](ui-designer-policy.md) after PM returns. Set `skip_architect` from [architect-policy.md](architect-policy.md) after requirements exist. Child specs live under `features/{slug}/{child}/`. One tester **wave** at the parent after all waves. Parent must not start waves without `signoff-ba.md`. When `skip_telemetry` is true, write `telemetry-contract.md` with `EVENTS: none` and `HANDOFF-telemetry.md` `STATUS: SUCCESS` (no telemetry Task). When `RUN_TELEMETRY: true`, insert `telemetry-agent` before each child’s developer.
+
+When `skip_ui_designer` is true, drop `ui-designer-agent`; requirements sign-off is PRD-only. When it ran, present `prd.md` **and** `ui-design.md` / mockups at `@signoff:requirements`.
 
 **minor**
 
@@ -91,7 +97,7 @@ Set `skip_pm`, `skip_ba`, `skip_ba_critic` to `false`. Set `skip_telemetry: true
 
 Parent **before** developer: write `patch.md` (problem, 1–3 ACs, out of scope), `telemetry-contract.md` with `EVENTS: none`, and `HANDOFF-telemetry.md` `STATUS: SUCCESS` (no telemetry Task). Skip PM, Architect, BA, BA critic.
 
-`skip_pm: true`, `skip_architect: true`, `skip_ba: true`, `skip_ba_critic: true`, `skip_telemetry: true`, `skip_developer_critic: false`, `skip_tester:` from [tester-policy.md](tester-policy.md)
+`skip_pm: true`, `skip_architect: true`, `skip_ui_designer: true`, `skip_ba: true`, `skip_ba_critic: true`, `skip_telemetry: true`, `skip_developer_critic: false`, `skip_tester:` from [tester-policy.md](tester-policy.md)
 
 **micro**
 

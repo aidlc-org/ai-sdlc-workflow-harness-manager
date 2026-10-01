@@ -73,9 +73,12 @@ Reuse `{slug}` if the folder exists; update the architecture, do not fork.
 
 **A1 Discover** — Read prior **state JSON** first, then only the files it
 lists. The signed-off requirements source is `prd.md` (PM) or `intake.md` /
-`epic-plan.md`. Also read `research.md`, `decisions.md`,
+`epic-plan.md`. Also read `ui-design.md`, `ui/manifest.json`, and
+`ui/index.html` when they exist, then `research.md`, `decisions.md`,
 `signoff-requirements.md`, then the repo. Restate the technical problem.
 List 2–4 structural options and why one is preferred. Greenfield: say so.
+Do not invent screens missing from `ui-design.md`. If IA/layout is blocking,
+return `CONSULT_REQUESTED` per [next-agent-policy.md](../feature-development/assets/next-agent-policy.md).
 Append extracted facts to `decisions.md`. Load [clarify-first.md](../feature-development/assets/clarify-first.md).
 
 **A2 Challenge** — Follow clarify-first. Run the **Architect** coverage

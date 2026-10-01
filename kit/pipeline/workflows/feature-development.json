@@ -16,7 +16,9 @@
         ".pipeline/workflows/feature-development.json",
         ".pipeline/skills/feature-development/assets/pipeline-state.md",
         ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
-        ".pipeline/skills/feature-development/assets/agent-state-template.json"
+        ".pipeline/skills/feature-development/assets/agent-state-template.json",
+        ".pipeline/skills/feature-development/assets/ui-designer-policy.md",
+        ".pipeline/skills/feature-development/assets/next-agent-policy.md"
       ]
     },
     "steps": {
@@ -33,7 +35,32 @@
           ".pipeline/skills/feature-development/assets/pipeline-state.md",
           ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
           ".pipeline/skills/feature-development/assets/agent-state-template.json",
-          ".pipeline/skills/feature-development/assets/prd-template.md"
+          ".pipeline/skills/feature-development/assets/prd-template.md",
+          ".pipeline/skills/feature-development/assets/next-agent-policy.md",
+          ".pipeline/skills/feature-development/assets/ui-designer-policy.md"
+        ]
+      },
+      "ui-designer-agent": {
+        "files": [
+          ".pipeline/agents/ui-designer-agent.md",
+          ".pipeline/skills/ui-design/SKILL.md",
+          ".pipeline/skills/ui-web-responsive/SKILL.md",
+          ".pipeline/skills/ui-mobile/SKILL.md",
+          ".pipeline/skills/ui-desktop/SKILL.md",
+          ".pipeline/skills/ui-erp-enterprise/SKILL.md",
+          ".pipeline/skills/ui-accessibility/SKILL.md",
+          ".pipeline/skills/ui-html-mockups/SKILL.md",
+          ".pipeline/skills/feature-development/assets/ui-design-template.md",
+          ".pipeline/skills/feature-development/assets/handoff-ui-template.md",
+          ".pipeline/skills/feature-development/assets/ui-manifest-template.json",
+          ".pipeline/skills/feature-development/assets/ui-designer-policy.md",
+          ".pipeline/skills/feature-development/assets/next-agent-policy.md",
+          ".pipeline/skills/feature-development/assets/questions-format.md",
+          ".pipeline/skills/feature-development/assets/clarify-first.md",
+          ".pipeline/skills/feature-development/assets/decisions-template.md",
+          ".pipeline/skills/feature-development/assets/pipeline-state.md",
+          ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
+          ".pipeline/skills/feature-development/assets/agent-state-template.json"
         ]
       },
       "architect-agent": {
@@ -54,7 +81,8 @@
           ".pipeline/skills/feature-development/assets/architecture-diagrams-policy.md",
           ".pipeline/skills/feature-development/assets/pipeline-state.md",
           ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
-          ".pipeline/skills/feature-development/assets/agent-state-template.json"
+          ".pipeline/skills/feature-development/assets/agent-state-template.json",
+          ".pipeline/skills/feature-development/assets/next-agent-policy.md"
         ]
       },
       "ba-agent": {
@@ -73,7 +101,8 @@
           ".pipeline/skills/feature-development/assets/decisions-template.md",
           ".pipeline/skills/feature-development/assets/pipeline-state.md",
           ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
-          ".pipeline/skills/feature-development/assets/agent-state-template.json"
+          ".pipeline/skills/feature-development/assets/agent-state-template.json",
+          ".pipeline/skills/feature-development/assets/next-agent-policy.md"
         ]
       },
       "ba-critic-agent": {
