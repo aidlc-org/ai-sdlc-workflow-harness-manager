@@ -261,7 +261,43 @@ def write_pack(
     safe = slug.strip().strip("/")
     if not safe or ".." in safe.split("/"):
         raise ValueError("invalid slug")
-    artifact = project / "features" / safe / "context-pack.json"
+    feature_root = project / "features" / safe
+    # Prefer shared resolver when available (memory bank / external root).
+    try:
+        import sys
+        from pathlib import Path as _P
+
+        # Walk up from pack to find kit paths.py or installed pipeline_kit
+        for candidate in (
+            pack.parent.parent / "paths.py",  # unlikely
+            Path(__file__).resolve().parents[3] / "paths.py",  # kit/pipeline/loader -> repo
+        ):
+            if candidate.is_file():
+                root = str(candidate.parent)
+                if root not in sys.path:
+                    sys.path.insert(0, root)
+                break
+        try:
+            from pipeline_kit.paths import feature_dir as _fd
+            from pipeline_kit.paths import feature_rel as _fr
+            from pipeline_kit.paths import load_pipeline_config
+        except ImportError:
+            from paths import feature_dir as _fd  # type: ignore
+            from paths import feature_rel as _fr  # type: ignore
+            from paths import load_pipeline_config  # type: ignore
+
+        cfg = load_pipeline_config(project)
+        feature_root = _fd(project, safe, cfg)
+        data = dict(data)
+        data["artifact_root"] = str(feature_root.parent)
+        data["feature_dir"] = str(feature_root)
+        data["feature_rel"] = _fr(project, safe, cfg)
+    except Exception:
+        data = dict(data)
+        data.setdefault("feature_dir", str(feature_root))
+        data.setdefault("feature_rel", f"features/{safe}")
+
+    artifact = feature_root / "context-pack.json"
     artifact.parent.mkdir(parents=True, exist_ok=True)
     state = pack / "state" / "active-context.json"
     state.parent.mkdir(parents=True, exist_ok=True)

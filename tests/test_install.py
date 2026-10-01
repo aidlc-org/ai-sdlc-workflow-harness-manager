@@ -37,10 +37,13 @@ def test_source_layout_keeps_import_names():
     import pipeline_observability
     import pipeline_orchestrator
     import pipeline_plugins
+    from pipeline_kit import paths as pk_paths
 
     assert Path(knowledge.__file__).resolve().is_relative_to(REPO / "capabilities" / "knowledge")
     assert Path(pipeline_plugins.__file__).resolve().is_relative_to(REPO / "capabilities" / "plugins")
     assert Path(pipeline_orchestrator.__file__).resolve().is_relative_to(REPO / "orchestrator")
+    assert Path(pk_paths.__file__).resolve() == (REPO / "paths.py").resolve()
+    assert callable(pk_paths.feature_dir)
 
 
 def test_source_pack_is_bundled_kit():

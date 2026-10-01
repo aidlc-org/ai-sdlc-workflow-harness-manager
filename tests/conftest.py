@@ -10,7 +10,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSESS = ROOT / "packages" / "pipeline-kit-assess"
-for entry in (ROOT, ASSESS):
+MEMORY = ROOT / "packages" / "pipeline-kit-memory"
+for entry in (ROOT, ASSESS, MEMORY):
     if str(entry) not in sys.path:
         sys.path.insert(0, str(entry))
 

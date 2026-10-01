@@ -11,8 +11,32 @@ class RenderError(ValueError):
     """cases.json is missing or not renderable."""
 
 
+def _feature_base(project: Path, slug: str) -> Path:
+    try:
+        from pipeline_kit.paths import feature_dir
+    except ImportError:
+        try:
+            from paths import feature_dir  # type: ignore
+        except ImportError:
+            return project / "features" / slug
+    return feature_dir(project, slug)
+
+
+def _feature_display(project: Path, slug: str) -> str:
+    """Project-relative path when local; absolute path string when memory-linked."""
+    try:
+        from pipeline_kit.paths import feature_rel
+    except ImportError:
+        try:
+            from paths import feature_rel  # type: ignore
+        except ImportError:
+            return f"features/{slug}"
+    return feature_rel(project, slug)
+
+
 def render_case_views(project: Path, slug: str) -> list[Path]:
-    design = project / "features" / slug / "test-design"
+    feature_root = _feature_base(project, slug)
+    design = feature_root / "test-design"
     cases_path = design / "cases.json"
     if not cases_path.is_file():
         raise RenderError(f"missing {cases_path}")
@@ -20,16 +44,17 @@ def render_case_views(project: Path, slug: str) -> list[Path]:
     cases = payload.get("cases") if isinstance(payload, dict) else None
     if not isinstance(cases, list):
         raise RenderError("cases.json must contain a cases array")
-    feature_dir = project / "features" / slug
     design.mkdir(parents=True, exist_ok=True)
-    feature_dir.mkdir(parents=True, exist_ok=True)
+    feature_root.mkdir(parents=True, exist_ok=True)
+    rel = _feature_display(project, slug)
     return [
-        _write(feature_dir / "qa-test-cases.md", _qa_cases_markdown(slug, cases)),
-        _write(design / "test-plan-view.md", _test_plan_markdown(slug, cases)),
+        _write(feature_root / "qa-test-cases.md", _qa_cases_markdown(slug, cases, rel)),
+        _write(design / "test-plan-view.md", _test_plan_markdown(slug, cases, rel)),
     ]
 
 
-def _qa_cases_markdown(slug: str, cases: list[Any]) -> str:
+def _qa_cases_markdown(slug: str, cases: list[Any], feature_rel: str = "") -> str:
+    base = feature_rel or f"features/{slug}"
     index_rows = [_index_row(index, item) for index, item in enumerate(cases, start=1)]
     index = "\n".join(index_rows) if index_rows else "| — | — | — | — | — |"
     procedures = "\n\n".join(
@@ -37,8 +62,8 @@ def _qa_cases_markdown(slug: str, cases: list[Any]) -> str:
     ) or "_No cases._"
     return (
         f"# Test cases — {slug}\n\n"
-        f"**Test plan:** features/{slug}/test-plan.md\n"
-        f"**Source:** features/{slug}/test-design/cases.json\n"
+        f"**Test plan:** {base}/test-plan.md\n"
+        f"**Source:** {base}/test-design/cases.json\n"
         "**Status:** Ready for review (design-only)\n\n"
         "Each `ui` / browser `e2e` case below is a numbered click-path. "
         "A later Playwright pass maps one `test('TC-N')` to one case. "
@@ -56,7 +81,8 @@ def _qa_cases_markdown(slug: str, cases: list[Any]) -> str:
     )
 
 
-def _test_plan_markdown(slug: str, cases: list[Any]) -> str:
+def _test_plan_markdown(slug: str, cases: list[Any], feature_rel: str = "") -> str:
+    base = feature_rel or f"features/{slug}"
     layers: dict[str, int] = {}
     lines: list[str] = []
     for item in cases:
@@ -75,15 +101,15 @@ def _test_plan_markdown(slug: str, cases: list[Any]) -> str:
     return (
         f"# Test plan — {slug}\n\n"
         "**change_class:** feature\n"
-        f"**spec_order:** features/{slug}/spec-order.md\n"
-        f"**Source:** features/{slug}/test-design/cases.json\n\n"
+        f"**spec_order:** {base}/spec-order.md\n"
+        f"**Source:** {base}/test-design/cases.json\n\n"
         "## Layer rollup\n\n"
         "| Layer | Case count |\n"
         "|-------|------------|\n"
         f"{layer_rows}\n\n"
         "## Cases\n\n"
         f"{case_list}\n\n"
-        f"Full click-paths live in `features/{slug}/qa-test-cases.md`.\n"
+        f"Full click-paths live in `{base}/qa-test-cases.md`.\n"
     )
 
 

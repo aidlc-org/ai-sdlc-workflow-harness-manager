@@ -31,6 +31,109 @@ def load_config() -> dict[str, Any]:
     return {}
 
 
+def artifact_dir_name(cfg: dict[str, Any] | None = None) -> str:
+    cfg = cfg if cfg is not None else load_config()
+    product = cfg.get("product") if isinstance(cfg.get("product"), dict) else {}
+    value = product.get("artifact_dir") if isinstance(product, dict) else None
+    if not isinstance(value, str) or not value.strip():
+        return "features"
+    return value.strip().strip("/\\").replace("\\", "/") or "features"
+
+
+def memory_root_from_config(cfg: dict[str, Any] | None = None, repo: Path | None = None) -> Path | None:
+    """Absolute memory root when enabled, else None."""
+    cfg = cfg if cfg is not None else load_config()
+    mem = cfg.get("memory") if isinstance(cfg.get("memory"), dict) else {}
+    if not isinstance(mem, dict) or mem.get("enabled") is not True:
+        return None
+    raw = mem.get("root")
+    if not isinstance(raw, str) or not raw.strip():
+        return None
+    path = Path(raw.strip()).expanduser()
+    base = repo or Path(__file__).resolve().parents[2]
+    if not path.is_absolute():
+        path = base / path
+    return path.resolve()
+
+
+def artifact_zone_roots(cfg: dict[str, Any] | None = None, repo: Path | None = None) -> list[Path]:
+    """Directories that count as the artifact write zone."""
+    cfg = cfg if cfg is not None else load_config()
+    repo = (repo or Path(__file__).resolve().parents[2]).resolve()
+    name = artifact_dir_name(cfg)
+    roots: list[Path] = []
+    mem = memory_root_from_config(cfg, repo)
+    if mem is not None:
+        layout = str(mem_cfg_layout(cfg))
+        pid = mem_cfg_project_id(cfg)
+        if layout == "namespaced" and pid:
+            roots.append((mem / "projects" / pid / name).resolve())
+        else:
+            roots.append((mem / name).resolve())
+        # Also allow bare memory root + features for flat writes
+        roots.append((mem / name).resolve())
+    roots.append((repo / name).resolve())
+    # de-dupe
+    seen: set[str] = set()
+    out: list[Path] = []
+    for r in roots:
+        key = str(r).lower()
+        if key not in seen:
+            seen.add(key)
+            out.append(r)
+    return out
+
+
+def mem_cfg_layout(cfg: dict[str, Any]) -> str:
+    mem = cfg.get("memory") if isinstance(cfg.get("memory"), dict) else {}
+    layout = mem.get("layout") if isinstance(mem, dict) else None
+    if isinstance(layout, str) and layout.strip().lower() in {"flat", "namespaced"}:
+        return layout.strip().lower()
+    pid = mem_cfg_project_id(cfg)
+    return "namespaced" if pid else "flat"
+
+
+def mem_cfg_project_id(cfg: dict[str, Any]) -> str | None:
+    mem = cfg.get("memory") if isinstance(cfg.get("memory"), dict) else {}
+    if not isinstance(mem, dict):
+        return None
+    pid = mem.get("project_id")
+    if pid is None:
+        return None
+    text = str(pid).strip()
+    return text or None
+
+
+def is_artifact_path(path: str, cfg: dict[str, Any] | None = None, repo: Path | None = None) -> bool:
+    """True if path (relative or absolute) is under a configured artifact zone."""
+    if not path:
+        return False
+    cfg = cfg if cfg is not None else load_config()
+    repo = (repo or Path(__file__).resolve().parents[2]).resolve()
+    name = artifact_dir_name(cfg)
+    norm = path.replace("\\", "/")
+    # Relative product-style path
+    if norm.startswith(f"{name}/") or f"/{name}/" in f"/{norm}":
+        # If memory is enabled, still allow local features/ for transition
+        return True
+    # Absolute path under memory root / feature zone
+    try:
+        target = Path(path)
+        if not target.is_absolute():
+            target = (repo / path).resolve()
+        else:
+            target = target.resolve()
+    except (OSError, RuntimeError):
+        return norm.startswith(f"{name}/")
+    for zone in artifact_zone_roots(cfg, repo):
+        try:
+            target.relative_to(zone)
+            return True
+        except ValueError:
+            continue
+    return False
+
+
 def load_payload() -> dict[str, Any]:
     try:
         data = json.load(sys.stdin)
@@ -232,6 +335,29 @@ def feature_slug(payload: dict[str, Any] | None = None) -> str:
     return ""
 
 
+def feature_base(slug: str, cfg: dict[str, Any] | None = None, repo: Path | None = None) -> Path:
+    """Absolute feature slug directory (local features/ or linked memory root)."""
+    repo = (repo or Path(__file__).resolve().parents[2]).resolve()
+    cfg = cfg if cfg is not None else load_config()
+    safe = (slug or "").strip().strip("/\\")
+    if not safe:
+        return artifact_zone_roots(cfg, repo)[0] if artifact_zone_roots(cfg, repo) else repo / "features"
+    # Prefer memory-aware zones; fall back to local features/{slug}
+    for zone in artifact_zone_roots(cfg, repo):
+        candidate = zone / safe
+        if candidate.is_dir():
+            return candidate
+    name = artifact_dir_name(cfg)
+    mem = memory_root_from_config(cfg, repo)
+    if mem is not None:
+        layout = mem_cfg_layout(cfg)
+        pid = mem_cfg_project_id(cfg)
+        if layout == "namespaced" and pid:
+            return (mem / "projects" / pid / name / safe).resolve()
+        return (mem / name / safe).resolve()
+    return (repo / name / safe).resolve()
+
+
 def _deps_from_state(path: Path) -> set[str]:
     try:
         with path.open(encoding="utf-8") as handle:
@@ -280,8 +406,13 @@ def declared_dependencies(slug: str) -> set[str]:
         parent = slug.split("/", 1)[0]
         if parent and parent != slug:
             seen.append(parent)
+    cfg = load_config()
+    repo = Path(__file__).resolve().parents[2]
     for candidate in seen:
-        base = ARTIFACT_ROOT / candidate
-        names |= _deps_from_state(base / "state" / "architect-agent.json")
-        names |= _deps_from_handoff(base / "HANDOFF-architect.md")
+        base = feature_base(candidate, cfg, repo)
+        # Also check local features/ during memory transition
+        local = repo / artifact_dir_name(cfg) / candidate
+        for root in (base, local):
+            names |= _deps_from_state(root / "state" / "architect-agent.json")
+            names |= _deps_from_handoff(root / "HANDOFF-architect.md")
     return {n for n in names if n and n != "none" and "{" not in n}

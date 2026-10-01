@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pipeline-kit-memory"
+version = "1.0.0"
+description = "External artifact memory bank, FTS search, and MCP server for pipeline-kit"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = []
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.0"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pipeline_memory*"]
+
+[project.entry-points."pipeline_kit.commands"]
+memory = "pipeline_memory.commands:cmd_memory_entrypoint"
+
+[project.scripts]
+pipeline-memory-mcp = "pipeline_memory.mcp_server:main"

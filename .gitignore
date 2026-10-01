@@ -13,3 +13,4 @@ features/
 .license/
 website/node_modules/
 website/.docusaurus/
+.pipeline/

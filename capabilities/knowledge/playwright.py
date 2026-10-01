@@ -29,8 +29,13 @@ class PlaywrightError(ValueError):
 
 
 def generate_playwright(project: Path, slug: str) -> list[Path]:
-    cases_path = project / "features" / slug / "test-design" / "cases.json"
-    locators_path = project / "features" / slug / "test-design" / "locators.json"
+    try:
+        from pipeline_kit.paths import feature_dir as _fd
+        base = _fd(project, slug)
+    except Exception:
+        base = project / "features" / slug
+    cases_path = base / "test-design" / "cases.json"
+    locators_path = base / "test-design" / "locators.json"
     if not cases_path.is_file():
         raise PlaywrightError(f"INPUT_MISSING: missing {cases_path}")
     payload = _read_json(cases_path)

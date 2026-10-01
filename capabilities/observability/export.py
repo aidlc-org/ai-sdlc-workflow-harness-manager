@@ -385,10 +385,19 @@ def _read_text(path: Path, limit: int = 200_000) -> str:
         return ""
 
 
+def _feature_root(repo: Path, slug: str) -> Path:
+    try:
+        from pipeline_kit.paths import feature_dir as _fd
+
+        return _fd(repo, str(slug))
+    except Exception:
+        return repo / "features" / str(slug)
+
+
 def _handoff_file(repo: Path | None, slug: str | None, step: str | None) -> Path | None:
     if repo is None or not slug:
         return None
-    root = repo / "features" / str(slug)
+    root = _feature_root(repo, str(slug))
     if not root.is_dir():
         return None
     try:
@@ -458,7 +467,7 @@ def _workflow_chain(repo: Path | None, workflow: str | None, change: str | None)
 def _deploy_health(repo: Path | None, slug: str | None) -> bool | None:
     if repo is None or not slug:
         return None
-    text = _read_text(repo / "features" / str(slug) / "deploy-result.env")
+    text = _read_text(_feature_root(repo, str(slug)) / "deploy-result.env")
     if not text:
         return None
     return "OVERALL=passed" in text
@@ -468,7 +477,7 @@ def _secret_leak_count(repo: Path | None, slug: str | None) -> int | None:
     """SECRET_RE hits across features/{slug} artifacts. None = N/A (no artifacts)."""
     if repo is None or not slug:
         return None
-    root = repo / "features" / str(slug)
+    root = _feature_root(repo, str(slug))
     if not root.is_dir():
         return None
     count = 0

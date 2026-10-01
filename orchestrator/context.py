@@ -9,6 +9,13 @@ from pathlib import Path
 from pipeline_orchestrator.graph import AgentStep
 from pipeline_orchestrator.pack import kit_pack_root, normalize_pack_rel
 
+try:
+    from pipeline_kit.paths import feature_dir as _feature_dir
+    from pipeline_kit.paths import feature_rel as _feature_rel
+except ImportError:  # pragma: no cover
+    from paths import feature_dir as _feature_dir  # type: ignore
+    from paths import feature_rel as _feature_rel  # type: ignore
+
 PROMPT_BUDGET = 400_000
 ISOLATION = Path(__file__).resolve().parent / "prompts" / "isolation.txt"
 _LINK_HREF = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
@@ -178,26 +185,26 @@ def compose_prompt(
     for key, value in fields.items():
         parts.append(f"{key}: {value}")
     parts.append("")
-    kit_context = f"features/{slug}/kit-context"
+    kit_context_rel = f"{_feature_rel(project, slug)}/kit-context"
     parts.append(
         f"You are {step.id}. Follow the inlined brief and skills below. "
         "Do not read `.pipeline/agents` or `.pipeline/skills` from disk — they are not installed in orchestrator mode. "
         "When an inlined skill or brief names an asset, Read it from "
-        f"{kit_context}/ (same relative path). Do not preload every kit-context file. "
-        "Write artifacts under features/{slug}/ only. "
-        f"Write features/{slug}/state/{step.id}.json when done. "
+        f"{kit_context_rel}/ (same relative path). Do not preload every kit-context file. "
+        f"Write artifacts under {_feature_rel(project, slug)}/ only. "
+        f"Write {_feature_rel(project, slug)}/state/{step.id}.json when done. "
         "Return a short HANDOFF with **status:** SUCCESS | BLOCKED | ASSUMPTIONS_USED | changes-required."
     )
     parts.append("")
     if assets:
-        dest = project / "features" / slug / "kit-context"
+        dest = _feature_dir(project, slug) / "kit-context"
         parts.append("## Named skill assets (read only when a skill names them)\n")
         for rel in assets:
             name, text = _read_rel(rel, project=project, spec_dir=spec_dir)
             out = dest / rel
             out.parent.mkdir(parents=True, exist_ok=True)
             out.write_text(text, encoding="utf-8")
-            parts.append(f"- `{name}` → `{kit_context}/{rel}`")
+            parts.append(f"- `{name}` → `{kit_context_rel}/{rel}`")
         parts.append("")
     for rel in seed:
         name, text = _read_rel(rel, project=project, spec_dir=spec_dir)

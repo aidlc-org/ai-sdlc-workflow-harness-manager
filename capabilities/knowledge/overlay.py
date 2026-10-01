@@ -107,7 +107,11 @@ def enable_test_design(project: Path) -> None:
 
 def promote_feature_nodes(project: Path, slug: str) -> list[str]:
     """Merge planned overlay nodes from a feature into test-knowledge as inferred."""
-    design = project / "features" / slug / "test-design"
+    try:
+        from pipeline_kit.paths import feature_dir as _fd
+        design = _fd(project, slug) / "test-design"
+    except Exception:
+        design = project / "features" / slug / "test-design"
     if not design.is_dir():
         raise OverlayError(f"missing {design}")
     root = init_overlay(project)

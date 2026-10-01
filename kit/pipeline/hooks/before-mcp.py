@@ -16,6 +16,12 @@ ALLOW_EXACT = {
     "atlassianuserinfo",
     "search",
     "fetch",
+    # pipeline-memory MCP tools (read-only)
+    "memory_search",
+    "memory_get",
+    "memory_list_slugs",
+    "memory_list_files",
+    "memory_why",
 }
 
 # CamelCase (getJiraIssue) and snake (list_pull_requests) both count as reads.

@@ -10,6 +10,7 @@ finder so public imports stay the same:
 * ``pipeline_observability``
 * ``pipeline_eval``
 * ``pipeline_orchestrator``
+* ``pipeline_kit.paths`` / ``pipeline_kit.license`` (root modules)
 """
 
 from __future__ import annotations
@@ -64,12 +65,20 @@ class SourcePackageFinder:
 
 
 class PipelineKitFinder:
-    """Expose ``pipeline_kit.license`` from a source checkout.
+    """Expose ``pipeline_kit.*`` root modules from a source checkout.
 
     The wheel maps the ``pipeline_kit`` package onto this repo root. A source
-    run has no ``pipeline_kit/`` directory, so this finder serves only the
-    package init and the license module.
+    run has no ``pipeline_kit/`` directory, so this finder serves the package
+    init plus root modules such as ``license`` and ``paths``.
     """
+
+    # Root-level modules that belong to the pipeline_kit package (package-dir = ".")
+    _MODULES = {
+        "install": "install.py",
+        "layout": "layout.py",
+        "license": "license.py",
+        "paths": "paths.py",
+    }
 
     def find_spec(self, fullname, path=None, target=None):  # noqa: ARG002
         if fullname == "pipeline_kit":
@@ -79,13 +88,20 @@ class PipelineKitFinder:
             return importlib.util.spec_from_file_location(
                 fullname,
                 init,
-                submodule_search_locations=[],
+                submodule_search_locations=[str(ROOT)],
             )
-        if fullname == "pipeline_kit.license":
-            module = ROOT / "license.py"
-            if not module.is_file():
+        if fullname.startswith("pipeline_kit."):
+            leaf = fullname.split(".", 1)[1]
+            if "." in leaf:
                 return None
-            return importlib.util.spec_from_file_location(fullname, module)
+            filename = self._MODULES.get(leaf)
+            if not filename:
+                # Allow any existing root .py so package-dir="." stays consistent
+                candidate = ROOT / f"{leaf}.py"
+            else:
+                candidate = ROOT / filename
+            if candidate.is_file():
+                return importlib.util.spec_from_file_location(fullname, candidate)
         return None
 
 

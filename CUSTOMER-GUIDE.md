@@ -302,6 +302,8 @@ Sign-off gates do not ask the decider. Full examples:
 | `pipeline-kit obs install [project]` | Merge fail-open agent-run hooks (Langfuse first). Does not replace existing hooks. |
 | `pipeline-kit obs report [project]` | Local scores from the ledger. No network. |
 | `pipeline-kit obs flush [project]` | Ship new ledger rows to the configured adapter. |
+| `pipeline-kit memory link <root> [project]` | Link external artifact bank (needs `.[memory]`) |
+| `pipeline-kit memory index / search / mcp` | Index, query, or run the memory MCP server |
 
 Full agent-run observability handbook (install, Langfuse identity, scores, ideal values, troubleshooting): **[OBSERVABILITY.md](./OBSERVABILITY.md)** (copied to `.pipeline/docs/OBSERVABILITY.md` on `init`).
 
@@ -311,7 +313,8 @@ Install/update commands accept `--ide cursor`, `claude-code`, `github`, or
 `none`. Add `--agent-stubs` to create thin `.cursor/agents/*.md` files.
 
 Resolution at run time: project `.pipeline` wins; otherwise `~/.pipeline`.
-Run artifacts always go to **this project’s** `features/{slug}/`.
+Run artifacts default to **this project’s** `features/{slug}/`. Optionally link an
+**external memory bank** so artifacts live in a separate git repo (see Memory bank below).
 
 Open the repository root in the IDE so the skill folder is discovered.
 
@@ -340,6 +343,87 @@ Hooks are **not required** and do not turn on by default. To enable:
 ```
 
 Full hook reference: [`.pipeline/hooks/README.md`](./.pipeline/hooks/README.md)
+
+### 2.0.2 Memory bank (optional external artifacts)
+
+By default, feature artifacts stay in the product repo under `features/{slug}/`.
+For multi-repo product lines or a shared org archive, install the optional
+memory package and link an external git folder:
+
+```bash
+pip install -e packages/pipeline-kit-memory -e .
+pipeline-kit memory link ../pipeline-memory --project-id my-app
+pipeline-kit memory import-local    # one-time copy of existing features/
+pipeline-kit memory index
+pipeline-kit memory search "oauth decision" --json
+pipeline-kit memory doctor
+```
+
+- **Flat layout** (one product ↔ one bank): `{root}/features/{slug}/…`
+- **Namespaced** (`--project-id`): `{root}/projects/{id}/features/{slug}/…`
+- Run cursor under `.pipeline/state/` always stays in the product project.
+- Search works from the CLI without MCP (`memory search`). Re-run `memory index`
+  after artifact changes.
+
+#### MCP (optional — user must register the server)
+
+Memory does **not** auto-wire into the IDE. Each developer adds a **stdio MCP
+server** entry in their client config, then restarts the client.
+
+1. Install so `pipeline-memory-mcp` is on PATH (same env as above).
+2. Ensure the product is linked and indexed (`memory link` / `memory index`).
+3. Add MCP config (absolute `--project` = product repo with `.pipeline/config.json`):
+
+**Cursor** (`.cursor/mcp.json` or global MCP settings):
+
+```json
+{
+  "mcpServers": {
+    "pipeline-memory": {
+      "command": "pipeline-memory-mcp",
+      "args": ["--project", "C:/path/to/your-product-repo"]
+    }
+  }
+}
+```
+
+**VS Code / Copilot MCP** (workspace or user MCP JSON; key name may be `servers`):
+
+```json
+{
+  "servers": {
+    "pipeline-memory": {
+      "type": "stdio",
+      "command": "pipeline-memory-mcp",
+      "args": ["--project", "C:/path/to/your-product-repo"]
+    }
+  }
+}
+```
+
+**Claude Desktop** (`claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "pipeline-memory": {
+      "command": "pipeline-memory-mcp",
+      "args": ["--project", "C:/path/to/your-product-repo"]
+    }
+  }
+}
+```
+
+If the console script is missing from PATH, point `command` at your `python.exe`
+and use args: `-m`, `pipeline_memory.mcp_server`, `--project`, `<product path>`.
+
+4. Restart the IDE. Tools: `memory_search`, `memory_why`, `memory_get`,
+   `memory_list_slugs`, `memory_list_files`.
+5. You do not keep `memory mcp` running in a terminal for daily use — the client
+   spawns stdio when a tool is called. Use the terminal for link/index/search/debug.
+
+Full detail, troubleshooting, and checklist:
+[`packages/pipeline-kit-memory/README.md`](./packages/pipeline-kit-memory/README.md).
 
 ### 2.1 Optional QA knowledge (opt-in)
 

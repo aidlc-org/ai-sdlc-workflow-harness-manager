@@ -80,10 +80,19 @@ def _extract_paths(text: str) -> set[str]:
     return found
 
 
+def _feature_root(repo: Path, slug: str) -> Path:
+    try:
+        from pipeline_kit.paths import feature_dir as _fd
+
+        return _fd(repo, str(slug))
+    except Exception:
+        return repo / "features" / str(slug)
+
+
 def _plan_paths(repo: Path, slug: str | None) -> set[str]:
     if not slug:
         return set()
-    root = repo / "features" / slug
+    root = _feature_root(repo, str(slug))
     found: set[str] = set()
     for name in ("implementation-plan.md", "spec-order.md", "plan.md"):
         path = root / name
@@ -95,7 +104,7 @@ def _plan_paths(repo: Path, slug: str | None) -> set[str]:
 def _handoff_success(repo: Path, slug: str | None, step: str | None) -> bool | None:
     if not slug:
         return None
-    root = repo / "features" / slug
+    root = _feature_root(repo, str(slug))
     if not root.is_dir():
         return None
     files = sorted(root.glob("HANDOFF*.md")) + sorted(root.glob("**/HANDOFF*.md"))
@@ -286,7 +295,7 @@ def score_events(repo: Path, rows: list[dict[str, Any]]) -> dict[str, Any]:
         by_step[str(event.get("step") or "unattributed")].append(event)
     for step, group in by_step.items():
         slug = next((item.get("slug") for item in group if item.get("slug")), None)
-        route = _parse_route(repo / "features" / str(slug or "") / "route.md")
+        route = _parse_route(_feature_root(repo, str(slug or "")) / "route.md")
         plan_files = _plan_paths(repo, slug)
         seen: dict[str, int] = {}
         tools = [item for item in group if _is_tool(item)]

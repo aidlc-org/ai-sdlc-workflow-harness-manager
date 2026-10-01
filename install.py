@@ -825,10 +825,16 @@ def _require_license(feature: str) -> int:
 def _feature_for_saved_run(project: Path, slug: str) -> str:
     from pipeline_kit.license import feature_for_workflow
 
-    for path in (
+    paths = [
         project / ".pipeline" / "state" / "runs" / f"{slug}.json",
-        project / "features" / slug / "pipeline-state.json",
-    ):
+    ]
+    try:
+        from pipeline_kit.paths import feature_dir
+
+        paths.append(feature_dir(project, slug) / "pipeline-state.json")
+    except Exception:
+        paths.append(project / "features" / slug / "pipeline-state.json")
+    for path in paths:
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
@@ -901,6 +907,43 @@ def _obs_commands():
     return cmd_flush, cmd_install, cmd_report, cmd_status, cmd_uninstall
 
 
+def _memory_pkg_path() -> None:
+    _ensure_pkg_path()
+    mem = HERE / "packages" / "pipeline-kit-memory"
+    if mem.is_dir() and str(mem) not in sys.path:
+        sys.path.insert(0, str(mem))
+
+
+def _memory_commands():
+    _memory_pkg_path()
+    try:
+        from pipeline_memory.commands import (  # noqa: WPS433
+            cmd_doctor,
+            cmd_import_local,
+            cmd_index,
+            cmd_link,
+            cmd_mcp,
+            cmd_search,
+            cmd_status,
+            cmd_unlink,
+        )
+    except ImportError as exc:
+        raise ImportError(
+            'pipeline-kit-memory is not installed. Run: pip install -e ".[memory]" '
+            "or add packages/pipeline-kit-memory to PYTHONPATH"
+        ) from exc
+    return {
+        "link": cmd_link,
+        "unlink": cmd_unlink,
+        "status": cmd_status,
+        "doctor": cmd_doctor,
+        "index": cmd_index,
+        "search": cmd_search,
+        "mcp": cmd_mcp,
+        "import-local": cmd_import_local,
+    }
+
+
 def doctor(
     *,
     target: Path,
@@ -942,6 +985,21 @@ def doctor(
     info_lines.extend(obs_info)
     required.update(arch_required)
     required.update(obs_required)
+    try:
+        _memory_pkg_path()
+        from pipeline_memory.resolve import load_config as _mem_load
+        from pipeline_memory.resolve import memory_enabled as _mem_on
+        from pipeline_memory.resolve import resolve_memory_root as _mem_root
+
+        mcfg = _mem_load(target)
+        if _mem_on(mcfg):
+            root = _mem_root(target, mcfg)
+            info_lines.append(f"memory: enabled → {root}")
+            required["memory root"] = bool(root and root.is_dir())
+        else:
+            info_lines.append("memory: disabled (default local features/)")
+    except ImportError:
+        info_lines.append("memory: package not installed (optional)")
     for line in info_lines:
         print(f"info  {line}")
     checks.update(required)
@@ -1286,6 +1344,51 @@ def cli_main(argv: list[str] | None = None) -> int:
     )
     e_sync.add_argument("project", nargs="?", default=".")
 
+    memory_parser = commands.add_parser(
+        "memory",
+        help="link external artifact bank, index/search, and run memory MCP (pipeline-kit-memory)",
+    )
+    memory_commands = memory_parser.add_subparsers(dest="memory_command", required=True)
+    m_link = memory_commands.add_parser("link", help="point this project at an external memory repo")
+    m_link.add_argument("root", help="path to memory git folder (created if missing with --init)")
+    m_link.add_argument("project", nargs="?", default=".")
+    m_link.add_argument("--project-id", default="", help="namespace under projects/{id}/")
+    m_link.add_argument("--layout", choices=("", "flat", "namespaced"), default="")
+    m_link.add_argument(
+        "--init",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="scaffold README/gitignore/git (default: true)",
+    )
+    memory_commands.add_parser("unlink", help="disable memory without deleting the bank").add_argument(
+        "project", nargs="?", default="."
+    )
+    memory_commands.add_parser("status", help="print memory link JSON").add_argument(
+        "project", nargs="?", default="."
+    )
+    memory_commands.add_parser("doctor", help="verify memory root and index").add_argument(
+        "project", nargs="?", default="."
+    )
+    m_index = memory_commands.add_parser("index", help="rebuild FTS index over the memory bank")
+    m_index.add_argument("project", nargs="?", default=".")
+    m_index.add_argument("--engine", default="", help="search backend (default fts5)")
+    m_search = memory_commands.add_parser("search", help="query the memory index")
+    m_search.add_argument("query")
+    m_search.add_argument("project", nargs="?", default=".")
+    m_search.add_argument("--limit", type=int, default=10)
+    m_search.add_argument("--slug", default="")
+    m_search.add_argument("--kind", default="")
+    m_search.add_argument("--json", action="store_true")
+    m_mcp = memory_commands.add_parser("mcp", help="run stdio MCP server (pipeline-memory)")
+    m_mcp.add_argument("project", nargs="?", default=".")
+    m_mcp.add_argument("--root", default="", help="override memory root")
+    m_import = memory_commands.add_parser(
+        "import-local",
+        help="copy existing project features/ into the linked memory root",
+    )
+    m_import.add_argument("project", nargs="?", default=".")
+    m_import.add_argument("--dry-run", action="store_true")
+
     license_parser = commands.add_parser("license", help="issue or activate an org license")
     license_commands = license_parser.add_subparsers(dest="license_command", required=True)
     issue_parser = license_commands.add_parser(
@@ -1518,6 +1621,50 @@ def cli_main(argv: list[str] | None = None) -> int:
         if args.knowledge_command == "promote-feature":
             return cmd_promote_feature(project, slug=args.slug)
         parser.error("unknown knowledge command")
+        return 2
+    if args.command == "memory":
+        if not project.is_dir() and args.memory_command != "link":
+            # link may create paths; still require project dir
+            pass
+        if not project.is_dir():
+            print(f"not a directory: {project}", file=sys.stderr)
+            return 64
+        try:
+            cmds = _memory_commands()
+        except ImportError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        cmd = args.memory_command
+        if cmd == "link":
+            return cmds["link"](
+                project,
+                args.root,
+                project_id=getattr(args, "project_id", "") or "",
+                layout=getattr(args, "layout", "") or "",
+                init=bool(getattr(args, "init", True)),
+            )
+        if cmd == "unlink":
+            return cmds["unlink"](project)
+        if cmd == "status":
+            return cmds["status"](project)
+        if cmd == "doctor":
+            return cmds["doctor"](project)
+        if cmd == "index":
+            return cmds["index"](project, engine=getattr(args, "engine", "") or "")
+        if cmd == "search":
+            return cmds["search"](
+                project,
+                args.query,
+                limit=int(getattr(args, "limit", 10) or 10),
+                slug=getattr(args, "slug", "") or "",
+                kind=getattr(args, "kind", "") or "",
+                as_json=bool(getattr(args, "json", False)),
+            )
+        if cmd == "mcp":
+            return cmds["mcp"](project, root=getattr(args, "root", "") or "")
+        if cmd == "import-local":
+            return cmds["import-local"](project, dry_run=bool(getattr(args, "dry_run", False)))
+        parser.error("unknown memory command")
         return 2
     if args.command == "plugins":
         cmd_install, cmd_list, cmd_status, cmd_uninstall = _plugin_commands()

@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "hooks": {
+    "subagentStart": [
+      {
+        "command": "python3 .pipeline/hooks/subagent-start.py",
+        "timeout": 15
+      }
+    ],
+    "subagentStop": [
+      {
+        "command": "python3 .pipeline/hooks/subagent-stop.py",
+        "timeout": 10,
+        "loop_limit": 1
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "python3 .pipeline/hooks/before-shell.py",
+        "timeout": 10
+      }
+    ],
+    "beforeMCPExecution": [
+      {
+        "command": "python3 .pipeline/hooks/before-mcp.py",
+        "timeout": 10
+      }
+    ],
+    "beforeReadFile": [
+      {
+        "command": "python3 .pipeline/hooks/before-read.py",
+        "timeout": 10
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "python3 .pipeline/hooks/pre-write.py",
+        "matcher": "Write|StrReplace",
+        "timeout": 10
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": "python3 .pipeline/hooks/after-file-edit.py",
+        "timeout": 10
+      }
+    ],
+    "postToolUseFailure": [
+      {
+        "command": "python3 .pipeline/hooks/post-tool-failure.py",
+        "timeout": 10
+      }
+    ]
+  }
+}

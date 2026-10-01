@@ -26,7 +26,9 @@ from pipeline_orchestrator.verify import is_critic_reject, is_ok, step_advanced
 
 
 def parse_children(project: Path, slug: str) -> list[str]:
-    path = project / "features" / slug / "spec-order.md"
+    from pipeline_orchestrator.state import feature_dir
+
+    path = feature_dir(project, slug) / "spec-order.md"
     if not path.is_file():
         return []
     text = path.read_text(encoding="utf-8")
@@ -436,9 +438,10 @@ async def advance(
                 run["exit_hint"] = EXIT_STEP
                 save_run(project, run)
                 print(f"blocked: step={node.id} slug={run['slug']}")
-                print(f"  see features/{run['slug']}/questions.md and HANDOFF-*.md")
+                art = run.get("artifact_dir") or f"features/{run['slug']}"
+                print(f"  see {art}/questions.md and HANDOFF-*.md")
                 print(
-                    f"  update features/{run['slug']}/request.md then: "
+                    f"  update {art}/request.md then: "
                     f"pipeline-kit resume --slug {run['slug']}"
                 )
                 return EXIT_STEP

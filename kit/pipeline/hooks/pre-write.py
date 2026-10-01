@@ -20,15 +20,20 @@ from lib import (
     subagent_type,
     tool_contents,
     tool_path,
+    artifact_dir_name,
+    is_artifact_path,
 )
 
 _PRODUCT = load_config().get("product")
 _PRODUCT = _PRODUCT if isinstance(_PRODUCT, dict) else {}
 _ARTIFACT = _PRODUCT.get("artifact_dir")
 _AGENTS = _PRODUCT.get("readonly_agents")
+_CFG = load_config()
 
 # Analysis agents may write artifacts only; every other tree is product source.
-ARTIFACT_DIR = (_ARTIFACT if isinstance(_ARTIFACT, str) and _ARTIFACT.strip() else "features").strip("/") + "/"
+ARTIFACT_DIR = (artifact_dir_name(_CFG) if _CFG else (
+    _ARTIFACT if isinstance(_ARTIFACT, str) and _ARTIFACT.strip() else "features"
+)).strip("/") + "/"
 RESTRICTED = (
     {str(name).lower() for name in _AGENTS}
     if isinstance(_AGENTS, list) and _AGENTS
@@ -48,7 +53,9 @@ SECRET_BODY = re.compile(
     r"|console\.(log|debug|info|warn)\([^)]{0,200}\b(email|password|ssn|authorization)\b"
     r"|\b(gtag|fbq|mixpanel\.init|analytics\.load)\s*\("
 )
-UI_ARTIFACT_REF = re.compile(r"features/[a-z0-9][a-z0-9_-]*/ui/", re.I)
+UI_ARTIFACT_REF = re.compile(
+    r"(?:features|[A-Za-z]:[\\/][^\s\"']+)[\\/][a-z0-9][a-z0-9_-]*[\\/]ui[\\/]", re.I
+)
 _REPO = Path(__file__).resolve().parents[2]
 
 _MINIMALISM = load_config().get("code_minimalism")
@@ -117,7 +124,7 @@ def _norm(path: str) -> str:
 
 
 def _is_artifact(rel: str) -> bool:
-    return rel.startswith(ARTIFACT_DIR) or f"/{ARTIFACT_DIR}" in rel
+    return is_artifact_path(rel, _CFG, _REPO)
 
 
 def _is_mockup_copy(rel: str, body: str) -> bool:
@@ -136,9 +143,13 @@ def _is_mockup_copy(rel: str, body: str) -> bool:
     if name.endswith((".html", ".htm", ".css")) and skeleton:
         return True
     if name.endswith((".html", ".htm", ".css")) and name not in {"index.html", "index.htm"}:
-        root = _REPO / "features"
-        if root.is_dir() and (any(root.glob(f"*/ui/{name}")) or any(root.glob(f"*/*/ui/{name}"))):
-            return True
+        from lib import artifact_zone_roots
+
+        for zone in artifact_zone_roots(_CFG, _REPO):
+            if zone.is_dir() and (
+                any(zone.glob(f"*/ui/{name}")) or any(zone.glob(f"*/*/ui/{name}"))
+            ):
+                return True
     return False
 
 

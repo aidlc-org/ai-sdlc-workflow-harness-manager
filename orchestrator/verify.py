@@ -8,11 +8,18 @@ from pathlib import Path
 from typing import Any
 
 from pipeline_orchestrator.graph import BUILTIN
-from pipeline_orchestrator.state import agent_state_path, load_json
+from pipeline_orchestrator.state import agent_state_path, feature_dir, load_json
 
 
 CRITIC_FAIL = {"changes-required", "changes_required"}
 OK_STATUSES = {"success", "assumptions_used", "approve", "approve-with-nits", "approved"}
+
+
+def _display_path(path: Path, project: Path) -> str:
+    try:
+        return str(path.relative_to(Path(project).resolve()))
+    except ValueError:
+        return str(path)
 
 
 def parse_status_from_text(text: str) -> str:
@@ -30,14 +37,15 @@ def step_advanced(*, project: Path, slug: str, agent: str, started_at: str) -> d
     path = agent_state_path(project, slug, agent)
     data = load_json(path)
     if data is None:
-        raise ValueError(f"missing agent state: {path.relative_to(project)}")
+        raise ValueError(f"missing agent state: {_display_path(path, project)}")
     updated = str(data.get("updated_at") or "")
     if started_at and updated and updated < started_at:
-        raise ValueError(f"agent state did not advance: {path.relative_to(project)}")
+        raise ValueError(f"agent state did not advance: {_display_path(path, project)}")
     status = str(data.get("status") or "")
     if not status:
-        handoff = project / "features" / slug / "HANDOFF.md"
-        alt = project / "features" / slug / f"HANDOFF-{agent}.md"
+        base = feature_dir(project, slug)
+        handoff = base / "HANDOFF.md"
+        alt = base / f"HANDOFF-{agent}.md"
         for candidate in (handoff, alt):
             if candidate.is_file():
                 status = parse_status_from_text(candidate.read_text(encoding="utf-8"))
