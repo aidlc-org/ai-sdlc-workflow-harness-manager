@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -10,9 +11,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import (
     portal_owns_gate,
+    declared_dependencies,
     emit_permission,
+    feature_slug,
     load_config,
     load_payload,
+    normalize_package,
     subagent_type,
     tool_contents,
     tool_path,
@@ -46,6 +50,66 @@ SECRET_BODY = re.compile(
 )
 UI_ARTIFACT_REF = re.compile(r"features/[a-z0-9][a-z0-9_-]*/ui/", re.I)
 _REPO = Path(__file__).resolve().parents[2]
+
+_MINIMALISM = load_config().get("code_minimalism")
+_MINIMALISM = _MINIMALISM if isinstance(_MINIMALISM, dict) else {}
+_MANIFEST_NAMES = _MINIMALISM.get("manifest_files")
+# Only the two formats this hook can parse without a third-party library.
+MANIFESTS = (
+    {str(name).lower() for name in _MANIFEST_NAMES}
+    if isinstance(_MANIFEST_NAMES, list) and _MANIFEST_NAMES
+    else {"package.json", "requirements.txt"}
+)
+DEPS_GATE_ON = _MINIMALISM.get("require_declared_dependencies", True) is not False
+PKG_JSON_PAIR = re.compile(r'"([^"\s]+)"\s*:\s*"([~^><=*]|\d)[^"]*"')
+REQ_LINE = re.compile(r"(?m)^\s*([A-Za-z0-9][A-Za-z0-9._-]*)")
+PKG_JSON_BLOCKS = ("dependencies", "devDependencies", "peerDependencies", "optionalDependencies")
+
+
+def _packages_in(name: str, body: str) -> set[str]:
+    """Package names a manifest body declares. Empty when the body cannot be read."""
+    if not body:
+        return set()
+    if name == "package.json":
+        try:
+            data = json.loads(body)
+        except json.JSONDecodeError:
+            # An Edit sends a fragment, not a document; fall back to name/version pairs.
+            return {normalize_package(m.group(1)) for m in PKG_JSON_PAIR.finditer(body)}
+        found = set()
+        if isinstance(data, dict):
+            for block in PKG_JSON_BLOCKS:
+                rows = data.get(block)
+                if isinstance(rows, dict):
+                    found |= {normalize_package(key) for key in rows}
+        return found
+    found = set()
+    for line in body.splitlines():
+        line = line.split("#", 1)[0].strip()
+        if not line or line.startswith("-"):
+            continue
+        match = REQ_LINE.match(line)
+        if match:
+            found.add(normalize_package(match.group(1)))
+    return found
+
+
+def _undeclared_manifest_deps(rel: str, body: str) -> list[str]:
+    """Packages this write would add to a manifest without an Architect declaration."""
+    name = Path(rel).name.lower()
+    if name not in MANIFESTS:
+        return []
+    incoming = _packages_in(name, body)
+    if not incoming:
+        return []
+    try:
+        on_disk = _packages_in(name, (_REPO / rel).read_text(encoding="utf-8", errors="replace"))
+    except OSError:
+        on_disk = set()
+    added = incoming - on_disk
+    if not added:
+        return []
+    return sorted(added - declared_dependencies(feature_slug()))
 
 
 def _norm(path: str) -> str:
@@ -111,6 +175,17 @@ def main() -> int:
             f"{kind} may not edit product source ({rel}). Write only under {ARTIFACT_DIR}{{slug}}/.",
             extra,
         )
+    if DEPS_GATE_ON and rel and not _is_artifact(rel) and feature_slug():
+        undeclared = _undeclared_manifest_deps(rel, body)
+        if undeclared:
+            return emit_permission(
+                False,
+                "Blocked undeclared dependency in %s: %s. Architect must declare it in "
+                "features/%s/state/architect-agent.json context.new_dependencies "
+                "(name + why_nothing_existing_works). See minimalism-policy.md."
+                % (rel, ", ".join(undeclared), feature_slug()),
+                extra,
+            )
     return emit_permission(True, "allow", extra)
 
 

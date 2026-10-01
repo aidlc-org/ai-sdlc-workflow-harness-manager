@@ -147,6 +147,7 @@ concerns), then BA.
 - [ ] At least one ADR
 - [ ] Child-spec split listed (at least one kebab slug)
 - [ ] Constraints and do-not-invent non-empty
+- [ ] New dependencies declared in `state/architect-agent.json` `context.new_dependencies` with the rung each failed, and mirrored in `HANDOFF-architect.md` (`none` when there are none)
 - [ ] Assumptions labeled; no silent auth, persistence, or vendor invention
 - [ ] When `TEST_DESIGN_ENABLED`: `test-design/model-delta.json` exists or `no_test_model_change` is true
 - [ ] When `ARCHIFY_ENABLED`: `diagrams/manifest.json` exists with `delivered` or `mermaid-fallback`

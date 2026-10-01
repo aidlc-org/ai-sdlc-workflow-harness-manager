@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "_note": "Guardrail hooks for GitHub Copilot CLI. Copilot discovers .github/hooks/*.json and runs every entry registered for an event. matcher is a regex on toolName, anchored by Copilot as ^(?:PATTERN)$. preToolUse is fail-closed: a hook crash or non-zero exit denies the tool call, so these scripts always exit 0.",
+  "hooks": {
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "{{PYTHON}} .pipeline/hooks/before-shell.py",
+        "powershell": "{{PYTHON}} .pipeline/hooks/before-shell.py",
+        "timeoutSec": 10,
+        "matcher": "bash|powershell"
+      },
+      {
+        "type": "command",
+        "bash": "{{PYTHON}} .pipeline/hooks/pre-write.py",
+        "powershell": "{{PYTHON}} .pipeline/hooks/pre-write.py",
+        "timeoutSec": 10,
+        "matcher": "create|edit"
+      },
+      {
+        "type": "command",
+        "bash": "{{PYTHON}} .pipeline/hooks/before-read.py",
+        "powershell": "{{PYTHON}} .pipeline/hooks/before-read.py",
+        "timeoutSec": 10,
+        "matcher": "view"
+      }
+    ],
+    "postToolUseFailure": [
+      {
+        "type": "command",
+        "bash": "{{PYTHON}} .pipeline/hooks/post-tool-failure.py",
+        "powershell": "{{PYTHON}} .pipeline/hooks/post-tool-failure.py",
+        "timeoutSec": 10
+      }
+    ],
+    "subagentStart": [
+      {
+        "type": "command",
+        "bash": "{{PYTHON}} .pipeline/hooks/subagent-start.py",
+        "powershell": "{{PYTHON}} .pipeline/hooks/subagent-start.py",
+        "timeoutSec": 15
+      }
+    ],
+    "subagentStop": [
+      {
+        "type": "command",
+        "bash": "{{PYTHON}} .pipeline/hooks/subagent-stop.py",
+        "powershell": "{{PYTHON}} .pipeline/hooks/subagent-stop.py",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}

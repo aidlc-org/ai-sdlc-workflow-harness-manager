@@ -25,3 +25,4 @@ Match **triggers** against the current request, error, or pipeline class. Read
 | Visible copy grep misses; text split across source tokens | [ui-copy-split-in-source.md](ui-copy-split-in-source.md) |
 | test-strategy; test-plan; FEATURE_SIGNOFF; tester-policy; `RUN_TESTER`; `qa-test-cases` | [feature-pipeline-test-layers.md](feature-pipeline-test-layers.md) |
 | Interrupted Task; missing HANDOFF; restart tester | [interrupted-pipeline-task-no-handoff.md](interrupted-pipeline-task-no-handoff.md) |
+| Blocked undeclared dependency; `PIPELINE_ALLOW_DEPS`; `ALLOW_DEPENDENCY`; new library; oversized diff for a small requirement | [dependency-declaration-and-minimalism.md](dependency-declaration-and-minimalism.md) |

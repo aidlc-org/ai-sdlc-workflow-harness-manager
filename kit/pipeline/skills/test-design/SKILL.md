@@ -28,8 +28,8 @@ Parent checked [test-design-policy.md](../feature-development/assets/test-design
 ## Work
 
 1. Read the overlay manifest. If `graphify-out/graph.json` is missing, `BLOCKED` and tell the parent to run `pipeline-kit knowledge extract`.
-2. Write `features/{slug}/test-design/inventory.json` from the inventory template: what, why, lowest effective level, technique. E2E needs a written reason.
-3. Write `features/{slug}/test-design/cases.json` from the cases template.
+2. Write `features/{slug}/test-design/inventory.json` from [assets/inventory-template.json](assets/inventory-template.json): what, why, lowest effective level, technique. E2E needs a written reason.
+3. Write `features/{slug}/test-design/cases.json` from [assets/cases-template.json](assets/cases-template.json).
    Overlay IDs (`actions` / `fixtures` / `oracles`) are traceability only.
    **`steps[].do` and `expected[].see` are the deliverable** — a numbered
    click-path a human (and later Playwright) can follow:

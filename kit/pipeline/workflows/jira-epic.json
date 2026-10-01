@@ -5,128 +5,61 @@
       "files": [
         ".pipeline/skills/orchestration/SKILL.md",
         ".pipeline/skills/feature-development/SKILL.md",
-        ".pipeline/skills/feature-development/assets/change-routing.md",
-        ".pipeline/skills/feature-development/assets/tester-policy.md",
-        ".pipeline/skills/feature-development/assets/test-design-policy.md",
-        ".pipeline/skills/feature-development/assets/architecture-diagrams-policy.md",
-        ".pipeline/skills/feature-development/assets/planning-signoff-template.md",
-        ".pipeline/skills/feature-development/assets/architect-policy.md",
-        ".pipeline/skills/feature-development/assets/parent-task-prompt.md",
         ".pipeline/config.json",
         ".pipeline/skills/jira-intake/SKILL.md",
-        ".pipeline/skills/jira-intake/assets/intake-template.md",
         ".pipeline/skills/epic-breakdown/SKILL.md",
-        ".pipeline/skills/epic-breakdown/assets/epic-plan-template.md",
-        ".pipeline/workflows/jira-epic.json",
-        ".pipeline/skills/feature-development/assets/pipeline-state.md",
-        ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
-        ".pipeline/skills/feature-development/assets/agent-state-template.json"
+        ".pipeline/workflows/jira-epic.json"
       ]
     },
     "steps": {
       "product-manager-agent": {
         "files": [
           ".pipeline/agents/product-manager-agent.md",
-          ".pipeline/skills/product-planning/SKILL.md",
-          ".pipeline/skills/feature-development/assets/research-template.md",
-          ".pipeline/skills/feature-development/assets/plan-template.md",
-          ".pipeline/skills/feature-development/assets/handoff-pm-template.md",
-          ".pipeline/skills/feature-development/assets/questions-format.md",
-          ".pipeline/skills/feature-development/assets/clarify-first.md",
-          ".pipeline/skills/feature-development/assets/decisions-template.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
-          ".pipeline/skills/feature-development/assets/agent-state-template.json",
-          ".pipeline/skills/feature-development/assets/prd-template.md"
+          ".pipeline/skills/product-planning/SKILL.md"
         ]
       },
       "architect-agent": {
         "files": [
           ".pipeline/agents/architect-agent.md",
           ".pipeline/skills/architecture-design/SKILL.md",
-          ".pipeline/skills/feature-development/assets/architecture-template.md",
-          ".pipeline/skills/feature-development/assets/implementation-plan-template.md",
-          ".pipeline/skills/feature-development/assets/handoff-architect-template.md",
-          ".pipeline/skills/feature-development/assets/questions-format.md",
-          ".pipeline/skills/feature-development/assets/clarify-first.md",
-          ".pipeline/skills/feature-development/assets/decisions-template.md",
-          ".pipeline/skills/feature-development/assets/architect-policy.md",
           ".pipeline/skills/test-design/SKILL.md",
-          ".pipeline/skills/test-design/assets/model-delta-template.json",
-          ".pipeline/skills/architecture-visualization/SKILL.md",
-          ".pipeline/skills/architecture-visualization/assets/diagram-manifest-template.json",
-          ".pipeline/skills/feature-development/assets/architecture-diagrams-policy.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
-          ".pipeline/skills/feature-development/assets/agent-state-template.json"
+          ".pipeline/skills/architecture-visualization/SKILL.md"
         ]
       },
       "ba-agent": {
         "files": [
           ".pipeline/agents/ba-agent.md",
           ".pipeline/skills/spec-generation/SKILL.md",
-          ".pipeline/skills/feature-development/assets/specification-template.md",
-          ".pipeline/skills/feature-development/assets/example-specification.md",
-          ".pipeline/skills/feature-development/assets/spec-order-template.md",
-          ".pipeline/skills/feature-development/assets/test-plan-template.md",
-          ".pipeline/skills/feature-development/assets/test-strategy-template.md",
-          ".pipeline/skills/test-design/SKILL.md",
-          ".pipeline/skills/feature-development/assets/questions-format.md",
-          ".pipeline/skills/feature-development/assets/handoff-template.md",
-          ".pipeline/skills/feature-development/assets/clarify-first.md",
-          ".pipeline/skills/feature-development/assets/decisions-template.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
-          ".pipeline/skills/feature-development/assets/agent-state-template.json"
+          ".pipeline/skills/test-design/SKILL.md"
         ]
       },
       "ba-critic-agent": {
         "files": [
           ".pipeline/agents/ba-critic-agent.md",
-          ".pipeline/skills/test-design/SKILL.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
-          ".pipeline/skills/feature-development/assets/agent-state-template.json"
+          ".pipeline/skills/test-design/SKILL.md"
         ]
       },
       "test-designer-agent": {
         "files": [
           ".pipeline/agents/test-designer-agent.md",
-          ".pipeline/skills/test-design/SKILL.md",
-          ".pipeline/skills/test-design/assets/inventory-template.json",
-          ".pipeline/skills/test-design/assets/cases-template.json",
-          ".pipeline/skills/feature-development/assets/qa-test-cases-template.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
-          ".pipeline/skills/feature-development/assets/agent-state-template.json"
+          ".pipeline/skills/test-design/SKILL.md"
         ]
       },
       "telemetry-agent": {
         "files": [
           ".pipeline/agents/telemetry-agent.md",
-          ".pipeline/skills/observability-telemetry/SKILL.md",
-          ".pipeline/skills/observability-telemetry/assets/telemetry-contract-template.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
-          ".pipeline/skills/feature-development/assets/agent-state-template.json"
+          ".pipeline/skills/observability-telemetry/SKILL.md"
         ]
       },
       "developer-agent": {
         "files": [
           ".pipeline/agents/developer-agent.md",
-          ".pipeline/skills/secure-implementation/SKILL.md",
-          ".pipeline/skills/secure-implementation/assets/security-preflight-template.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
-          ".pipeline/skills/feature-development/assets/agent-state-template.json"
+          ".pipeline/skills/secure-implementation/SKILL.md"
         ]
       },
       "developer-critic-agent": {
         "files": [
-          ".pipeline/agents/developer-critic-agent.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
-          ".pipeline/skills/feature-development/assets/agent-state-template.json"
+          ".pipeline/agents/developer-critic-agent.md"
         ]
       },
       "tester-agent": {
@@ -136,48 +69,29 @@
           ".pipeline/skills/testing-e2e/SKILL.md",
           ".pipeline/skills/testing-api/SKILL.md",
           ".pipeline/skills/testing-unit/SKILL.md",
-          ".pipeline/skills/test-design/SKILL.md",
-          ".pipeline/skills/feature-development/assets/qa-test-cases-template.md",
-          ".pipeline/skills/feature-development/assets/qa-signoff-template.md",
-          ".pipeline/skills/feature-development/assets/tester-rca-template.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
-          ".pipeline/skills/feature-development/assets/agent-state-template.json"
+          ".pipeline/skills/test-design/SKILL.md"
         ]
       },
       "devops-agent": {
         "files": [
           ".pipeline/agents/devops-agent.md",
-          ".pipeline/skills/local-deployment/SKILL.md",
-          ".pipeline/skills/local-deployment/assets/local-deploy-runbook.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
-          ".pipeline/skills/feature-development/assets/agent-state-template.json"
+          ".pipeline/skills/local-deployment/SKILL.md"
         ]
       },
       "retro-agent": {
         "files": [
           ".pipeline/agents/retro-agent.md",
           ".pipeline/skills/pipeline-retro/SKILL.md",
-          ".pipeline/skills/pipeline-retro/assets/retro-template.md",
           ".pipeline/wiki/README.md",
-          ".pipeline/wiki/INDEX.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
-          ".pipeline/skills/feature-development/assets/agent-state-template.json"
+          ".pipeline/wiki/INDEX.md"
         ]
       },
       "intake-agent": {
         "files": [
           ".pipeline/agents/intake-agent.md",
           ".pipeline/skills/jira-intake/SKILL.md",
-          ".pipeline/skills/jira-intake/assets/intake-template.md",
           ".pipeline/skills/epic-breakdown/SKILL.md",
-          ".pipeline/skills/epic-breakdown/assets/epic-plan-template.md",
-          ".pipeline/config.json",
-          ".pipeline/skills/feature-development/assets/pipeline-state.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
-          ".pipeline/skills/feature-development/assets/agent-state-template.json"
+          ".pipeline/config.json"
         ]
       }
     }

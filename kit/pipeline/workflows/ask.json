@@ -6,10 +6,7 @@
         ".pipeline/skills/orchestration/SKILL.md",
         ".pipeline/skills/ask/SKILL.md",
         ".pipeline/config.json",
-        ".pipeline/workflows/ask.json",
-        ".pipeline/skills/feature-development/assets/pipeline-state.md",
-        ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
-        ".pipeline/skills/feature-development/assets/agent-state-template.json"
+        ".pipeline/workflows/ask.json"
       ]
     },
     "steps": {}

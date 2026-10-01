@@ -84,7 +84,9 @@ Optional: if the team installed `--agent-stubs`, Cursor Task types such as
 1. Write `.pipeline/skills/{name}/SKILL.md` (plus `assets/` templates if needed).
 2. Write `.pipeline/workflows/{name}.json` with `context.parent.files` and
    `context.steps.{agent}.files` (relative paths from the project root, using
-   the `.pipeline/…` prefix).
+   the `.pipeline/…` prefix). List briefs, `SKILL.md`, config, and wiki — not
+   skill `assets/`. The loader allowlists assets from the listed skills;
+   specialists Read them only when the skill names them.
 3. Add `workflows.{name}` in `.pipeline/config.json` (`source`, `chain` or
    `classes`, `skips`). An empty `chain` means parent-only (see `ask`).
 4. Optional: add `.pipeline/agents/{role}.md` and list it on that step’s allowlist.
@@ -96,7 +98,7 @@ Optional: if the team installed `--agent-stubs`, Cursor Task types such as
 python3 .pipeline/loader/load_workflow.py --workflow {name} --step parent --slug try-{name}
 ```
 
-Confirm `allowed_reads` is the smallest set that step needs.
+Confirm `seed_bundle` (`features/{slug}/step-context.md`) concatenates `seed_reads`. `allowed_reads` also includes skill assets for later Reads.
 
 Shipped workflows: `ask`, `feature-development`, `jira-story`, `jira-epic`,
 `jira-bug`, `test-knowledge-bootstrap`. Feature-class work can run

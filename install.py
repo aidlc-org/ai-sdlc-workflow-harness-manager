@@ -313,6 +313,49 @@ def _hook_command_text(entry: Any) -> str:
     return " ".join(parts)
 
 
+PYTHON_PLACEHOLDER = "{{PYTHON}}"
+
+
+def detect_python() -> str:
+    """Interpreter token for hook command strings.
+
+    Hook configs are plain command strings run by the harness, so they cannot
+    use `sys.executable` at runtime. `python3` is absent on most Windows boxes
+    (and is a non-functional Microsoft Store stub when the alias is enabled),
+    while many Linux images ship only `python3`. So probe, and fall back to the
+    absolute path of the interpreter running this installer.
+    """
+    marker = "pipeline-kit-ok"
+    probe = "import sys; sys.stdout.write('" + marker + "')"
+    candidates = ["python", "python3", "py -3"] if os.name == "nt" else ["python3", "python"]
+    for candidate in candidates:
+        try:
+            proc = subprocess.run(
+                candidate.split() + ["-c", probe],
+                capture_output=True,
+                text=True,
+                timeout=15,
+                check=False,
+            )
+        except (OSError, subprocess.SubprocessError):
+            continue
+        if proc.returncode == 0 and marker in (proc.stdout or ""):
+            return candidate
+    fallback = sys.executable or "python3"
+    return '"%s"' % fallback if " " in fallback else fallback
+
+
+def _substitute_python(node: Any, interpreter: str) -> Any:
+    """Replace the interpreter placeholder everywhere in a hook fragment."""
+    if isinstance(node, str):
+        return node.replace(PYTHON_PLACEHOLDER, interpreter)
+    if isinstance(node, list):
+        return [_substitute_python(item, interpreter) for item in node]
+    if isinstance(node, dict):
+        return {key: _substitute_python(value, interpreter) for key, value in node.items()}
+    return node
+
+
 def _is_guardrail_entry(entry: Any) -> bool:
     text = _hook_command_text(entry)
     return GUARDRAIL_NEEDLE in text and OBS_NEEDLE not in text
@@ -371,6 +414,9 @@ def merge_guardrail_hooks(*, ide: str, ide_root: Path, pack: Path) -> int:
     elif ide == "claude-code":
         fragment_path = pack / "hooks" / "claude.settings.json"
         dest = ide_root / ".claude" / "settings.json"
+    elif ide == "github":
+        fragment_path = pack / "hooks" / "copilot.hooks.json"
+        dest = ide_root / ".github" / "hooks" / "pipeline-guardrails.json"
     else:
         return 0
     if not fragment_path.is_file():
@@ -378,6 +424,13 @@ def merge_guardrail_hooks(*, ide: str, ide_root: Path, pack: Path) -> int:
     fragment = json.loads(fragment_path.read_text(encoding="utf-8"))
     if not isinstance(fragment, dict):
         return 0
+    fragment = _substitute_python(fragment, detect_python())
+    if ide == "github":
+        # Copilot discovers .github/hooks/*.json; this file is ours alone, so
+        # write it whole rather than merging into someone else's config.
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(json.dumps(fragment, indent=2) + "\n", encoding="utf-8")
+        return sum(len(v) for v in fragment.get("hooks", {}).values() if isinstance(v, list))
     existing: dict[str, Any] = {"version": 1, "hooks": {}} if ide == "cursor" else {}
     if dest.is_file():
         loaded = json.loads(dest.read_text(encoding="utf-8"))
@@ -386,6 +439,13 @@ def merge_guardrail_hooks(*, ide: str, ide_root: Path, pack: Path) -> int:
             existing.setdefault("hooks", {})
             if ide == "cursor":
                 existing.setdefault("version", 1)
+    # Drop our own previous entries first. Without this, an upgrade leaves a stale
+    # command (an older interpreter, or a POSIX env prefix) registered beside the
+    # new one, so the hook runs twice and one invocation fails. On Copilot, whose
+    # preToolUse is fail-closed, that failure denies the tool call outright.
+    # Entries owned by the user or by obs do not match the needle and are kept.
+    _strip_guardrail_entries(existing)
+    existing.setdefault("hooks", {})
     added = _merge_hook_object(existing, fragment)
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(json.dumps(existing, indent=2) + "\n", encoding="utf-8")
@@ -393,6 +453,9 @@ def merge_guardrail_hooks(*, ide: str, ide_root: Path, pack: Path) -> int:
 
 
 def strip_guardrail_hooks(*, ide_root: Path) -> None:
+    owned = ide_root / ".github" / "hooks" / "pipeline-guardrails.json"
+    if owned.is_file():
+        owned.unlink()
     for rel in (Path(".cursor") / "hooks.json", Path(".claude") / "settings.json"):
         path = ide_root / rel
         if not path.is_file():
@@ -677,7 +740,10 @@ def install(
         (pack_dest / "state" / "runs").mkdir(parents=True, exist_ok=True)
         print("Done. Orchestrator: pipeline-kit run --slug <slug> --workflow feature-development", file=sys.stderr)
     else:
-        print(f"Done. Loader: python3 {pack_dest / 'loader' / 'load_workflow.py'}", file=sys.stderr)
+        print(
+            f"Done. Loader: {detect_python()} {pack_dest / 'loader' / 'load_workflow.py'}",
+            file=sys.stderr,
+        )
     return 0
 
 

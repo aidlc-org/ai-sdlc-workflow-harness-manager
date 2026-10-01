@@ -201,6 +201,14 @@
     "fallback": "mermaid",
     "visual_check": "when-available"
   },
+  "code_minimalism": {
+    "_note": "Dependency declarations. The ladder text lives in skills/feature-development/assets/minimalism-policy.md. manifest_files lists only formats pre-write.py can parse without a library; shell installs are gated separately in before-shell.py.",
+    "require_declared_dependencies": true,
+    "manifest_files": [
+      "package.json",
+      "requirements.txt"
+    ]
+  },
   "agent_observability": {
     "_note": "Opt-in agent-run observability. Distinct from telemetry-agent (customer app events). Secrets stay in the environment.",
     "enabled": false,

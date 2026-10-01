@@ -38,6 +38,12 @@ blocks an honest design, return `CONSULT_REQUESTED` (see
 [next-agent-policy.md](../skills/feature-development/assets/next-agent-policy.md))
 instead of guessing.
 
+Design for the smallest honest shape: prefer existing modules, the standard
+library, and native platform features over new packages. Declare every new
+dependency with the rung it failed — see
+[minimalism-policy.md](../skills/feature-development/assets/minimalism-policy.md).
+The Developer cannot install what you did not declare.
+
 The PRD may not be fully solidified. When a technical deep-dive shows a gap,
 raise a **concern**. Blocking concerns stop the step. Recorded concerns travel
 to `@signoff:architect` so a human reviews them. Do not invent product

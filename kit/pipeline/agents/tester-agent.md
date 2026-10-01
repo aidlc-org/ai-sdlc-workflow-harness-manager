@@ -43,7 +43,7 @@ Execute the cases for your layer. You are not devops. You do not edit product so
 
 ## Work
 
-1. If `TESTER_MODE` is `cases-only`: write `qa-test-cases.md` from the plan / patch / RCA (or use rendered cases when test design is on). Return SUCCESS. Do not run runners.
+1. If `TESTER_MODE` is `cases-only`: write `qa-test-cases.md` from [qa-test-cases-template.md](../skills/feature-development/assets/qa-test-cases-template.md) (or use rendered cases when test design is on). Return SUCCESS. Do not run runners.
 2. Do **not** rewrite `qa-test-cases.md` or `cases.json` when they already exist.
 3. Load only the skill for `TEST_LAYER`:
    - `unit` → [testing-unit](../skills/testing-unit/SKILL.md)
@@ -52,7 +52,7 @@ Execute the cases for your layer. You are not devops. You do not edit product so
 4. On failure: copy [tester-rca-template.md](../skills/feature-development/assets/tester-rca-template.md) to `tester-rca-{layer}.md`. Classify `cause: test | product | unclear` (`unclear` = product).
    - `test`: heal test artifacts only (max 2). Rerun. Do not weaken Expected or skip cases.
    - `product`: HANDOFF `NEEDS_APPROVAL`. Stop. Do not edit product. Do not spawn developer.
-5. Feature class cannot finish a required layer as cases-only. Micro/minor may skip `ui` when no case is tagged `ui` or browser `e2e`.
+5. Feature class cannot finish a required layer as cases-only. Micro/minor may skip `ui` when no case is tagged `ui` or browser `e2e`. Parent joins layers with [qa-signoff-template.md](../skills/feature-development/assets/qa-signoff-template.md).
 
 ## Outputs
 

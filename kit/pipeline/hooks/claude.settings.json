@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PIPELINE_HOOK_FORMAT=claude python3 .pipeline/hooks/before-shell.py"
+            "command": "{{PYTHON}} .pipeline/hooks/before-shell.py"
           }
         ]
       },
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PIPELINE_HOOK_FORMAT=claude python3 .pipeline/hooks/before-read.py"
+            "command": "{{PYTHON}} .pipeline/hooks/before-read.py"
           }
         ]
       },
@@ -24,7 +24,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PIPELINE_HOOK_FORMAT=claude python3 .pipeline/hooks/pre-write.py"
+            "command": "{{PYTHON}} .pipeline/hooks/pre-write.py"
           }
         ]
       }
@@ -34,7 +34,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PIPELINE_HOOK_FORMAT=claude python3 .pipeline/hooks/post-tool-failure.py"
+            "command": "{{PYTHON}} .pipeline/hooks/post-tool-failure.py"
           }
         ]
       }
@@ -44,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PIPELINE_HOOK_FORMAT=claude python3 .pipeline/hooks/subagent-start.py"
+            "command": "{{PYTHON}} .pipeline/hooks/subagent-start.py"
           }
         ]
       }
@@ -54,7 +54,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PIPELINE_HOOK_FORMAT=claude python3 .pipeline/hooks/subagent-stop.py"
+            "command": "{{PYTHON}} .pipeline/hooks/subagent-stop.py"
           }
         ]
       }

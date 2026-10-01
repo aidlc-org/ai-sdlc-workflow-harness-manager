@@ -23,6 +23,7 @@ Owned by **feature-development**. Architect writes
 **ready_for_ba:** true | false
 **child_split_changed:** true | false
 **has_recorded_concerns:** true | false
+**new_dependencies:** {comma-separated package names} | none
 **archify_status:** skipped | mermaid-fallback | delivered
 **diagrams_manifest_path:** features/{slug}/diagrams/manifest.json | none
 

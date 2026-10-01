@@ -79,6 +79,7 @@ A `Task` subagent is a **fresh context**. Required for every specialist below. D
 | PM P2–P6 | [assets/research-template.md](assets/research-template.md), [assets/prd-template.md](assets/prd-template.md), [assets/handoff-pm-template.md](assets/handoff-pm-template.md) |
 | UI designer U1–U6 | [../ui-design/SKILL.md](../ui-design/SKILL.md), [assets/ui-design-template.md](assets/ui-design-template.md), [assets/handoff-ui-template.md](assets/handoff-ui-template.md), [assets/ui-manifest-template.json](assets/ui-manifest-template.json) |
 | Architect A2–A5 | [../architecture-design/SKILL.md](../architecture-design/SKILL.md), [assets/architecture-template.md](assets/architecture-template.md), [assets/implementation-plan-template.md](assets/implementation-plan-template.md), [assets/handoff-architect-template.md](assets/handoff-architect-template.md), [../architecture-visualization/SKILL.md](../architecture-visualization/SKILL.md) (when `architecture_diagrams.enabled`) |
+| Architect A3 + Developer | [assets/minimalism-policy.md](assets/minimalism-policy.md) |
 | BA S3 questions | [assets/questions-format.md](assets/questions-format.md) |
 | BA S4 draft | [assets/specification-template.md](assets/specification-template.md) |
 | BA S4 density | [assets/example-specification.md](assets/example-specification.md) |

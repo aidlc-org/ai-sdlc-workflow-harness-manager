@@ -10,7 +10,7 @@ Owned by **feature-development**. Parent picks the **workflow** ([orchestration]
 
 State contract: [pipeline-state.md](pipeline-state.md). Do **not** paste a prior HANDOFF body into the next prompt. Pass `PIPELINE_STATE_PATH` and `PRIOR_STATE_PATH` only.
 
-**Always include:** `REPO_ROOT` (absolute), `FEATURE_SLUG`, `WORKFLOW`, `CHANGE_CLASS: micro|minor|feature`, the two state paths.
+**Always include:** `REPO_ROOT` (absolute), `FEATURE_SLUG`, `WORKFLOW`, `CHANGE_CLASS: micro|minor|feature`, the two state paths, `CONTEXT_PACK`, `SEED_BUNDLE`.
 
 Feature class: parent slug for PM, UI designer, Architect, BA, BA critic, test-designer, tester, devops, retro. Child work uses `FEATURE_SLUG: {parent}/{child}`. When `test_design.enabled`, add `TEST_DESIGN_ENABLED: true` to Architect, BA, BA critic, test-designer, and tester. When `architecture_diagrams.enabled`, add `ARCHIFY_ENABLED: true` to Architect.
 
@@ -29,13 +29,16 @@ REPO_ROOT: {absolute path}
 FEATURE_SLUG: {slug}
 PIPELINE_STATE_PATH: features/{slug}/pipeline-state.json
 PRIOR_STATE_PATH: features/{slug}/state/{prior-agent}.json | none
+CONTEXT_PACK: features/{slug}/context-pack.json
+SEED_BUNDLE: features/{slug}/step-context.md
 
 1. Read PIPELINE_STATE_PATH.
 2. If PRIOR_STATE_PATH is not none, read it. Open only outputs and context.next_must_read.
-3. Do your job per .pipeline/agents/{name}.md.
-4. Write features/{slug}/state/{your-agent}.json (child waves: features/{parent}/{child}/state/{your-agent}.json).
-5. Update your row in pipeline-state.json.
-6. Return a short HANDOFF. The parent will not paste that HANDOFF into the next Task.
+3. Read SEED_BUNDLE once. Do not Read .pipeline/agents or .pipeline/skills separately — they are in the bundle.
+4. Do your job from that bundle. Load named assets only when the skill says to, if they are on allowed_reads.
+5. Write features/{slug}/state/{your-agent}.json (child waves: features/{parent}/{child}/state/{your-agent}.json).
+6. Update your row in pipeline-state.json.
+7. Return a short HANDOFF. The parent will not paste that HANDOFF into the next Task.
 ```
 
 ---

@@ -184,6 +184,31 @@ pipeline-kit workflows
 Default `--mode kit` copies the markdown pack. See [Two kits](#two-kits-pick-one-at-init)
 if you have not chosen yet.
 
+### Choosing an IDE (`--ide`)
+
+The kit works with **Cursor**, **Claude Code**, and **GitHub Copilot CLI**. Pick one per project:
+
+| IDE | Flag | Setup | Use case |
+|-----|------|-------|----------|
+| **Cursor** | `--ide cursor` | GUI editor (VSCode fork). Open repo root. | Most common; full context control. |
+| **Claude Code** | `--ide claude-code` | CLI or desktop app. Works anywhere Python runs. | Remote dev, no VSCode. Lightweight. |
+| **GitHub Copilot CLI** | `--ide github` | Terminal tool. Runs `copilot_cli` command. | Shell-first workflows, zero-UI. |
+| `none` | `--ide none` | No IDE adapter. Run workflows from orchestrator only. | CI/CD, test harnesses. |
+
+All options ship the same `.pipeline/` pack. Only the IDE folder location changes (`.cursor/`, `.claude/`, `.github/`).
+
+**Portable across IDEs:** If you commit the IDE config to git, teammates can use it on their own IDE by re-running `init`. The interpreter is detected per machine, so:
+
+```bash
+# On machine A (Windows): detected python
+# You commit the config to git
+# On machine B (Linux): run init again to pick up python3
+git clone …
+pipeline-kit init --ide cursor  # auto-detects the right interpreter
+```
+
+If you skip the re-run, hooks may fail silently on the second machine (wrong interpreter). Re-running `init` or `update` is safe — it replaces stale hook entries and keeps everything else intact.
+
 ### Orchestrator mode (optional, parallel)
 
 `--mode orchestrator` does **not** copy `agents/`, `skills/`, `loader/`, or
@@ -292,6 +317,29 @@ Open the repository root in the IDE so the skill folder is discovered.
 
 The old `python3 install.py` flags remain available for compatibility and
 for the maintainer-only `--sync-kit` operation.
+
+### 2.0.1 Guardrail hooks (code minimalism and dependencies)
+
+The kit includes optional **guardrail hooks** that fire before tool use to
+enforce code minimalism:
+
+- **Dependency gate**: Blocks undeclared `npm install`, `pip install`, etc.
+  and direct edits to `package.json`, `requirements.txt`, etc.
+  Architect declares dependencies with a reason; gate reads that declaration.
+  Break-glass: `PIPELINE_ALLOW_DEPS=1`.
+
+- **Code minimalism policy**: A decision ladder (reuse → stdlib → platform →
+  install → one-liner → minimum) shipped with the kit in `.pipeline/`. Agent
+  briefs link to it. See [`minimalism-policy.md`](./.pipeline/skills/feature-development/assets/minimalism-policy.md).
+
+Hooks are **not required** and do not turn on by default. To enable:
+
+```bash
+# The hooks are already in place; they fire on all IDEs (Cursor, Claude Code, Copilot).
+# Just write a declaration when the gate fires, or set PIPELINE_ALLOW_DEPS=1 to override.
+```
+
+Full hook reference: [`.pipeline/hooks/README.md`](./.pipeline/hooks/README.md)
 
 ### 2.1 Optional QA knowledge (opt-in)
 
@@ -579,6 +627,15 @@ checklist items instead of silent defaults. Override UI designer with
 `.pipeline/skills/feature-development/assets/ui-designer-policy.md`). Override
 Architect with `RUN_ARCHITECT: true|false`. Size policy lives in
 `.pipeline/skills/feature-development/assets/architect-policy.md`.
+
+**New dependencies.** Architect declares each one in
+`features/{slug}/state/architect-agent.json` `context.new_dependencies`
+(`name` + `why_nothing_existing_works`) and mirrors it in
+`HANDOFF-architect.md`. Developer cannot install or add to a manifest what was
+not declared — the refusal names the package. Micro, minor, and bug work take
+no new dependencies at all. Ladder and table in
+`.pipeline/skills/feature-development/assets/minimalism-policy.md`; one-run
+escape is `ALLOW_DEPENDENCY={name}`.
 
 ---
 

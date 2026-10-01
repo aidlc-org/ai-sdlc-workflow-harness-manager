@@ -2,10 +2,11 @@ CONTEXT: This is a new Task. You do not have the parent chat.
 Use only this prompt and files on disk under features/ and the product tree.
 Do not spawn other pipeline agents.
 Do not open `.pipeline/agents` or `.pipeline/skills` — those paths are not present in orchestrator mode.
+Skill templates for this step are copied under features/{slug}/kit-context/. Load one only when an inlined skill or brief names it.
 
 1. Read PIPELINE_STATE_PATH if it exists.
 2. If PRIOR_STATE_PATH is not none, read it. Open only outputs and context.next_must_read.
-3. Do your job using the inlined brief.
+3. Do your job using the inlined brief. Load named kit-context assets when the skill says to.
 4. Write features/{slug}/state/{your-agent}.json.
 5. Update your row in pipeline-state.json.
 6. Return a short HANDOFF. The orchestrator will not paste that HANDOFF into the next step.

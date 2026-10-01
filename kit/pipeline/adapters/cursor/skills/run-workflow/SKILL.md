@@ -32,8 +32,8 @@ python3 .pipeline/loader/load_workflow.py --workflow {name} --step parent --slug
 python3 ~/.pipeline/loader/load_workflow.py --workflow {name} --step parent --slug {slug}
 ```
 
-3. Read **only** `allowed_reads` from the printed JSON (also at `features/{slug}/context-pack.json`). Do not Read other `.pipeline/skills/` files.
+3. Read **`seed_bundle`** from the printed JSON (`features/{slug}/step-context.md`) **once**. That file already concatenates briefs, `SKILL.md`, and config. Do **not** Read each `seed_reads` path separately. Do **not** preload `**/assets/**` (including pipeline-state). If `seed_bundle` is missing, Read `seed_reads` in **one** parallel Read. When a loaded skill or brief names an asset, Read that file if it is on `allowed_reads`. Do not Read other `.pipeline/skills/` files.
 4. For `ask`: follow the ask skill and stop. No `route.md`, no Task chain.
-5. For product workflows: classify and write `features/{slug}/route.md`. Spawn **one new Task** per chain step (`generalPurpose` plus `Follow .pipeline/agents/{name}.md`, or the named Cursor type if `--agent-stubs` was installed). Before each Task, run the loader again with `--step {agent}` and put `FEATURE_SLUG: {slug}` plus `CONTEXT_PACK: features/{slug}/context-pack.json` in the prompt.
+5. For product workflows: classify and write `features/{slug}/route.md`. Spawn **one new Task** per chain step (`generalPurpose` plus `Follow .pipeline/agents/{name}.md`, or the named Cursor type if `--agent-stubs` was installed). Before each Task, run the loader again with `--step {agent}` and put `FEATURE_SLUG: {slug}`, `CONTEXT_PACK: features/{slug}/context-pack.json`, and `SEED_BUNDLE: features/{slug}/step-context.md` in the prompt.
 
 Chains and skips: `.pipeline/config.json` (project, else `~/.pipeline/config.json`). Pack file lists: `{pack}/workflows/{name}.json`.

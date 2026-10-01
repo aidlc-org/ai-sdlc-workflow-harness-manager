@@ -7,7 +7,7 @@ fork of this repository.
 
 1. Write `.pipeline/skills/{name}/SKILL.md` (plus `assets/` if needed).
 2. Write `.pipeline/workflows/{name}.json` with `context.parent.files`
-   and `context.steps.{agent}.files`.
+   and `context.steps.{agent}.files` (briefs and `SKILL.md`, not skill assets).
 3. Add `workflows.{name}` in `.pipeline/config.json`.
 4. Optional: add `.pipeline/agents/{role}.md` and allowlist it.
 5. If the receptionist should auto-pick it, add a row to

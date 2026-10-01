@@ -5,10 +5,6 @@
       "files": [
         ".pipeline/skills/orchestration/SKILL.md",
         ".pipeline/skills/repo-assessment/SKILL.md",
-        ".pipeline/skills/repo-assessment/assets/rule.mdc",
-        ".pipeline/skills/repo-assessment/assets/SKILL.md",
-        ".pipeline/skills/repo-assessment/assets/agent.md",
-        ".pipeline/skills/repo-assessment/assets/workflow.json",
         ".pipeline/config.json",
         ".pipeline/workflows/repo-assessment.json"
       ]

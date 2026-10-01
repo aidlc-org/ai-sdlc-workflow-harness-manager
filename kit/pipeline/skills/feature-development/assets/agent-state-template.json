@@ -38,6 +38,18 @@
         "summary": ""
       }
     ],
+    "reuse_candidates": [
+      {
+        "path": "{existing repo path considered}",
+        "note": "{what it covers, or why it did not fit}"
+      }
+    ],
+    "new_dependencies": [
+      {
+        "name": "{exact package name the installer sees}",
+        "why_nothing_existing_works": "{repo / stdlib / platform / installed dep checked, and why each failed}"
+      }
+    ],
     "next_agent": "{agent-id | signoff-requirements | signoff-architect | signoff-ba | stop}",
     "recommend_after_signoff": "{architect-agent | ba-agent | none}",
     "consult_agent": "{ui-designer-agent | none}",

@@ -5,23 +5,15 @@
       "files": [
         ".pipeline/skills/orchestration/SKILL.md",
         ".pipeline/skills/test-knowledge-bootstrap/SKILL.md",
-        ".pipeline/skills/test-knowledge-bootstrap/assets/review-report-template.md",
         ".pipeline/config.json",
-        ".pipeline/workflows/test-knowledge-bootstrap.json",
-        ".pipeline/skills/feature-development/assets/pipeline-state.md",
-        ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
-        ".pipeline/skills/feature-development/assets/agent-state-template.json"
+        ".pipeline/workflows/test-knowledge-bootstrap.json"
       ]
     },
     "steps": {
       "knowledge-curator-agent": {
         "files": [
           ".pipeline/agents/knowledge-curator-agent.md",
-          ".pipeline/skills/test-knowledge-bootstrap/SKILL.md",
-          ".pipeline/skills/test-knowledge-bootstrap/assets/review-report-template.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state.md",
-          ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
-          ".pipeline/skills/feature-development/assets/agent-state-template.json"
+          ".pipeline/skills/test-knowledge-bootstrap/SKILL.md"
         ]
       }
     }

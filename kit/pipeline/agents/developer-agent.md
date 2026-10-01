@@ -67,12 +67,13 @@ the parent can reclassify as **feature**.
 ## Standards
 
 - Follow [`.pipeline/rules/code-standards.mdc`](../rules/code-standards.mdc) for JS/TS (naming, patterns used nearby).
+- Work the ladder in [`minimalism-policy.md`](../skills/feature-development/assets/minimalism-policy.md) before adding code: needed at all → reuse → stdlib → native platform → installed dep → one line → minimum.
 - Follow [`.pipeline/skills/secure-implementation/SKILL.md`](../skills/secure-implementation/SKILL.md) — write `features/{slug}/security-preflight.md`.
 - Emit **only** events in the telemetry contract ([observability-telemetry](../skills/observability-telemetry/SKILL.md)). If `EVENTS: none`, add no analytics.
 - Match files you edit: same imports, routing, state style.
 - Validate on the server/source of truth if there is one; client checks are UX only.
 - No hardcoded secrets. Generic user errors; details in logs without PII.
-- Do not add dependencies without a spec requirement **and** a short security note in HANDOFF (what it is, why existing code cannot do it).
+- Do not add a dependency the Architect has not declared in `state/architect-agent.json` `context.new_dependencies`. Undeclared installs and manifest edits are refused by the hooks, and the refusal names the package. Use the native or already-installed alternative, or ask the parent to re-spawn Architect.
 
 ## Work (spec / patch mode)
 

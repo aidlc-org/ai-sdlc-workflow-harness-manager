@@ -66,6 +66,15 @@ If this differs from the PM / intake split, this table **wins** for BA.
 - Authz / PII / secrets boundaries
 - What must not be invented
 
+### New dependencies
+
+`none`, or one row each. Mirror these into `state/architect-agent.json`
+`context.new_dependencies` — the hooks read the state file, not this table.
+
+| Package | Why nothing existing works |
+|---------|----------------------------|
+| … | … |
+
 ## 7. Risks
 
 | Risk | Why it matters | Mitigation |
