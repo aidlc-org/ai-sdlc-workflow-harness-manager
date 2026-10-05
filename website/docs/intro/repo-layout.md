@@ -17,6 +17,10 @@ capabilities/
   observability/             agent-run traces
   eval/                      judges / Langfuse eval
   feature_flags/             named on/off keys
+packages/                    separate installable extras, own pyproject.toml
+  pipeline-kit-assess/       licensed repo assessment
+  pipeline-kit-memory/       external artifact bank + MCP
+  pipeline-kit-portal/       local fleet dashboard
 website/                     this documentation site
 tests/
 ```
@@ -52,6 +56,21 @@ Optional. `init` does not turn them on. [Overview](/docs/capabilities/overview).
 | `capabilities/feature_flags/` | `pipeline-kit features` | `pipeline_features` |
 
 Folder names are the product map. Import names stay the same so obs hooks (`from pipeline_observability.export import …`) and associate workflows (`from pipeline_orchestrator.graph import WorkflowSpec`) do not break.
+
+## Packages
+
+Also optional, but each is a **separate installable package** with its own
+`pyproject.toml` — not imported until its extra is installed.
+
+| Folder | CLI | Import name (stable) | Extra |
+|--------|-----|----------------------|-------|
+| `packages/pipeline-kit-assess/` | `pipeline-kit scan` | `pipeline_assess` | `.[assess]` |
+| `packages/pipeline-kit-memory/` | `pipeline-kit memory` | `pipeline_memory` | `.[memory]` |
+| `packages/pipeline-kit-portal/` | `pipeline-kit portal` | `pipeline_portal` | `.[portal]` |
+
+[Portal](/docs/capabilities/portal) is the local admin dashboard: features,
+plugins, and extensions across several registered projects, plus pipeline
+health, grouped by team.
 
 ## What stays at the repo root
 

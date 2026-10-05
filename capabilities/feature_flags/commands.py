@@ -96,6 +96,11 @@ def _toggle(project: Path, name: str, *, on: bool) -> int:
     return 0
 
 
+def snapshot(project: Path) -> dict[str, tuple[str, str]]:
+    """Public alias of ``_snapshot`` for callers outside this module (e.g. pipeline_portal)."""
+    return _snapshot(project)
+
+
 def _snapshot(project: Path) -> dict[str, tuple[str, str]]:
     cfg = _load_config(project)
     design = cfg.get("test_design") if isinstance(cfg.get("test_design"), dict) else {}

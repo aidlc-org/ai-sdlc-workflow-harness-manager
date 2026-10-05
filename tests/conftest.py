@@ -11,7 +11,8 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 ASSESS = ROOT / "packages" / "pipeline-kit-assess"
 MEMORY = ROOT / "packages" / "pipeline-kit-memory"
-for entry in (ROOT, ASSESS, MEMORY):
+PORTAL = ROOT / "packages" / "pipeline-kit-portal"
+for entry in (ROOT, ASSESS, MEMORY, PORTAL):
     if str(entry) not in sys.path:
         sys.path.insert(0, str(entry))
 

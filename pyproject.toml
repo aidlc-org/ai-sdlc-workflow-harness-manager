@@ -16,13 +16,15 @@ dependencies = ["cryptography>=44"]
 orchestrator = ["cursor-sdk", "typesafe-sdk"]
 assess = ["pipeline-kit-assess"]
 memory = ["pipeline-kit-memory"]
+portal = ["pipeline-kit-portal"]
 
 [tool.uv.workspace]
-members = ["packages/pipeline-kit-assess", "packages/pipeline-kit-memory"]
+members = ["packages/pipeline-kit-assess", "packages/pipeline-kit-memory", "packages/pipeline-kit-portal"]
 
 [tool.uv.sources]
 pipeline-kit-assess = { workspace = true }
 pipeline-kit-memory = { workspace = true }
+pipeline-kit-portal = { workspace = true }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

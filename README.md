@@ -86,6 +86,16 @@ from the Graphify graph. It does not call a model. In chat, the shipped
 templates in `.pipeline/skills/repo-assessment/assets/`. Details:
 [CUSTOMER-GUIDE.md](./CUSTOMER-GUIDE.md).
 
+Optional **portal** is also a separate package: a local, loopback-only web
+dashboard over several registered projects — what features/plugins/extensions
+are on where, plus run and gate health from each project's own state files.
+It never imports or runs a project's own code, and every write goes through
+the same `features` / `plugins` / `obs` commands the CLI uses. Install with
+`uv tool install -e ".[portal]"`, then `pipeline-kit portal add <path>` and
+`pipeline-kit portal serve`. Full detail and the security model:
+[`packages/pipeline-kit-portal/README.md`](./packages/pipeline-kit-portal/README.md).
+Customer-handbook version: [CUSTOMER-GUIDE.md](./CUSTOMER-GUIDE.md).
+
 Before each orchestrator agent, a decider chooses the Cursor model. `jev` (default) asks TypeSafe with a shortlist (`models.candidates`), not the full catalog. `fixed` skips that call. Planning and review prefer Opus or GPT; implementation prefers Composer. Add a model as an object in `candidates`, or as a string plus `models.cards` — not both. A pin skips Jev for one step:
 
 ```json
@@ -168,6 +178,10 @@ capabilities/
   observability/        agent-run traces (import: pipeline_observability)
   eval/                 judges / Langfuse eval (import: pipeline_eval)
   feature_flags/        named on/off keys (import: pipeline_features)
+packages/               separate installable extras (own pyproject.toml each)
+  pipeline-kit-assess/  licensed repo assessment (import: pipeline_assess)
+  pipeline-kit-memory/  external artifact bank + MCP (import: pipeline_memory)
+  pipeline-kit-portal/  local fleet dashboard (import: pipeline_portal)
 website/                local Docusaurus docs
 tests/
 ```
@@ -184,6 +198,9 @@ Folder names are the product map.
 | [`orchestrator/`](./orchestrator/) | Orchestrator-mode engine (`--mode orchestrator`) |
 | [`extensions/`](./extensions/) | Add workflows in kit mode or orchestrator mode |
 | [`capabilities/`](./capabilities/) | Plugins, knowledge, observability, eval, feature flags |
+| [`packages/pipeline-kit-assess/`](./packages/pipeline-kit-assess/) | Licensed repo assessment. Install with `.[assess]` |
+| [`packages/pipeline-kit-memory/`](./packages/pipeline-kit-memory/README.md) | External artifact bank + MCP. Install with `.[memory]` |
+| [`packages/pipeline-kit-portal/`](./packages/pipeline-kit-portal/README.md) | Local fleet dashboard. Install with `.[portal]` |
 | [CUSTOMER-GUIDE.md](./CUSTOMER-GUIDE.md) | Architect / developer handbook |
 | `website/` | Local Docusaurus documentation (`npm start` in that folder) |
 | `tests/` | Installer tests (`pytest`) |
@@ -240,6 +257,9 @@ pipeline-kit obs status
 pipeline-kit obs report
 pipeline-kit obs flush
 # Full guide: OBSERVABILITY.md
+pipeline-kit portal add <path> --team <name>  # register a project in the fleet (needs .[portal])
+pipeline-kit portal serve                     # local admin dashboard: features/plugins/extensions + health
+pipeline-kit portal list
 pipeline-kit uninstall [project]  # remove files managed by the kit
 pipeline-kit version              # current kit VERSION (maintainers: bump / set)
 pipeline-kit --version

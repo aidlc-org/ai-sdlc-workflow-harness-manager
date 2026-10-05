@@ -304,6 +304,9 @@ Sign-off gates do not ask the decider. Full examples:
 | `pipeline-kit obs flush [project]` | Ship new ledger rows to the configured adapter. |
 | `pipeline-kit memory link <root> [project]` | Link external artifact bank (needs `.[memory]`) |
 | `pipeline-kit memory index / search / mcp` | Index, query, or run the memory MCP server |
+| `pipeline-kit portal add <path> [--team] [--label]` | Register a project in the portal's fleet (needs `.[portal]`) |
+| `pipeline-kit portal serve [project]` | Start the local admin dashboard (loopback + per-launch token by default) |
+| `pipeline-kit portal list` / `remove <path>` | List or unregister fleet projects |
 
 Full agent-run observability handbook (install, Langfuse identity, scores, ideal values, troubleshooting): **[OBSERVABILITY.md](./OBSERVABILITY.md)** (copied to `.pipeline/docs/OBSERVABILITY.md` on `init`).
 
@@ -424,6 +427,38 @@ and use args: `-m`, `pipeline_memory.mcp_server`, `--project`, `<product path>`.
 
 Full detail, troubleshooting, and checklist:
 [`packages/pipeline-kit-memory/README.md`](./packages/pipeline-kit-memory/README.md).
+
+### 2.0.3 Portal (optional local admin dashboard)
+
+A read-mostly local web dashboard across several projects: which features,
+plugins, and extensions are on where, and the health of their pipelines
+(runs, sign-off gates, observability-ledger scores). It is a separate
+package, installed and run the same way as assess/memory:
+
+```bash
+pip install -e packages/pipeline-kit-portal -e .
+pipeline-kit portal add ../checkout-api --team payments --label "Checkout API"
+pipeline-kit portal add ../payments-web --team payments
+pipeline-kit portal serve
+```
+
+- One registry (`~/.pipeline/portal/projects.json`, override with `--home`)
+  lists every project the portal shows — not just the one you launch from.
+- Binds `127.0.0.1` and prints a per-launch token in the URL; writes are
+  POST-only and refused entirely with `--read-only`. A non-loopback `--host`
+  needs `--allow-remote` and keeps the token requirement.
+- Never imports or runs a registered project's own code (no
+  `pipeline_extensions/*.py`, no copied `.pipeline/loader/*.py`) — every
+  project is read through its own JSON state files on disk.
+- Toggles call the exact same functions as `pipeline-kit features` /
+  `plugins` / `obs` — the dashboard is a view over those commands, not a
+  second way to write `config.json`.
+- The portal never runs `init`/`update` for you; a project that is missing
+  or behind the installed kit version is flagged with the exact command to
+  copy.
+
+Full detail and the security model:
+[`packages/pipeline-kit-portal/README.md`](./packages/pipeline-kit-portal/README.md).
 
 ### 2.1 Optional QA knowledge (opt-in)
 

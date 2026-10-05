@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pipeline-kit-portal"
+version = "0.1.0"
+description = "Local admin web dashboard for pipeline-kit — fleet health and feature/plugin toggles"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pipeline_portal*"]
+
+[tool.setuptools.package-data]
+pipeline_portal = ["web/*"]
+
+[project.entry-points."pipeline_kit.commands"]
+portal = "pipeline_portal.commands:cmd_portal_entrypoint"

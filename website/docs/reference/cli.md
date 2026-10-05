@@ -57,6 +57,21 @@ See [Knowledge base](/docs/capabilities/knowledge).
 
 See [Agent-run observability](/docs/capabilities/observability).
 
+## Portal
+
+Requires the `portal` extra (`pip install -e packages/pipeline-kit-portal -e .`, or `uv tool install -e ".[portal]"`).
+
+| Command | Purpose |
+|---------|---------|
+| `portal serve [project]` | Start the dashboard. `--port`, `--host`, `--open`, `--read-only`, `--no-token`, `--allow-remote` |
+| `portal add <path>` | Register a project in the fleet. `--team`, `--label` |
+| `portal remove <path>` | Unregister a project |
+| `portal list` | List registered projects |
+
+Binds `127.0.0.1` with a per-launch token by default; writes go through the
+same `features` / `plugins` / `obs` functions the CLI already uses, never a
+second writer. See [Portal](/docs/capabilities/portal).
+
 ## Maintainers
 
 `version [show]` prints `VERSION`. `version bump patch|minor|major` and `version set X.Y.Z` update `VERSION` (and `website/package.json`) in the **kit git checkout** — resolved from `--repo`, then `$PIPELINE_KIT_REPO`, then upwards from the current directory — never in a customer project or the installed wheel. `--commit` commits there with `git -C`; `--tag` (requires `--commit`) adds `vX.Y.Z`. Also `--dry-run`. See [This repository](/docs/maintainers/repo).

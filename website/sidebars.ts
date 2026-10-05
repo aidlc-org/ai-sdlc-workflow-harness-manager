@@ -53,6 +53,7 @@ const sidebars: SidebarsConfig = {
         'capabilities/observability',
         'capabilities/telemetry',
         'capabilities/feature-flags',
+        'capabilities/portal',
         'capabilities/wiki',
         'capabilities/loader',
       ],

@@ -907,6 +907,35 @@ def _obs_commands():
     return cmd_flush, cmd_install, cmd_report, cmd_status, cmd_uninstall
 
 
+def _portal_pkg_path() -> None:
+    _ensure_pkg_path()
+    portal = HERE / "packages" / "pipeline-kit-portal"
+    if portal.is_dir() and str(portal) not in sys.path:
+        sys.path.insert(0, str(portal))
+
+
+def _portal_commands():
+    _portal_pkg_path()
+    try:
+        from pipeline_portal.commands import (  # noqa: WPS433
+            cmd_portal_add,
+            cmd_portal_list,
+            cmd_portal_remove,
+            cmd_portal_serve,
+        )
+    except ImportError as exc:
+        raise ImportError(
+            'pipeline-kit-portal is not installed. Run: pip install -e ".[portal]" '
+            "or add packages/pipeline-kit-portal to PYTHONPATH"
+        ) from exc
+    return {
+        "serve": cmd_portal_serve,
+        "add": cmd_portal_add,
+        "remove": cmd_portal_remove,
+        "list": cmd_portal_list,
+    }
+
+
 def _memory_pkg_path() -> None:
     _ensure_pkg_path()
     mem = HERE / "packages" / "pipeline-kit-memory"
@@ -1389,6 +1418,36 @@ def cli_main(argv: list[str] | None = None) -> int:
     m_import.add_argument("project", nargs="?", default=".")
     m_import.add_argument("--dry-run", action="store_true")
 
+    portal_parser = commands.add_parser(
+        "portal",
+        help="local admin web dashboard: fleet health, feature/plugin toggles (pipeline-kit-portal)",
+    )
+    portal_commands = portal_parser.add_subparsers(dest="portal_command", required=True)
+    p_serve = portal_commands.add_parser("serve", help="start the portal web server")
+    p_serve.add_argument("project", nargs="?", default=".")
+    p_serve.add_argument("--port", type=int, default=7171)
+    p_serve.add_argument("--host", default="127.0.0.1")
+    p_serve.add_argument("--open", action="store_true", help="open the URL in a browser")
+    p_serve.add_argument("--read-only", action="store_true", help="disable all write endpoints")
+    p_serve.add_argument("--no-token", action="store_true", help="disable the per-launch token (same-machine only)")
+    p_serve.add_argument(
+        "--allow-remote",
+        action="store_true",
+        help="allow a non-loopback --host (still requires the token unless --no-token)",
+    )
+    p_serve.add_argument("--home", default="", help=argparse.SUPPRESS)
+    p_add = portal_commands.add_parser("add", help="register a project in the fleet")
+    p_add.add_argument("path")
+    p_add.add_argument("--team", default="")
+    p_add.add_argument("--label", default="")
+    p_add.add_argument("--home", default="", help=argparse.SUPPRESS)
+    p_remove = portal_commands.add_parser("remove", help="unregister a project from the fleet")
+    p_remove.add_argument("path")
+    p_remove.add_argument("--home", default="", help=argparse.SUPPRESS)
+    portal_commands.add_parser("list", help="list registered projects").add_argument(
+        "--home", default="", help=argparse.SUPPRESS
+    )
+
     license_parser = commands.add_parser("license", help="issue or activate an org license")
     license_commands = license_parser.add_subparsers(dest="license_command", required=True)
     issue_parser = license_commands.add_parser(
@@ -1665,6 +1724,33 @@ def cli_main(argv: list[str] | None = None) -> int:
         if cmd == "import-local":
             return cmds["import-local"](project, dry_run=bool(getattr(args, "dry_run", False)))
         parser.error("unknown memory command")
+        return 2
+    if args.command == "portal":
+        try:
+            cmds = _portal_commands()
+        except ImportError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        home_dir = home or Path.home()
+        cmd = args.portal_command
+        if cmd == "serve":
+            return cmds["serve"](
+                project,
+                home=home_dir,
+                host=args.host,
+                port=args.port,
+                open_browser=bool(getattr(args, "open", False)),
+                read_only=bool(getattr(args, "read_only", False)),
+                use_token=not bool(getattr(args, "no_token", False)),
+                allow_remote=bool(getattr(args, "allow_remote", False)),
+            )
+        if cmd == "add":
+            return cmds["add"](args.path, home=home_dir, team=args.team, label=args.label)
+        if cmd == "remove":
+            return cmds["remove"](args.path, home=home_dir)
+        if cmd == "list":
+            return cmds["list"](home=home_dir)
+        parser.error("unknown portal command")
         return 2
     if args.command == "plugins":
         cmd_install, cmd_list, cmd_status, cmd_uninstall = _plugin_commands()
