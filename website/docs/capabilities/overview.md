@@ -30,12 +30,13 @@ Pipeline Kit ships **two kits**. [Kit mode](/docs/capabilities/modes) is the mar
 | Capability | How you turn it on |
 |------------|--------------------|
 | [Knowledge base](/docs/capabilities/knowledge) | `pipeline-kit knowledge init` |
+| [Memory bank and MCP](/docs/capabilities/memory) | `pip install -e packages/pipeline-kit-memory`, then `pipeline-kit memory link` |
 | [Plugins](/docs/capabilities/plugins) | External Graphify/Archify (`plugins install`) and bundled observability (`obs install`) |
 | [Graphify](/docs/capabilities/graphify) | Official CLI + skill registration |
 | [Archify](/docs/capabilities/archify) | Pinned Agent Skill `v2.16.0` |
 | [Agent-run observability](/docs/capabilities/observability) | Bundled add-on: `pipeline-kit obs install` (not `plugins install`) |
 | [App telemetry](/docs/capabilities/telemetry) | `features enable telemetry` or `RUN_TELEMETRY` |
-| [Portal](/docs/capabilities/portal) | Separate package: `pip install -e packages/pipeline-kit-portal` or the `.[portal]` extra |
+| [Enterprise portal](/docs/capabilities/portal) | Separate product and repository (enterprise plan): sign-in, roles, analysis, license management |
 
 :::warning Two different “observability” words
 **Agent-run observability** traces what the *coding agent* did (tools, steps, scores). **App telemetry** is a pipeline specialist that extracts *product* analytics events from a spec. Do not mix them.

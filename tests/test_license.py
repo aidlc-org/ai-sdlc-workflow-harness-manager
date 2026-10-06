@@ -1,4 +1,4 @@
-"""Org license gates the four paid areas. Kit mode stays open."""
+"""Org license gates the paid areas (orchestrator, jira, governance, evidence, assess). Kit mode stays open."""
 
 from __future__ import annotations
 
@@ -211,43 +211,36 @@ def test_issue_signs_a_token_that_activates(
     assert claims["features"] == ["jira", "orchestrator"]
 
 
-def test_jira_loader_checks_the_license(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+def test_issue_defaults_to_every_paid_area_including_assess(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    enterprise_license: dict,
+    capsys: pytest.CaptureFixture[str],
+):
+    from cryptography.hazmat.primitives.serialization import (
+        Encoding,
+        NoEncryption,
+        PrivateFormat,
+    )
+
+    from pipeline_kit import license as lic
+
+    key_file = tmp_path / "signing.pem"
+    key_file.write_bytes(
+        enterprise_license["signing_key"].private_bytes(Encoding.PEM, PrivateFormat.PKCS8, NoEncryption())
+    )
+    monkeypatch.setenv(lic.ENV_SIGNING_KEY, str(key_file))
+    argv = ["license", "issue", "--repo", str(REPO), "--org", "Northline", "--expires", "2027-06-01"]
+    assert _cli(argv) == 0
+    token = capsys.readouterr().out.strip().splitlines()[-1]
+    assert lic.verify_token(token)["features"] == sorted(lic.FEATURES)
+    assert "assess" in lic.FEATURES
+
+
+def test_scan_needs_the_assess_area(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]):
     _clear(monkeypatch, tmp_path / "home")
     app = tmp_path / "app"
     app.mkdir()
-    assert _cli(["init", str(app), "--ide", "none"]) == 0
-    loader = app / ".pipeline" / "loader" / "context_pack.py"
-    spec = importlib.util.spec_from_file_location("installed_context_pack_gate", loader)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    assert (
-        module.main(
-            [
-                "--workflow",
-                "feature-development",
-                "--step",
-                "developer-agent",
-                "--slug",
-                "open",
-                "--repo-root",
-                str(app),
-            ]
-        )
-        == 0
-    )
-    assert (
-        module.main(
-            [
-                "--workflow",
-                "jira-story",
-                "--step",
-                "intake-agent",
-                "--slug",
-                "paid",
-                "--repo-root",
-                str(app),
-            ]
-        )
-        == 73
-    )
+    assert _cli(["scan", str(app)]) == 73
+    assert "pipeline-kit license activate" in capsys.readouterr().err
+

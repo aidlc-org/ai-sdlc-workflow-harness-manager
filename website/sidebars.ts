@@ -47,6 +47,7 @@ const sidebars: SidebarsConfig = {
         'capabilities/workflows',
         'capabilities/planning-gates',
         'capabilities/knowledge',
+        'capabilities/memory',
         'capabilities/plugins',
         'capabilities/graphify',
         'capabilities/archify',
@@ -96,6 +97,8 @@ const sidebars: SidebarsConfig = {
       label: 'Reference',
       items: [
         'reference/cli',
+        'reference/licensing',
+        'reference/portal-protocol',
         'reference/config',
         'reference/pack-layout',
         'reference/agents',

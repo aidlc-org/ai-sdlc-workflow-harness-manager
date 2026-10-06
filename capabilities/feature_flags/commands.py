@@ -97,7 +97,7 @@ def _toggle(project: Path, name: str, *, on: bool) -> int:
 
 
 def snapshot(project: Path) -> dict[str, tuple[str, str]]:
-    """Public alias of ``_snapshot`` for callers outside this module (e.g. pipeline_portal)."""
+    """Public alias of ``_snapshot`` for callers outside this module (e.g. the enterprise portal)."""
     return _snapshot(project)
 
 

@@ -276,7 +276,7 @@ then a `summary` table. It does not start Cursor agents. Without
 pick. Use `feature` to see planning and review.
 
 Sign-off gates do not ask the decider. Full examples:
-[`orchestrator/README.md`](../../../orchestrator/README.md#model-choice).
+[`orchestrator/README.md`](./orchestrator/README.md#model-choice).
 
 
 | Command | Purpose |
@@ -302,6 +302,15 @@ Sign-off gates do not ask the decider. Full examples:
 | `pipeline-kit obs install [project]` | Merge fail-open agent-run hooks (Langfuse first). Does not replace existing hooks. |
 | `pipeline-kit obs report [project]` | Local scores from the ledger. No network. |
 | `pipeline-kit obs flush [project]` | Ship new ledger rows to the configured adapter. |
+| `pipeline-kit memory link <root> [project]` | Link external artifact bank (needs `.[memory]`) |
+| `pipeline-kit memory index / search / mcp` | Index, query, or run the memory MCP server |
+| `pipeline-kit license status` | Show org, expiry, and which paid areas are on. Never prints the token. |
+| `pipeline-kit license activate` | Verify the token in `PIPELINE_KIT_LICENSE` and store it in `~/.pipeline/license.json` |
+| `pipeline-kit license issue --org NAME --expires YYYY-MM-DD [--features …]` | Vendor only: sign a token. Needs the signing key. Default features: all five paid areas. |
+| `pipeline-kit portal connect --url URL --key KEY [project]` | Report this project to a portal. Verifies the key, then sends the first report. |
+| `pipeline-kit portal status [project]` | Show the connection and when the portal last heard from this project |
+| `pipeline-kit portal push [project]` | Send the current state now |
+| `pipeline-kit portal disconnect [project]` | Forget the connection on this machine |
 
 Full agent-run observability handbook (install, Langfuse identity, scores, ideal values, troubleshooting): **[OBSERVABILITY.md](./OBSERVABILITY.md)** (copied to `.pipeline/docs/OBSERVABILITY.md` on `init`).
 
@@ -311,7 +320,8 @@ Install/update commands accept `--ide cursor`, `claude-code`, `github`, or
 `none`. Add `--agent-stubs` to create thin `.cursor/agents/*.md` files.
 
 Resolution at run time: project `.pipeline` wins; otherwise `~/.pipeline`.
-Run artifacts always go to **this project’s** `features/{slug}/`.
+Run artifacts default to **this project’s** `features/{slug}/`. Optionally link an
+**external memory bank** so artifacts live in a separate git repo (see Memory bank below).
 
 Open the repository root in the IDE so the skill folder is discovered.
 
@@ -340,6 +350,207 @@ Hooks are **not required** and do not turn on by default. To enable:
 ```
 
 Full hook reference: [`.pipeline/hooks/README.md`](./.pipeline/hooks/README.md)
+
+### 2.0.2 Memory bank (optional external artifacts)
+
+By default, feature artifacts stay in the product repo under `features/{slug}/`.
+For multi-repo product lines or a shared org archive, install the optional
+memory package and link an external git folder:
+
+```bash
+pip install -e packages/pipeline-kit-memory -e .
+pipeline-kit memory link ../pipeline-memory --project-id my-app
+pipeline-kit memory import-local    # one-time copy of existing features/
+pipeline-kit memory index
+pipeline-kit memory search "oauth decision" --json
+pipeline-kit memory doctor
+```
+
+- **Flat layout** (one product ↔ one bank): `{root}/features/{slug}/…`
+- **Namespaced** (`--project-id`): `{root}/projects/{id}/features/{slug}/…`
+- Run cursor under `.pipeline/state/` always stays in the product project.
+- Search works from the CLI without MCP (`memory search`). Re-run `memory index`
+  after artifact changes.
+
+#### MCP (optional — user must register the server)
+
+Memory does **not** auto-wire into the IDE. Each developer adds a **stdio MCP
+server** entry in their client config, then restarts the client.
+
+1. Install so `pipeline-memory-mcp` is on PATH (same env as above).
+2. Ensure the product is linked and indexed (`memory link` / `memory index`).
+3. Add MCP config (absolute `--project` = product repo with `.pipeline/config.json`):
+
+**Cursor** (`.cursor/mcp.json` or global MCP settings):
+
+```json
+{
+  "mcpServers": {
+    "pipeline-memory": {
+      "command": "pipeline-memory-mcp",
+      "args": ["--project", "C:/path/to/your-product-repo"]
+    }
+  }
+}
+```
+
+**VS Code / Copilot MCP** (workspace or user MCP JSON; key name may be `servers`):
+
+```json
+{
+  "servers": {
+    "pipeline-memory": {
+      "type": "stdio",
+      "command": "pipeline-memory-mcp",
+      "args": ["--project", "C:/path/to/your-product-repo"]
+    }
+  }
+}
+```
+
+**Claude Desktop** (`claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "pipeline-memory": {
+      "command": "pipeline-memory-mcp",
+      "args": ["--project", "C:/path/to/your-product-repo"]
+    }
+  }
+}
+```
+
+If the console script is missing from PATH, point `command` at your `python.exe`
+and use args: `-m`, `pipeline_memory.mcp_server`, `--project`, `<product path>`.
+
+4. Restart the IDE. Tools: `memory_search`, `memory_why`, `memory_get`,
+   `memory_list_slugs`, `memory_list_files`.
+5. You do not keep `memory mcp` running in a terminal for daily use — the client
+   spawns stdio when a tool is called. Use the terminal for link/index/search/debug.
+
+Full detail, troubleshooting, and checklist:
+[`packages/pipeline-kit-memory/README.md`](./packages/pipeline-kit-memory/README.md).
+
+### 2.0.3 Licensing and paid areas
+
+The kit is open for everyday use. Five areas are **paid** and need an org
+license, a signed token you activate once per machine:
+
+| Area (`license status` name) | What it unlocks |
+|------------------------------|-----------------|
+| `orchestrator` | Orchestrator mode: `init`/`setup --mode orchestrator`, `run`, `resume`, `approve`, `workflows --scaffold` |
+| `jira` | Running the `jira-story`, `jira-epic`, `jira-bug` workflows, and `features enable jira-intake` |
+| `governance` | Running `security-review`, `ci-audit`, `dependency-audit`, `accessibility-review` |
+| `evidence` | Agent-run observability and eval: every `obs` command except `report`, `eval`, and `features enable agent-observability` |
+| `assess` | Repository assessment: `pipeline-kit scan` (also needs the assess package) |
+
+Kit mode, `ask`, `feature-development`, `knowledge`, `plugins`, `memory` and
+`obs report` do not read the license.
+
+```bash
+export PIPELINE_KIT_LICENSE='<the token you were given>'
+pipeline-kit license activate     # verifies it and stores ~/.pipeline/license.json (mode 0600)
+pipeline-kit license status       # org, expiry, and each area on/off
+```
+
+- The token is checked **offline** against a public key shipped with the kit.
+  Nothing is sent anywhere.
+- `PIPELINE_KIT_LICENSE` in the environment wins over the stored file for that
+  process, which suits CI.
+- A command in a paid area without a valid token exits **73** and prints the
+  reason: `missing`, `expired`, or `<area> is not on this license`.
+- Expiry is the end of the licensed day (UTC). Ask your vendor for a renewed token.
+- Tokens are issued by the vendor with `pipeline-kit license issue`, which needs
+  the vendor's signing key. Customers never have that key. The
+  [Enterprise portal](#204-enterprise-pipeline-portal-separate-product) can issue and
+  activate tokens from a web page instead of the command line.
+
+### 2.0.4 Enterprise Pipeline Portal (separate product)
+
+The web portal is a separate product in its own repository, sold on the
+enterprise plan. It is a place where a team sees every project at once. It does
+not change how the CLI works, and it never reaches into your projects.
+
+**How it works.** Projects report to the portal; the portal does not read them.
+
+1. In the portal, an operator or admin chooses **Connect project**, names it,
+   and gets an **ingest key** (shown once).
+2. In the project folder you run:
+
+   ```bash
+   pipeline-kit portal connect --url https://portal.example.com --key pk_...
+   ```
+
+   The command checks the key, stores the connection in `~/.pipeline/portal.json`
+   (not in the project, so it is never committed), and sends a first report.
+3. From then on, **every local change is reported automatically**: `features
+   enable/disable`, `plugins install/uninstall`, `obs install/uninstall/flush`,
+   `memory link`, `knowledge init/extract`, `init`/`update`/`uninstall`, `scan`, orchestrator `run`/`resume`/
+   `approve`, and `license activate`. `pipeline-kit portal push` sends the
+   current state on demand. In CI, set `PIPELINE_PORTAL_URL` and
+   `PIPELINE_PORTAL_KEY` instead of running `connect`.
+
+**Reporting never gets in the way.** If the portal is unreachable, the command
+you ran still succeeds. It prints one line saying the change was not reported;
+the next report carries the full state, so nothing is lost. Reports are sent
+with a 4-second limit.
+
+**What is sent.** Metadata only: project name, kit version and mode, which
+features are on, plugin and package state, observability status, run and gate
+status, the license state (organization, expiry, areas) and the names of failed
+doctor checks. **Never sent:** `config.json`, file paths, prompts, source code,
+or the license token. The portal also drops any field it does not know, so a
+modified client cannot make it store more. The full list is in
+[what is sent](./website/docs/reference/portal-protocol.md).
+
+**Read-only in this version.** The portal shows what projects report. It cannot
+change a feature, plugin or setting in a project. Change those in the project
+with the CLI; the portal updates within seconds.
+
+**Keys.** Each project has its own key. A key is stored hashed in the portal, so
+it cannot be shown again; if you lose it, rotate it. Rotating or removing a
+project stops the old key immediately, so a leaked key affects one project and
+can be shut off without touching the others. The connection requires `https://`
+(plain `http://` is accepted only for `localhost`).
+
+**What the portal offers.**
+
+- **Sign-in with roles** per organization: **Admin**, **Project operator**,
+  **Viewer**. The first run creates one default user per role; each must change
+  the password at first sign-in.
+- **Fleet and project pages**: health, version drift, features, plugins,
+  packages, runs, license state, and when each project last reported. A project
+  that has been silent for 48 hours shows as *not reporting*.
+- **History**: a tab on each project listing what changed and when (a feature
+  turned on, a kit upgrade, a license state change) with the command that caused
+  it. It never records who made the change. Only changes are stored, for 90 days.
+- **Analysis**: a dashboard of project health, runs, feature adoption, kit
+  version drift, observability, licenses and packages, for all projects or one.
+  Operators and admins add widgets; viewers see them.
+  Three 30-day trend charts show feature adoption, kit version drift and reporting
+  health over time.
+- **Licenses**: what was issued to your organization, and what each project
+  reports about its own license. Your vendor issues tokens; you activate them on
+  each machine with `pipeline-kit license activate`.
+- **Users and audit log** (admins): who can sign in, and who did what.
+- **Organizations**: each customer is its own organization with separate users,
+  projects and data. Vendor staff create organizations.
+
+| | Admin | Project operator | Viewer |
+|---|:-:|:-:|:-:|
+| See fleet, projects, analysis, licenses | yes | yes | yes |
+| Connect, rename, rotate the key of, and remove projects | yes | yes | no |
+| Add analysis widgets | yes | yes | no |
+| Manage users, read the audit log | yes | no | no |
+
+**Not in this version:** changing a project's settings from the portal,
+single sign-on, who made a change (history records what and when only), history
+longer than 90 days, and a self-hosted edition (the cloud portal comes first; the same protocol is meant
+to serve a portal an enterprise hosts itself). A license cannot be revoked from
+the portal, because the kit verifies tokens offline.
+
+More: the [Enterprise portal](./website/docs/capabilities/portal.md) docs page.
 
 ### 2.1 Optional QA knowledge (opt-in)
 

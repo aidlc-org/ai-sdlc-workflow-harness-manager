@@ -43,6 +43,20 @@ Kit mode never loads `pipeline_extensions/`. Examples: [Extensions](/docs/capabi
 
 See [Knowledge base](/docs/capabilities/knowledge).
 
+## Memory
+
+Needs the optional memory package. See [Memory bank and MCP](/docs/capabilities/memory).
+
+| Command | Purpose |
+|---------|---------|
+| `memory link <bank-root> [project] [--project-id ID] [--layout flat\|namespaced]` | Link an external artifact bank |
+| `memory unlink [project]` | Remove the link |
+| `memory import-local [project]` | One-time copy of local `features/` into the bank |
+| `memory index [project]` | Build or refresh the FTS index |
+| `memory search <query> [project] [--limit N] [--json]` | Search without MCP |
+| `memory status [project]` / `memory doctor [project]` | Inspect or diagnose the link |
+| `memory mcp [project]` | Run the stdio MCP server in the foreground (IDEs normally run `pipeline-memory-mcp`) |
+
 ## Plugins
 
 `plugins list | install graphify\|archify | status | uninstall` with `--ide`, `--scope project|user`. Graphify uninstall `--purge` deletes `graphify-out/`. Agent-run observability is a bundled add-on on the [Plugins](/docs/capabilities/plugins) page; install it with `obs`, not `plugins`.
@@ -59,18 +73,20 @@ See [Agent-run observability](/docs/capabilities/observability).
 
 ## Portal
 
-Requires the `portal` extra (`pip install -e packages/pipeline-kit-portal -e .`, or `uv tool install -e ".[portal]"`).
+Reports this project's local state to an [Enterprise portal](/docs/capabilities/portal).
+Metadata only; see [what is sent](/docs/reference/portal-protocol).
 
 | Command | Purpose |
 |---------|---------|
-| `portal serve [project]` | Start the dashboard. `--port`, `--host`, `--open`, `--read-only`, `--no-token`, `--allow-remote` |
-| `portal add <path>` | Register a project in the fleet. `--team`, `--label` |
-| `portal remove <path>` | Unregister a project |
-| `portal list` | List registered projects |
+| `portal connect --url URL --key KEY [project]` | Verify the project's ingest key, store the connection in `~/.pipeline/portal.json`, send the first report |
+| `portal status [project]` | Show the portal, the project and organization it maps to, and when it last reported |
+| `portal push [project]` | Send the current state now |
+| `portal disconnect [project]` | Forget the connection on this machine |
 
-Binds `127.0.0.1` with a per-launch token by default; writes go through the
-same `features` / `plugins` / `obs` functions the CLI already uses, never a
-second writer. See [Portal](/docs/capabilities/portal).
+Once connected, commands that change local state report automatically; a failure to
+report prints one line and never changes the command's exit code. In CI, set
+`PIPELINE_PORTAL_URL` and `PIPELINE_PORTAL_KEY` instead of running `connect`. The URL
+must be `https://`, except for `localhost`.
 
 ## Maintainers
 
@@ -78,7 +94,7 @@ second writer. See [Portal](/docs/capabilities/portal).
 
 ## License
 
-Paid areas are orchestrator mode, Jira intake, the governance workflows (`security-review`, `ci-audit`, `dependency-audit`, `accessibility-review`), and agent-run observability / eval. Kit mode, `ask`, and `feature-development` do not read the license. `obs report` stays local.
+Paid areas are orchestrator mode, Jira intake, the governance workflows (`security-review`, `ci-audit`, `dependency-audit`, `accessibility-review`), agent-run observability / eval (`evidence`), and repository assessment (`pipeline-kit scan`, area `assess`). Kit mode, `ask`, and `feature-development` do not read the license. `obs report` stays local. Full detail: [Licensing](/docs/reference/licensing).
 
 ```bash
 export PIPELINE_KIT_LICENSE='<token>'
@@ -86,7 +102,7 @@ pipeline-kit license activate
 pipeline-kit license status
 ```
 
-`activate` writes `~/.pipeline/license.json` (mode `0600`). `PIPELINE_KIT_LICENSE` in the environment wins over that file for one process. Maintainers sign a token from a kit checkout with `pipeline-kit license issue --org NAME --expires YYYY-MM-DD`. The signing key path is `PIPELINE_KIT_LICENSE_SIGNING_KEY`.
+`activate` writes `~/.pipeline/license.json` (mode `0600`). `PIPELINE_KIT_LICENSE` in the environment wins over that file for one process. Maintainers sign a token from a kit checkout with `pipeline-kit license issue --org NAME --expires YYYY-MM-DD [--features a,b]`; without `--features` the token covers all five areas (`orchestrator`, `jira`, `governance`, `evidence`, `assess`). The signing key path is `PIPELINE_KIT_LICENSE_SIGNING_KEY`.
 
 ## Legacy
 

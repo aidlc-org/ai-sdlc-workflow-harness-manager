@@ -304,9 +304,13 @@ Sign-off gates do not ask the decider. Full examples:
 | `pipeline-kit obs flush [project]` | Ship new ledger rows to the configured adapter. |
 | `pipeline-kit memory link <root> [project]` | Link external artifact bank (needs `.[memory]`) |
 | `pipeline-kit memory index / search / mcp` | Index, query, or run the memory MCP server |
-| `pipeline-kit portal add <path> [--team] [--label]` | Register a project in the portal's fleet (needs `.[portal]`) |
-| `pipeline-kit portal serve [project]` | Start the local admin dashboard (loopback + per-launch token by default) |
-| `pipeline-kit portal list` / `remove <path>` | List or unregister fleet projects |
+| `pipeline-kit license status` | Show org, expiry, and which paid areas are on. Never prints the token. |
+| `pipeline-kit license activate` | Verify the token in `PIPELINE_KIT_LICENSE` and store it in `~/.pipeline/license.json` |
+| `pipeline-kit license issue --org NAME --expires YYYY-MM-DD [--features …]` | Vendor only: sign a token. Needs the signing key. Default features: all five paid areas. |
+| `pipeline-kit portal connect --url URL --key KEY [project]` | Report this project to a portal. Verifies the key, then sends the first report. |
+| `pipeline-kit portal status [project]` | Show the connection and when the portal last heard from this project |
+| `pipeline-kit portal push [project]` | Send the current state now |
+| `pipeline-kit portal disconnect [project]` | Forget the connection on this machine |
 
 Full agent-run observability handbook (install, Langfuse identity, scores, ideal values, troubleshooting): **[OBSERVABILITY.md](./OBSERVABILITY.md)** (copied to `.pipeline/docs/OBSERVABILITY.md` on `init`).
 
@@ -428,37 +432,125 @@ and use args: `-m`, `pipeline_memory.mcp_server`, `--project`, `<product path>`.
 Full detail, troubleshooting, and checklist:
 [`packages/pipeline-kit-memory/README.md`](./packages/pipeline-kit-memory/README.md).
 
-### 2.0.3 Portal (optional local admin dashboard)
+### 2.0.3 Licensing and paid areas
 
-A read-mostly local web dashboard across several projects: which features,
-plugins, and extensions are on where, and the health of their pipelines
-(runs, sign-off gates, observability-ledger scores). It is a separate
-package, installed and run the same way as assess/memory:
+The kit is open for everyday use. Five areas are **paid** and need an org
+license, a signed token you activate once per machine:
+
+| Area (`license status` name) | What it unlocks |
+|------------------------------|-----------------|
+| `orchestrator` | Orchestrator mode: `init`/`setup --mode orchestrator`, `run`, `resume`, `approve`, `workflows --scaffold` |
+| `jira` | Running the `jira-story`, `jira-epic`, `jira-bug` workflows, and `features enable jira-intake` |
+| `governance` | Running `security-review`, `ci-audit`, `dependency-audit`, `accessibility-review` |
+| `evidence` | Agent-run observability and eval: every `obs` command except `report`, `eval`, and `features enable agent-observability` |
+| `assess` | Repository assessment: `pipeline-kit scan` (also needs the assess package) |
+
+Kit mode, `ask`, `feature-development`, `knowledge`, `plugins`, `memory` and
+`obs report` do not read the license.
 
 ```bash
-pip install -e packages/pipeline-kit-portal -e .
-pipeline-kit portal add ../checkout-api --team payments --label "Checkout API"
-pipeline-kit portal add ../payments-web --team payments
-pipeline-kit portal serve
+export PIPELINE_KIT_LICENSE='<the token you were given>'
+pipeline-kit license activate     # verifies it and stores ~/.pipeline/license.json (mode 0600)
+pipeline-kit license status       # org, expiry, and each area on/off
 ```
 
-- One registry (`~/.pipeline/portal/projects.json`, override with `--home`)
-  lists every project the portal shows — not just the one you launch from.
-- Binds `127.0.0.1` and prints a per-launch token in the URL; writes are
-  POST-only and refused entirely with `--read-only`. A non-loopback `--host`
-  needs `--allow-remote` and keeps the token requirement.
-- Never imports or runs a registered project's own code (no
-  `pipeline_extensions/*.py`, no copied `.pipeline/loader/*.py`) — every
-  project is read through its own JSON state files on disk.
-- Toggles call the exact same functions as `pipeline-kit features` /
-  `plugins` / `obs` — the dashboard is a view over those commands, not a
-  second way to write `config.json`.
-- The portal never runs `init`/`update` for you; a project that is missing
-  or behind the installed kit version is flagged with the exact command to
-  copy.
+- The token is checked **offline** against a public key shipped with the kit.
+  Nothing is sent anywhere.
+- `PIPELINE_KIT_LICENSE` in the environment wins over the stored file for that
+  process, which suits CI.
+- A command in a paid area without a valid token exits **73** and prints the
+  reason: `missing`, `expired`, or `<area> is not on this license`.
+- Expiry is the end of the licensed day (UTC). Ask your vendor for a renewed token.
+- Tokens are issued by the vendor with `pipeline-kit license issue`, which needs
+  the vendor's signing key. Customers never have that key. The
+  [Enterprise portal](#204-enterprise-pipeline-portal-separate-product) can issue and
+  activate tokens from a web page instead of the command line.
 
-Full detail and the security model:
-[`packages/pipeline-kit-portal/README.md`](./packages/pipeline-kit-portal/README.md).
+### 2.0.4 Enterprise Pipeline Portal (separate product)
+
+The web portal is a separate product in its own repository, sold on the
+enterprise plan. It is a place where a team sees every project at once. It does
+not change how the CLI works, and it never reaches into your projects.
+
+**How it works.** Projects report to the portal; the portal does not read them.
+
+1. In the portal, an operator or admin chooses **Connect project**, names it,
+   and gets an **ingest key** (shown once).
+2. In the project folder you run:
+
+   ```bash
+   pipeline-kit portal connect --url https://portal.example.com --key pk_...
+   ```
+
+   The command checks the key, stores the connection in `~/.pipeline/portal.json`
+   (not in the project, so it is never committed), and sends a first report.
+3. From then on, **every local change is reported automatically**: `features
+   enable/disable`, `plugins install/uninstall`, `obs install/uninstall/flush`,
+   `memory link`, `knowledge init/extract`, `init`/`update`/`uninstall`, `scan`, orchestrator `run`/`resume`/
+   `approve`, and `license activate`. `pipeline-kit portal push` sends the
+   current state on demand. In CI, set `PIPELINE_PORTAL_URL` and
+   `PIPELINE_PORTAL_KEY` instead of running `connect`.
+
+**Reporting never gets in the way.** If the portal is unreachable, the command
+you ran still succeeds. It prints one line saying the change was not reported;
+the next report carries the full state, so nothing is lost. Reports are sent
+with a 4-second limit.
+
+**What is sent.** Metadata only: project name, kit version and mode, which
+features are on, plugin and package state, observability status, run and gate
+status, the license state (organization, expiry, areas) and the names of failed
+doctor checks. **Never sent:** `config.json`, file paths, prompts, source code,
+or the license token. The portal also drops any field it does not know, so a
+modified client cannot make it store more. The full list is in
+[what is sent](./website/docs/reference/portal-protocol.md).
+
+**Read-only in this version.** The portal shows what projects report. It cannot
+change a feature, plugin or setting in a project. Change those in the project
+with the CLI; the portal updates within seconds.
+
+**Keys.** Each project has its own key. A key is stored hashed in the portal, so
+it cannot be shown again; if you lose it, rotate it. Rotating or removing a
+project stops the old key immediately, so a leaked key affects one project and
+can be shut off without touching the others. The connection requires `https://`
+(plain `http://` is accepted only for `localhost`).
+
+**What the portal offers.**
+
+- **Sign-in with roles** per organization: **Admin**, **Project operator**,
+  **Viewer**. The first run creates one default user per role; each must change
+  the password at first sign-in.
+- **Fleet and project pages**: health, version drift, features, plugins,
+  packages, runs, license state, and when each project last reported. A project
+  that has been silent for 48 hours shows as *not reporting*.
+- **History**: a tab on each project listing what changed and when (a feature
+  turned on, a kit upgrade, a license state change) with the command that caused
+  it. It never records who made the change. Only changes are stored, for 90 days.
+- **Analysis**: a dashboard of project health, runs, feature adoption, kit
+  version drift, observability, licenses and packages, for all projects or one.
+  Operators and admins add widgets; viewers see them.
+  Three 30-day trend charts show feature adoption, kit version drift and reporting
+  health over time.
+- **Licenses**: what was issued to your organization, and what each project
+  reports about its own license. Your vendor issues tokens; you activate them on
+  each machine with `pipeline-kit license activate`.
+- **Users and audit log** (admins): who can sign in, and who did what.
+- **Organizations**: each customer is its own organization with separate users,
+  projects and data. Vendor staff create organizations.
+
+| | Admin | Project operator | Viewer |
+|---|:-:|:-:|:-:|
+| See fleet, projects, analysis, licenses | yes | yes | yes |
+| Connect, rename, rotate the key of, and remove projects | yes | yes | no |
+| Add analysis widgets | yes | yes | no |
+| Manage users, read the audit log | yes | no | no |
+
+**Not in this version:** changing a project's settings from the portal,
+single sign-on, who made a change (history records what and when only), history
+longer than 90 days, and a self-hosted edition (the cloud portal comes first; the same protocol is meant
+to serve a portal an enterprise hosts itself). A license cannot be revoked from
+the portal, because the kit verifies tokens offline.
+
+More: the [Enterprise portal](./website/docs/capabilities/portal.md) docs page.
 
 ### 2.1 Optional QA knowledge (opt-in)
 

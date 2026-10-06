@@ -20,7 +20,6 @@ capabilities/
 packages/                    separate installable extras, own pyproject.toml
   pipeline-kit-assess/       licensed repo assessment
   pipeline-kit-memory/       external artifact bank + MCP
-  pipeline-kit-portal/       local fleet dashboard
 website/                     this documentation site
 tests/
 ```
@@ -66,11 +65,9 @@ Also optional, but each is a **separate installable package** with its own
 |--------|-----|----------------------|-------|
 | `packages/pipeline-kit-assess/` | `pipeline-kit scan` | `pipeline_assess` | `.[assess]` |
 | `packages/pipeline-kit-memory/` | `pipeline-kit memory` | `pipeline_memory` | `.[memory]` |
-| `packages/pipeline-kit-portal/` | `pipeline-kit portal` | `pipeline_portal` | `.[portal]` |
-
-[Portal](/docs/capabilities/portal) is the local admin dashboard: features,
-plugins, and extensions across several registered projects, plus pipeline
-health, grouped by team.
+The [Enterprise portal](/docs/capabilities/portal) (sign-in, roles, analysis,
+license management) is **not** in this repository. It is a separate product with
+its own repository, installed alongside the kit.
 
 ## What stays at the repo root
 

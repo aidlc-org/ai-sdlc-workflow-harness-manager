@@ -907,35 +907,6 @@ def _obs_commands():
     return cmd_flush, cmd_install, cmd_report, cmd_status, cmd_uninstall
 
 
-def _portal_pkg_path() -> None:
-    _ensure_pkg_path()
-    portal = HERE / "packages" / "pipeline-kit-portal"
-    if portal.is_dir() and str(portal) not in sys.path:
-        sys.path.insert(0, str(portal))
-
-
-def _portal_commands():
-    _portal_pkg_path()
-    try:
-        from pipeline_portal.commands import (  # noqa: WPS433
-            cmd_portal_add,
-            cmd_portal_list,
-            cmd_portal_remove,
-            cmd_portal_serve,
-        )
-    except ImportError as exc:
-        raise ImportError(
-            'pipeline-kit-portal is not installed. Run: pip install -e ".[portal]" '
-            "or add packages/pipeline-kit-portal to PYTHONPATH"
-        ) from exc
-    return {
-        "serve": cmd_portal_serve,
-        "add": cmd_portal_add,
-        "remove": cmd_portal_remove,
-        "list": cmd_portal_list,
-    }
-
-
 def _memory_pkg_path() -> None:
     _ensure_pkg_path()
     mem = HERE / "packages" / "pipeline-kit-memory"
@@ -1088,7 +1059,28 @@ def _add_install_options(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--home", default="", help=argparse.SUPPRESS)
 
 
+_LAST_INVOCATION: dict[str, object] = {}
+
+
 def cli_main(argv: list[str] | None = None) -> int:
+    """Run a command, then (best effort) report local changes to a connected portal."""
+    _LAST_INVOCATION.clear()
+    code = _cli_run(argv)
+    args = _LAST_INVOCATION.get("args")
+    if code == 0 and args is not None and not getattr(args, "user", False) and args.command not in {"setup", "portal"}:
+        sub = next((v for k, v in vars(args).items() if k.endswith("_command") and k != "command"), None)
+        try:
+            _ensure_pkg_path()
+            from pipeline_kit import portal_link
+
+            project = Path(getattr(args, "project", ".")).expanduser().resolve()
+            portal_link.push_after(args.command, sub if isinstance(sub, str) else None, project)
+        except Exception:  # noqa: BLE001 - never let reporting change a command's result
+            pass
+    return code
+
+
+def _cli_run(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="pipeline-kit",
         description="Install and inspect portable AI delivery workflows.",
@@ -1420,33 +1412,22 @@ def cli_main(argv: list[str] | None = None) -> int:
 
     portal_parser = commands.add_parser(
         "portal",
-        help="local admin web dashboard: fleet health, feature/plugin toggles (pipeline-kit-portal)",
+        help="report this project's local state to a pipeline portal (metadata only)",
     )
     portal_commands = portal_parser.add_subparsers(dest="portal_command", required=True)
-    p_serve = portal_commands.add_parser("serve", help="start the portal web server")
-    p_serve.add_argument("project", nargs="?", default=".")
-    p_serve.add_argument("--port", type=int, default=7171)
-    p_serve.add_argument("--host", default="127.0.0.1")
-    p_serve.add_argument("--open", action="store_true", help="open the URL in a browser")
-    p_serve.add_argument("--read-only", action="store_true", help="disable all write endpoints")
-    p_serve.add_argument("--no-token", action="store_true", help="disable the per-launch token (same-machine only)")
-    p_serve.add_argument(
-        "--allow-remote",
-        action="store_true",
-        help="allow a non-loopback --host (still requires the token unless --no-token)",
-    )
-    p_serve.add_argument("--home", default="", help=argparse.SUPPRESS)
-    p_add = portal_commands.add_parser("add", help="register a project in the fleet")
-    p_add.add_argument("path")
-    p_add.add_argument("--team", default="")
-    p_add.add_argument("--label", default="")
-    p_add.add_argument("--home", default="", help=argparse.SUPPRESS)
-    p_remove = portal_commands.add_parser("remove", help="unregister a project from the fleet")
-    p_remove.add_argument("path")
-    p_remove.add_argument("--home", default="", help=argparse.SUPPRESS)
-    portal_commands.add_parser("list", help="list registered projects").add_argument(
-        "--home", default="", help=argparse.SUPPRESS
-    )
+    p_connect = portal_commands.add_parser("connect", help="connect this project with an ingest key from the portal")
+    p_connect.add_argument("project", nargs="?", default=".")
+    p_connect.add_argument("--url", required=True, help="portal URL, for example https://portal.example.com")
+    p_connect.add_argument("--key", required=True, help="the project's ingest key (shown once in the portal)")
+    p_connect.add_argument("--home", default="", help=argparse.SUPPRESS)
+    for name, text in (
+        ("status", "show the connection and when the portal last heard from this project"),
+        ("push", "send the current state now"),
+        ("disconnect", "forget the connection on this machine"),
+    ):
+        sub = portal_commands.add_parser(name, help=text)
+        sub.add_argument("project", nargs="?", default=".")
+        sub.add_argument("--home", default="", help=argparse.SUPPRESS)
 
     license_parser = commands.add_parser("license", help="issue or activate an org license")
     license_commands = license_parser.add_subparsers(dest="license_command", required=True)
@@ -1458,8 +1439,8 @@ def cli_main(argv: list[str] | None = None) -> int:
     issue_parser.add_argument("--expires", required=True, help="YYYY-MM-DD, valid through that UTC day")
     issue_parser.add_argument(
         "--features",
-        default="orchestrator,jira,governance,evidence",
-        help="comma list: orchestrator, jira, governance, evidence",
+        default="orchestrator,jira,governance,evidence,assess",
+        help="comma list: orchestrator, jira, governance, evidence, assess",
     )
     issue_parser.add_argument("--repo", default="", help="pipeline-kit checkout")
     activate_parser = license_commands.add_parser(
@@ -1505,6 +1486,7 @@ def cli_main(argv: list[str] | None = None) -> int:
     version_parser.add_argument("--dry-run", action="store_true")
 
     args = parser.parse_args(argv)
+    _LAST_INVOCATION["args"] = args
     if args.command == "license":
         return _license_cli(args)
     if args.command == "version":
@@ -1726,32 +1708,17 @@ def cli_main(argv: list[str] | None = None) -> int:
         parser.error("unknown memory command")
         return 2
     if args.command == "portal":
-        try:
-            cmds = _portal_commands()
-        except ImportError as exc:
-            print(str(exc), file=sys.stderr)
-            return 1
-        home_dir = home or Path.home()
-        cmd = args.portal_command
-        if cmd == "serve":
-            return cmds["serve"](
-                project,
-                home=home_dir,
-                host=args.host,
-                port=args.port,
-                open_browser=bool(getattr(args, "open", False)),
-                read_only=bool(getattr(args, "read_only", False)),
-                use_token=not bool(getattr(args, "no_token", False)),
-                allow_remote=bool(getattr(args, "allow_remote", False)),
-            )
-        if cmd == "add":
-            return cmds["add"](args.path, home=home_dir, team=args.team, label=args.label)
-        if cmd == "remove":
-            return cmds["remove"](args.path, home=home_dir)
-        if cmd == "list":
-            return cmds["list"](home=home_dir)
-        parser.error("unknown portal command")
-        return 2
+        _ensure_pkg_path()
+        from pipeline_kit import portal_link
+
+        action = args.portal_command
+        if action == "connect":
+            return portal_link.cmd_connect(project, url=args.url, key=args.key, home=home)
+        if action == "status":
+            return portal_link.cmd_status(project, home=home)
+        if action == "push":
+            return portal_link.cmd_push(project, home=home)
+        return portal_link.cmd_disconnect(project, home=home)
     if args.command == "plugins":
         cmd_install, cmd_list, cmd_status, cmd_uninstall = _plugin_commands()
         if args.plugins_command == "list":
