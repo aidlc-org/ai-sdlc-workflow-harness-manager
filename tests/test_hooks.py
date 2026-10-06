@@ -163,7 +163,15 @@ def _declare(root: Path, slug: str, state: dict) -> None:
 
 def _fire(script: Path, payload: dict, env_extra: dict) -> dict:
     env = dict(os.environ)
-    for key in ("PIPELINE_ALLOW_DEPS", "PIPELINE_ALLOW_ALL", "FEATURE_SLUG", "ALLOW_DEPENDENCY"):
+    for key in (
+        "PIPELINE_ALLOW_DEPS",
+        "PIPELINE_ALLOW_ALL",
+        "PIPELINE_ALLOW_JIRA",
+        "PIPELINE_ALLOW_GITHUB",
+        "PIPELINE_ALLOW_NET",
+        "FEATURE_SLUG",
+        "ALLOW_DEPENDENCY",
+    ):
         env.pop(key, None)
     env.update(env_extra)
     proc = subprocess.run(
@@ -493,3 +501,75 @@ def test_upgrade_replaces_stale_guardrails_and_keeps_foreign_hooks(tmp_path: Pat
     assert _run(["--project", str(app), "--ide", "claude-code"]) == 0
     second = _all_hook_commands(json.loads(cfg.read_text(encoding="utf-8")))
     assert first == second, "merge is not idempotent"
+
+
+def test_before_shell_jira_cli_reads_allowed_writes_denied(tmp_path: Path):
+    hooks = _hook_install(tmp_path, "before-shell.py")
+    view = _fire(
+        hooks / "before-shell.py",
+        {"command": "jira issue view ABC-1 --plain"},
+        {},
+    )
+    api_get = _fire(
+        hooks / "before-shell.py",
+        {
+            "command": "python .pipeline/skills/jira-intake/scripts/jira_api.py issue get ABC-1"
+        },
+        {},
+    )
+    comment = _fire(
+        hooks / "before-shell.py",
+        {"command": "jira issue comment add ABC-1 --body nope"},
+        {},
+    )
+    allowed_write = _fire(
+        hooks / "before-shell.py",
+        {"command": "jira issue comment add ABC-1 --body nope"},
+        {"PIPELINE_ALLOW_JIRA": "1"},
+    )
+    curl = _fire(
+        hooks / "before-shell.py",
+        {"command": "curl https://example.atlassian.net/rest/api/3/issue/ABC-1"},
+        {},
+    )
+    assert view["permission"] == "allow"
+    assert api_get["permission"] == "allow"
+    assert comment["permission"] == "deny"
+    assert allowed_write["permission"] == "allow"
+    assert curl["permission"] == "deny"
+
+
+def test_before_shell_github_cli_reads_allowed_writes_denied(tmp_path: Path):
+    hooks = _hook_install(tmp_path, "before-shell.py")
+    view = _fire(
+        hooks / "before-shell.py",
+        {"command": "gh issue view 12 --repo acme/app --json number,title,body"},
+        {},
+    )
+    api_get = _fire(
+        hooks / "before-shell.py",
+        {
+            "command": "python .pipeline/skills/github-intake/scripts/github_api.py issue get acme/app#12"
+        },
+        {},
+    )
+    comment = _fire(
+        hooks / "before-shell.py",
+        {"command": "gh issue comment 12 --repo acme/app --body nope"},
+        {},
+    )
+    allowed_write = _fire(
+        hooks / "before-shell.py",
+        {"command": "gh issue comment 12 --repo acme/app --body nope"},
+        {"PIPELINE_ALLOW_GITHUB": "1"},
+    )
+    curl = _fire(
+        hooks / "before-shell.py",
+        {"command": "curl https://api.github.com/repos/acme/app/issues/12"},
+        {},
+    )
+    assert view["permission"] == "allow"
+    assert api_get["permission"] == "allow"
+    assert comment["permission"] == "deny"
+    assert allowed_write["permission"] == "allow"
+    assert curl["permission"] == "deny"

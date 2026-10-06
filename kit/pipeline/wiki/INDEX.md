@@ -11,7 +11,7 @@ Match **triggers** against the current request, error, or pipeline class. Read
 
 | Triggers (any match) | Page |
 |----------------------|------|
-| Tracker issue key; which workflow; `intake.md`; `rca.md`; `epic-plan.md`; bug vs story vs epic | [orchestration-and-jira-intake.md](orchestration-and-jira-intake.md) |
+| Tracker issue key; GitHub `owner/repo#N`; which workflow; `intake.md`; `rca.md`; `epic-plan.md`; bug vs story vs epic | [orchestration-and-jira-intake.md](orchestration-and-jira-intake.md) |
 | `CHANGE_CLASS`; micro vs minor vs feature; skip PM/BA; `route.md` | [feature-pipeline-change-class.md](feature-pipeline-change-class.md) |
 | PM first gate; `prd.md`; nested `features/{slug}/{child}/`; `spec-order.md`; waves | [feature-pipeline-pm-and-multi-spec.md](feature-pipeline-pm-and-multi-spec.md) |
 | ui-designer-agent; `ui-design.md`; `skip_ui_designer`; `RUN_UI_DESIGNER`; `CONSULT_UI`; mockups | [feature-pipeline-ui-designer.md](feature-pipeline-ui-designer.md) |

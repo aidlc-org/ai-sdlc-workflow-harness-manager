@@ -5,8 +5,8 @@ description: >-
   done: “work on …”, “fix …”, “change …”, “develop …”, or a message that
   contains a tracker issue key, or asks which skills, sub-agents,
   workflows, rules, or hooks to add, or asks to assess this repo. Decide the **workflow** (ask |
-  feature-development | jira-story | jira-bug | jira-epic |
-  test-knowledge-bootstrap | repo-assessment). Questions stay on
+  feature-development | jira-story | jira-bug | jira-epic | github-story |
+  github-bug | github-epic | test-knowledge-bootstrap | repo-assessment). Questions stay on
   `ask` (no Task chain). Product work writes features/{slug}/route.md, then
   drives that workflow’s Task chain. Parent-only. Never implements product
   code and never replaces a workflow skill.
@@ -36,14 +36,22 @@ Weather, locations, and other asks unrelated to this repository: **stop**. Do no
 
 ### O1 Detect the work source
 
-Read `intake.jira.key_pattern` from the config and match it against the user message.
+Read `intake.jira` and `intake.github` from the config. Match the user message in this order (first hit wins):
+
+1. **github** — only when `intake.github.enabled` is true:
+   - `https://github.com/{owner}/{repo}/issues/{N}` or `/pull/{N}`
+   - `{owner}/{repo}#{N}`
+   - bare `#{N}` or `{N}` **only** if `intake.github.repo` is a non-empty `owner/repo`
+2. **jira** — only when `intake.jira.enabled` is true and `intake.jira.key_pattern` matches
+3. otherwise **text**
 
 | Finding | `work_source` |
 |---------|---------------|
-| No key matches, or `intake.jira.enabled` is `false` | `text` |
-| A key matches (user pasted an issue id, a tracker URL containing one, or said “work on {KEY}”) | `jira` |
+| GitHub match and GitHub intake enabled | `github` |
+| Jira key match and Jira intake enabled | `jira` |
+| Neither, or the matching tracker is disabled | `text` |
 
-A key inside a quoted log line or a file path is **not** a work source. If the user names a key *and* describes something unrelated to it, ask which one is the work item before spawning anything.
+A key inside a quoted log line or a file path is **not** a work source. Bare `#123` is **not** GitHub unless `intake.github.enabled` is true **and** `repo` is set. If both a Jira key and a GitHub ref appear, ask which one is the work item before spawning anything. If the user names a key *and* describes something unrelated to it, ask which one is the work item before spawning anything.
 
 When `work_source` is `text`, also classify **intent**:
 
@@ -54,13 +62,13 @@ When `work_source` is `text`, also classify **intent**:
 | `knowledge_bootstrap` | bootstrap QA knowledge, bootstrap test knowledge |
 | `product` | work on, fix, change, develop, implement, add, build, or an explicit `WORKFLOW:` other than `ask` |
 
-### O2 Intake (only when `work_source: jira`)
+### O2 Intake (only when `work_source` is `jira` or `github`)
 
-Spawn **one** `Task` — `intake-agent`, following [`../jira-intake/SKILL.md`](../jira-intake/SKILL.md). Do **not** call tracker MCP tools from the parent: the issue payload belongs in its own context window.
+Spawn **one** `Task` — `intake-agent`. For `jira` follow [`../jira-intake/SKILL.md`](../jira-intake/SKILL.md) and inject `JIRA_KEY`. For `github` follow [`../github-intake/SKILL.md`](../github-intake/SKILL.md) and inject `GITHUB_REF`. Do **not** call tracker MCP tools from the parent: the issue payload belongs in its own context window.
 
 Intake returns `ISSUE_TYPE` and writes `features/{slug}/intake.md` (plus `epic-plan.md` when the issue is an epic).
 
-If intake returns `BLOCKED` because no tracker MCP is reachable, relay its recovery line to the user (paste the description, or fix MCP auth). Do not guess the issue contents.
+If intake returns `BLOCKED` because the configured tracker connection failed, relay its recovery line to the user (switch `intake.jira.connection` or `intake.github.connection`, fix auth, or paste the description). Do not guess the issue contents. Do not call MCP, `jira`, `gh`, or the API helpers from the parent.
 
 ### O3 Resolve the workflow
 
@@ -71,6 +79,7 @@ If intake returns `BLOCKED` because no tracker MCP is reachable, relay its recov
 | `text` + `knowledge_bootstrap` | `test-knowledge-bootstrap` — not the feature ladder |
 | `text` + `product` | `feature-development` |
 | `jira` | `intake.jira.issue_type_map[{issue_type}]`, falling back to that map’s `default` |
+| `github` | `intake.github.issue_type_map[{issue_type}]`, falling back to that map’s `default` |
 
 `ask` still runs the loader (`--workflow ask --step parent`) so the pack gate has an allowlist. Then follow [`../ask/SKILL.md`](../ask/SKILL.md) and stop — do not write `route.md` or spawn specialists.
 
@@ -81,7 +90,7 @@ If intake returns `BLOCKED` because no tracker MCP is reachable, relay its recov
 Then set `change_class`:
 
 - `feature-development`: classify with [`../feature-development/assets/change-routing.md`](../feature-development/assets/change-routing.md).
-- Jira workflows: start from that workflow’s `default_change_class` in the config, then apply the same hard-upgrade triggers from `change-routing.md`. A bug whose fix needs a new screen or API is still a hard upgrade — say so in `route.md` `reason`.
+- Jira and GitHub workflows: start from that workflow’s `default_change_class` in the config, then apply the same hard-upgrade triggers from `change-routing.md`. A bug whose fix needs a new screen or API is still a hard upgrade — say so in `route.md` `reason`.
 
 User override: an explicit `WORKFLOW: {name}` or `CHANGE_CLASS: {class}` in the ask wins, unless a hard-upgrade trigger contradicts `micro`.
 
@@ -93,14 +102,15 @@ Slug rules:
 
 - `text`: kebab summary of the ask.
 - `jira`: `{issue-key lowercased}-{short kebab summary}`, truncated to a readable length. Reuse the folder if it already exists; never fork a second one for the same key.
+- `github`: `{owner}-{repo}-{N}-{short kebab summary}`, truncated to a readable length. Reuse the folder if it already exists; never fork a second one for the same issue.
 
-Template and field meanings: [`../feature-development/assets/change-routing.md`](../feature-development/assets/change-routing.md). Fill `workflow`, `work_source`, `jira_key`, `issue_type` in addition to the class fields. Seed every `skip_*` from the workflow’s `skips` in the config; `skip_tester` still comes from [`../feature-development/assets/tester-policy.md`](../feature-development/assets/tester-policy.md) or a one-run `RUN_TESTER`. Seed `skip_architect: true` and `skip_ui_designer: true` for micro/minor/jira-bug. On feature-class **text** work, refine `skip_ui_designer` **after PM** using [`../feature-development/assets/ui-designer-policy.md`](../feature-development/assets/ui-designer-policy.md) or `RUN_UI_DESIGNER`. On feature-class story/epic/text work, refine `skip_architect` **after** `@signoff:requirements` using [`../feature-development/assets/architect-policy.md`](../feature-development/assets/architect-policy.md) or `RUN_ARCHITECT`. Honor [`../feature-development/assets/next-agent-policy.md`](../feature-development/assets/next-agent-policy.md) for legal `context.next_agent` values.
+Template and field meanings: [`../feature-development/assets/change-routing.md`](../feature-development/assets/change-routing.md). Fill `workflow`, `work_source`, `jira_key` or `github_ref`, `issue_type` in addition to the class fields. Seed every `skip_*` from the workflow’s `skips` in the config; `skip_tester` still comes from [`../feature-development/assets/tester-policy.md`](../feature-development/assets/tester-policy.md) or a one-run `RUN_TESTER`. Seed `skip_architect: true` and `skip_ui_designer: true` for micro/minor/jira-bug/github-bug. On feature-class **text** work, refine `skip_ui_designer` **after PM** using [`../feature-development/assets/ui-designer-policy.md`](../feature-development/assets/ui-designer-policy.md) or `RUN_UI_DESIGNER`. On feature-class story/epic/text work, refine `skip_architect` **after** `@signoff:requirements` using [`../feature-development/assets/architect-policy.md`](../feature-development/assets/architect-policy.md) or `RUN_ARCHITECT`. Honor [`../feature-development/assets/next-agent-policy.md`](../feature-development/assets/next-agent-policy.md) for legal `context.next_agent` values.
 
 `route.md` is always written at the **parent** slug, even when children exist.
 
 ### O5 Drive the chain
 
-Read the chain for the resolved workflow (and class) from the config and spawn **one new `Task` per step**, in order, waiting for each HANDOFF. Apply [`../feature-development/assets/next-agent-policy.md`](../feature-development/assets/next-agent-policy.md): honor `context.next_agent` only when it is a legal successor; otherwise follow the config chain. `@waves` expands to `waves.child_chain` per child, read from `features/{slug}/spec-order.md`. `@signoff:requirements`, `@signoff:architect`, and `@signoff:ba` are **parent-only stops** — present the artifact, wait for the user, write `signoff-*.md`. When UI designer ran, `@signoff:requirements` presents `prd.md` **and** `ui-design.md` / mockups. Do not treat sign-offs as Tasks. When `skip_ui_designer` is true, drop `ui-designer-agent`. When `skip_architect` is true, drop both `architect-agent` and `@signoff:architect`. When `skip_telemetry` is true (the default), drop `telemetry-agent` from `@waves` and write the `EVENTS: none` stub. Insert `telemetry-agent` before each child’s developer only if the user typed `RUN_TELEMETRY: true`. When `test_design.enabled` is true on feature / jira-story / jira-epic, insert `test-designer-agent` after `ba-critic-agent` and before `@signoff:ba` ([test-design-policy.md](../feature-development/assets/test-design-policy.md)). Do not insert it on micro, minor, or jira-bug. Expand `tester-agent` into a **layer wave** (parallel `TEST_LAYER` Tasks, then parent join) per [tester-agent.md](../../agents/tester-agent.md). When `architecture_diagrams.enabled` is true, pass `ARCHIFY_ENABLED: true` to Architect ([architecture-diagrams-policy.md](../feature-development/assets/architecture-diagrams-policy.md)); mermaid stays required and missing Archify is not a skip of Architect.
+Read the chain for the resolved workflow (and class) from the config and spawn **one new `Task` per step**, in order, waiting for each HANDOFF. Apply [`../feature-development/assets/next-agent-policy.md`](../feature-development/assets/next-agent-policy.md): honor `context.next_agent` only when it is a legal successor; otherwise follow the config chain. `@waves` expands to `waves.child_chain` per child, read from `features/{slug}/spec-order.md`. `@signoff:requirements`, `@signoff:architect`, and `@signoff:ba` are **parent-only stops** — present the artifact, wait for the user, write `signoff-*.md`. When UI designer ran, `@signoff:requirements` presents `prd.md` **and** `ui-design.md` / mockups. Do not treat sign-offs as Tasks. When `skip_ui_designer` is true, drop `ui-designer-agent`. When `skip_architect` is true, drop both `architect-agent` and `@signoff:architect`. When `skip_telemetry` is true (the default), drop `telemetry-agent` from `@waves` and write the `EVENTS: none` stub. Insert `telemetry-agent` before each child’s developer only if the user typed `RUN_TELEMETRY: true`. When `test_design.enabled` is true on feature / jira-story / jira-epic / github-story / github-epic, insert `test-designer-agent` after `ba-critic-agent` and before `@signoff:ba` ([test-design-policy.md](../feature-development/assets/test-design-policy.md)). Do not insert it on micro, minor, jira-bug, or github-bug. Expand `tester-agent` into a **layer wave** (parallel `TEST_LAYER` Tasks, then parent join) per [tester-agent.md](../../agents/tester-agent.md). When `architecture_diagrams.enabled` is true, pass `ARCHIFY_ENABLED: true` to Architect ([architecture-diagrams-policy.md](../feature-development/assets/architecture-diagrams-policy.md)); mermaid stays required and missing Archify is not a skip of Architect.
 
 On `CONSULT_REQUESTED` from Architect or BA, spawn one-shot `ui-designer-agent` with `UI_JOB: consult` then resume the requester, capped by `gates.consult_cap` (default 1) unless the user typed `CONSULT_UI: true`.
 
@@ -112,6 +122,9 @@ On `CONSULT_REQUESTED` from Architect or BA, spawn one-shot `ui-designer-agent` 
 | `jira-story` | intake → `@signoff:requirements` → architect? → `@signoff:architect` → BA → BA critic → `@signoff:ba` → waves → tester → devops → retro | [`../feature-development/SKILL.md`](../feature-development/SKILL.md), BA reads `intake.md` |
 | `jira-epic` | same as `jira-story` | same, BA reads `epic-plan.md` and writes one child spec per story |
 | `jira-bug` | intake → bug analyst → developer → developer critic → tester → devops → retro | [`../bug-fix/SKILL.md`](../bug-fix/SKILL.md) |
+| `github-story` | same as `jira-story` | same, BA reads `intake.md` |
+| `github-epic` | same as `jira-epic` | same, BA reads `epic-plan.md` |
+| `github-bug` | same as `jira-bug` | [`../bug-fix/SKILL.md`](../bug-fix/SKILL.md) |
 | `test-knowledge-bootstrap` | knowledge-curator-agent → one Markdown review → promote | [`../test-knowledge-bootstrap/SKILL.md`](../test-knowledge-bootstrap/SKILL.md) |
 
 Prompts for every step: [`../feature-development/assets/parent-task-prompt.md`](../feature-development/assets/parent-task-prompt.md). Always inject `WORKFLOW`, `CHANGE_CLASS`, `FEATURE_SLUG`, `REPO_ROOT`, and the disk paths that step needs.

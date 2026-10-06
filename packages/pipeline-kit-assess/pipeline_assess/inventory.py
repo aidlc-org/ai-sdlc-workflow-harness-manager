@@ -191,12 +191,14 @@ def _flags(config: dict) -> dict[str, bool]:
     )
     intake = config.get("intake") if isinstance(config.get("intake"), dict) else {}
     jira = intake.get("jira") if isinstance(intake.get("jira"), dict) else {}
+    github = intake.get("github") if isinstance(intake.get("github"), dict) else {}
     return {
         "test-design": bool(design.get("enabled")),
         "playwright": bool(design.get("playwright")),
         "archify": bool(diagrams.get("enabled")),
         "agent-observability": bool(obs.get("enabled")),
         "jira-intake": bool(jira.get("enabled")),
+        "github-intake": bool(github.get("enabled")),
     }
 
 

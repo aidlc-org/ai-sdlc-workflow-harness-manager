@@ -35,6 +35,9 @@ def test_workflow_json_does_not_preload_skill_assets():
         "jira-story",
         "jira-epic",
         "jira-bug",
+        "github-story",
+        "github-epic",
+        "github-bug",
         "ask",
         "test-knowledge-bootstrap",
         "repo-assessment",
@@ -99,6 +102,26 @@ def test_jira_architect_still_allowlists_diagram_policy():
         ".pipeline/skills/feature-development/assets/architecture-diagrams-policy.md"
         in allowed
     )
+
+
+def test_jira_intake_allowlists_api_script():
+    mod = _loader()
+    doc = _workflow("jira-story")
+    allowed = mod.files_for_step(doc, "intake-agent", PACK)
+    seed = mod.seed_reads_for(allowed)
+    assert ".pipeline/skills/jira-intake/SKILL.md" in seed
+    assert ".pipeline/skills/jira-intake/scripts/jira_api.py" in allowed
+    assert ".pipeline/skills/jira-intake/scripts/jira_api.py" not in seed
+
+
+def test_github_intake_allowlists_api_script():
+    mod = _loader()
+    doc = _workflow("github-story")
+    allowed = mod.files_for_step(doc, "intake-agent", PACK)
+    seed = mod.seed_reads_for(allowed)
+    assert ".pipeline/skills/github-intake/SKILL.md" in seed
+    assert ".pipeline/skills/github-intake/scripts/github_api.py" in allowed
+    assert ".pipeline/skills/github-intake/scripts/github_api.py" not in seed
 
 
 def test_activate_writes_one_seed_bundle(tmp_path: Path):

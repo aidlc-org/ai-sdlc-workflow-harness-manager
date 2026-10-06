@@ -1315,6 +1315,7 @@ def _cli_run(argv: list[str] | None = None) -> int:
             "tester",
             "archify",
             "jira-intake",
+            "github-intake",
             "agent-observability",
         ),
     )
@@ -1329,6 +1330,7 @@ def _cli_run(argv: list[str] | None = None) -> int:
             "tester",
             "archify",
             "jira-intake",
+            "github-intake",
             "agent-observability",
         ),
     )

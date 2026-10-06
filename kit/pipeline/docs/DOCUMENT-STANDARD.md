@@ -78,7 +78,7 @@ Those belong in the **project overlay**:
 
 | Concern | File the project edits |
 |---------|------------------------|
-| Tracker on/off, issue-type map | `.pipeline/config.json` → `intake.jira` |
+| Tracker on/off, connection (mcp/cli/api), issue-type map | `.pipeline/config.json` → `intake.jira` or `intake.github` |
 | Build / preview / health | `.pipeline/skills/local-deployment/assets/local-deploy-runbook.md` and `scripts/deploy-local.sh` |
 | Deploy target names | `.pipeline/config.json` → `deploy.targets` |
 | Path-based verify hints | `.pipeline/config.json` → `verify.rules` |

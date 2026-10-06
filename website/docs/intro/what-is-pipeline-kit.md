@@ -47,6 +47,7 @@ Specialist briefs stay under `.pipeline/` so the IDE does not auto-load them. Th
 | `ask` | Question about this repo (how / what / why / explain). No Task chain. |
 | `feature-development` | Product work from chat (“add”, “fix”, “change”, “implement”). |
 | `jira-story` / `jira-epic` / `jira-bug` | Tracker issue key, if Jira intake is enabled. |
+| `github-story` / `github-epic` / `github-bug` | GitHub issue or PR, if GitHub intake is enabled. |
 | `test-knowledge-bootstrap` | One-time QA overlay bootstrap. Not the feature ladder. |
 
 Opt-in extras — knowledge, plugins, agent-run observability — are documented under [Capabilities](/docs/capabilities/overview). `pipeline-kit init` does not turn them on.

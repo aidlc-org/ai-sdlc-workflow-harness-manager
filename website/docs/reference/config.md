@@ -11,7 +11,7 @@ Each key is a workflow name. Fields you will see:
 
 | Field | Meaning |
 |-------|---------|
-| `source` | `text` or `jira` |
+| `source` | `text`, `jira`, or `github` |
 | `plan_source` | Artifact the planner reads (`prd.md`, `intake.md`, `epic-plan.md`, `rca.md`) |
 | `chain` | Ordered specialist tokens and `@signoff:*` / `@waves` |
 | `classes` | micro / minor / feature chains (`feature-development` only) |
@@ -25,7 +25,15 @@ Expanded per child listed in `features/{slug}/spec-order.md`. Default: developer
 
 ## `intake.jira`
 
-`enabled`, `key_pattern`, `mcp_namespaces`, `tools.issue` / `tools.search`, `epic_children_jql`, `max_children`, `issue_type_map`, `include_comments`, `write_back`.
+`enabled`, `connection` (`mcp` | `cli` | `api`; missing means `mcp`), `key_pattern`, `mcp_namespaces`, `tools.issue` / `tools.search`, `cli.bin` / `cli.issue_view` / `cli.search`, `api` (env-only note), `epic_children_jql`, `max_children`, `issue_type_map`, `include_comments`, `write_back`.
+
+Site URL and token stay in the environment (`JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`), never in this file.
+
+## `intake.github`
+
+`enabled` (default false), `connection` (`mcp` | `cli` | `api`; missing means `cli`), `repo` (`owner/repo`, required for bare `#N`), `mcp_namespaces`, `tools.issue` / `tools.search`, `cli.bin` / `cli.issue_view` / `cli.pr_view` / `cli.sub_issues`, `api` (env-only note), `max_children`, `issue_type_map`, `include_comments`, `write_back`.
+
+Token stays in the environment (`GH_TOKEN` or `GITHUB_TOKEN`). Optional `GITHUB_API_URL` for GitHub Enterprise. Optional `GITHUB_REPO` when the ask is only `#123`.
 
 ## `product`
 

@@ -132,6 +132,76 @@
         "skip_developer_critic": false
       },
       "run_tester": true
+    },
+    "github-story": {
+      "source": "github",
+      "plan_source": "intake.md",
+      "default_change_class": "feature",
+      "chain": [
+        "intake-agent",
+        "@signoff:requirements",
+        "architect-agent",
+        "@signoff:architect",
+        "ba-agent",
+        "ba-critic-agent",
+        "@signoff:ba",
+        "@waves",
+        "tester-agent",
+        "devops-agent",
+        "retro-agent"
+      ],
+      "skips": {
+        "skip_pm": true,
+        "skip_ui_designer": true,
+        "skip_telemetry": true
+      }
+    },
+    "github-epic": {
+      "source": "github",
+      "plan_source": "epic-plan.md",
+      "default_change_class": "feature",
+      "chain": [
+        "intake-agent",
+        "@signoff:requirements",
+        "architect-agent",
+        "@signoff:architect",
+        "ba-agent",
+        "ba-critic-agent",
+        "@signoff:ba",
+        "@waves",
+        "tester-agent",
+        "devops-agent",
+        "retro-agent"
+      ],
+      "skips": {
+        "skip_pm": true,
+        "skip_ui_designer": true,
+        "skip_telemetry": true
+      }
+    },
+    "github-bug": {
+      "source": "github",
+      "plan_source": "rca.md",
+      "default_change_class": "minor",
+      "chain": [
+        "intake-agent",
+        "bug-analyst-agent",
+        "developer-agent",
+        "developer-critic-agent",
+        "tester-agent",
+        "devops-agent",
+        "retro-agent"
+      ],
+      "skips": {
+        "skip_pm": true,
+        "skip_ba": true,
+        "skip_ba_critic": true,
+        "skip_architect": true,
+        "skip_ui_designer": true,
+        "skip_telemetry": true,
+        "skip_developer_critic": false
+      },
+      "run_tester": true
     }
   },
   "waves": {
@@ -144,11 +214,21 @@
   "intake": {
     "jira": {
       "enabled": true,
+      "connection": "mcp",
       "key_pattern": "\\b[A-Z][A-Z0-9_]+-[0-9]+\\b",
       "mcp_namespaces": [],
       "tools": {
         "issue": "getJiraIssue",
         "search": "searchJiraIssuesUsingJql"
+      },
+      "cli": {
+        "_note": "Used only when connection is cli. Default argv matches jira-cli (ankitpokhrel). Change bin/argv for acli or another client. {KEY} and {JQL} are substituted.",
+        "bin": "jira",
+        "issue_view": ["issue", "view", "{KEY}", "--plain"],
+        "search": ["issue", "list", "--jql", "{JQL}", "--plain", "--columns", "key,type,summary,status"]
+      },
+      "api": {
+        "_note": "Used only when connection is api. Site URL and token stay in env: JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN. Do not put them here."
       },
       "epic_children_jql": "parent = {KEY} ORDER BY rank ASC",
       "max_children": 20,
@@ -163,6 +243,40 @@
         "epic": "jira-epic",
         "initiative": "jira-epic",
         "default": "jira-story"
+      },
+      "include_comments": false,
+      "write_back": false
+    },
+    "github": {
+      "enabled": false,
+      "connection": "cli",
+      "repo": "",
+      "mcp_namespaces": [],
+      "tools": {
+        "issue": "get_issue",
+        "search": "list_issues"
+      },
+      "cli": {
+        "_note": "Used only when connection is cli. Default argv matches GitHub CLI (gh). {N} is the issue or PR number, {REPO} is owner/repo.",
+        "bin": "gh",
+        "issue_view": ["issue", "view", "{N}", "--repo", "{REPO}", "--json", "number,title,body,labels,state,author,assignees,url,milestone,comments"],
+        "pr_view": ["pr", "view", "{N}", "--repo", "{REPO}", "--json", "number,title,body,labels,state,author,assignees,url,comments"],
+        "sub_issues": ["api", "repos/{REPO}/issues/{N}/sub_issues"]
+      },
+      "api": {
+        "_note": "Used only when connection is api. Token stays in env: GH_TOKEN or GITHUB_TOKEN. Optional GITHUB_API_URL for GitHub Enterprise. Optional GITHUB_REPO as owner/repo when the ask is only #123. Do not put them here."
+      },
+      "max_children": 20,
+      "issue_type_map": {
+        "issue": "github-story",
+        "feature": "github-story",
+        "enhancement": "github-story",
+        "pull_request": "github-story",
+        "bug": "github-bug",
+        "defect": "github-bug",
+        "incident": "github-bug",
+        "epic": "github-epic",
+        "default": "github-story"
       },
       "include_comments": false,
       "write_back": false

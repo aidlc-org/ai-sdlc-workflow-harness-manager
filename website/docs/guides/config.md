@@ -40,10 +40,23 @@ The shipped `deploy-local.sh` writes `OVERALL=failed` until you implement build,
 | Situation | Setting |
 |-----------|---------|
 | No Jira | `"enabled": false` |
-| Jira + IDE MCP connected | `"enabled": true`, fill `mcp_namespaces` if discovery fails |
+| Jira + IDE MCP | `"enabled": true`, `"connection": "mcp"`, fill `mcp_namespaces` if discovery fails |
+| MCP banned, CLI allowed | `"connection": "cli"` |
+| Token only | `"connection": "api"` plus `JIRA_BASE_URL` / `JIRA_API_TOKEN` in the environment |
 | Types differ (`Defect`, `Incident`) | Edit `issue_type_map` |
 
-Connect the tracker MCP in the IDE. Do not put the Jira site URL or API token in this file.
+Intake uses only the chosen `connection`. Do not put the Jira site URL or API token in this file.
+
+## `intake.github`
+
+| Situation | Setting |
+|-----------|---------|
+| No GitHub Issues | `"enabled": false` (pack default) |
+| MCP banned, `gh` allowed | `"enabled": true`, `"connection": "cli"`, set `repo` to `owner/repo` if asks are only `#123` |
+| Token only | `"connection": "api"` plus `GH_TOKEN` or `GITHUB_TOKEN` in the environment |
+| GitHub MCP in the IDE | `"connection": "mcp"`, fill `mcp_namespaces` if discovery fails |
+
+Default `connection` is `cli`. Intake uses only that path. Do not put a PAT in this file. Writes need `PIPELINE_ALLOW_GITHUB=1`.
 
 ## Leave as-is until you have a reason
 

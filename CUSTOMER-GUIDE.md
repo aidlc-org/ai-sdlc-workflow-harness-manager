@@ -785,13 +785,17 @@ repository (section 5). Set `targets` to the names you will implement.
 | Situation | What to set |
 |-----------|-------------|
 | No Jira (or Azure Boards, GitHub Issues only) | `"enabled": false` |
-| Jira + IDE MCP connected | `"enabled": true`, fill `mcp_namespaces` if the server name is not discovered |
+| Jira + IDE MCP connected | `"enabled": true`, `"connection": "mcp"`, fill `mcp_namespaces` if the server name is not discovered |
+| Jira MCP banned, CLI allowed | `"enabled": true`, `"connection": "cli"` (default bin `jira`; change `cli.bin` / argv for `acli`) |
+| Jira MCP and CLI banned, token allowed | `"enabled": true`, `"connection": "api"`; set `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN` in the environment |
 | Jira types differ (`Defect`, `Incident`, `Spike`) | Edit `issue_type_map` |
+| GitHub Issues instead of Jira | Leave Jira `enabled` false. See [4.3.1](#431-intakegithub--issues-without-mcp). |
 
 ```json
 "intake": {
   "jira": {
     "enabled": false,
+    "connection": "mcp",
     "key_pattern": "\\b[A-Z][A-Z0-9_]+-[0-9]+\\b",
     "mcp_namespaces": [],
     "issue_type_map": {
@@ -811,9 +815,62 @@ story, bug, or epic workflow. No one pastes the ticket by hand.
 **Use case, disabled:** The same sentence is treated as text
 (`feature-development` or `ask`). Correct for repos with no tracker.
 
-Connect the tracker MCP in the IDE. Tool names in config default to
-`getJiraIssue` and `searchJiraIssuesUsingJql`. Change `tools` if your MCP
-uses different names. Do not put the Jira site URL or API token in this file.
+`connection` is one of `mcp`, `cli`, `api`. Intake uses **only** that path. If it
+fails, it returns `BLOCKED` — it does not try the others. Missing `connection`
+means `mcp`.
+
+- **mcp:** connect the tracker MCP in the IDE. Tool names default to
+  `getJiraIssue` and `searchJiraIssuesUsingJql`. Change `tools` if your MCP
+  uses different names.
+- **cli:** authenticate the client in `cli.bin` yourself (`jira` by default).
+  Intake runs `cli.issue_view` / `cli.search` with `{KEY}` / `{JQL}` substituted.
+- **api:** run the bundled `jira_api.py` helper. Site URL and token stay in
+  env (`JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`). Do not put them in this
+  file.
+
+Do not put the Jira site URL or API token in this file. Agents must not call
+`curl` / `wget` for the tracker.
+
+### 4.3.1 `intake.github` — Issues without MCP
+
+| Situation | What to set |
+|-----------|-------------|
+| No GitHub Issues | `"enabled": false` (default) |
+| MCP banned, `gh` allowed | `"enabled": true`, `"connection": "cli"`; set `repo` to `owner/repo` if people type `#123` |
+| Token only | `"connection": "api"`; set `GH_TOKEN` or `GITHUB_TOKEN` in the environment |
+| GitHub MCP in the IDE | `"connection": "mcp"`; fill `mcp_namespaces` if discovery fails |
+
+```json
+"intake": {
+  "github": {
+    "enabled": true,
+    "connection": "cli",
+    "repo": "acme/app",
+    "issue_type_map": {
+      "issue": "github-story",
+      "bug": "github-bug",
+      "pull_request": "github-story",
+      "epic": "github-epic",
+      "default": "github-story"
+    }
+  }
+}
+```
+
+**Use case, enabled:** “Work on acme/app#12” or a github.com issues URL → intake
+fetches once → `github-story`, `github-bug`, or `github-epic`. These workflows
+do **not** need the Jira license. Turn the flag on with
+`pipeline-kit features enable github-intake`.
+
+Missing `connection` means `cli`. Intake uses **only** that path. If it fails,
+it returns `BLOCKED`. Bare `#12` is ignored unless `repo` is set.
+
+- **cli:** authenticate `gh` yourself. Intake runs `cli.issue_view` with `{N}` /
+  `{REPO}` substituted.
+- **api:** bundled `github_api.py`. Token in env only.
+- **mcp:** connect GitHub MCP. Tool names default to `get_issue` / `list_issues`.
+
+CLI writes need `PIPELINE_ALLOW_GITHUB=1`. Do not put a PAT in this file.
 
 ### 4.4 Leave as-is until you have a reason
 
@@ -980,7 +1037,7 @@ not commit those. Commit `features/` only if you want specs in git.
 
 | Item | When a real project needs it |
 |------|------------------------------|
-| Tracker MCP | Jira (or compatible) workflows. Enable `intake.jira` and authenticate the MCP in the IDE. |
+| Tracker intake | Jira: enable `intake.jira` and set `connection`. GitHub: `features enable github-intake` and set `intake.github.connection` (`cli` by default). |
 | Wiki | After a painful run, retro adds one page under `.pipeline/wiki/`. Start with the shipped index or empty it. |
 | `.pipeline/rules/*.mdc` | Durable coding standards. They do **not** auto-apply in Cursor (not under `.cursor/rules`). Mention a rule in `AGENTS.md` or on a step allowlist. |
 | Hooks | Policy guardrails ship in `.pipeline/hooks/` (sibling of `hooks/obs/`). `init --ide cursor` or `--ide claude-code` merges them into the IDE hook file without replacing existing entries. Agent-run observability stays opt-in via `pipeline-kit obs install`. |
@@ -1015,7 +1072,7 @@ repository. After install the same file is `.pipeline/docs/DOCUMENT-STANDARD.md`
 - Secrets, tokens, tracker site URLs — environment or IDE MCP settings only
 
 You **should** edit the local-deploy runbook, `deploy-local.sh`,
-`config.json` (`verify`, `deploy`, `intake.jira`), and testing skills if the
+`config.json` (`verify`, `deploy`, `intake.jira`, `intake.github`), and testing skills if the
 default runners are wrong.
 
 ---
@@ -1028,6 +1085,7 @@ default runners are wrong.
    - `verify.rules` for your folders (or leave `[]`)
    - `deploy.targets` for your apps
    - `intake.jira.enabled` (`false` unless you use Jira)
+   - `intake.github.enabled` (`false` unless you use GitHub Issues; then set `connection` and `repo`)
 4. Rewrite the local-deploy runbook and `deploy-local.sh` for your stack (section 5).
 5. Skim `.pipeline/docs/DOCUMENT-STANDARD.md` before editing any other pack markdown.
 6. Add `features/` and `.pipeline/state/` to `.gitignore`.

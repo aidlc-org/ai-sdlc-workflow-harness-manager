@@ -83,6 +83,7 @@ def apply_ids(project: Path, dest: Path, ids: list[str], *, dry_run: bool) -> li
             "playwright",
             "agent-observability",
             "jira-intake",
+            "github-intake",
             "archify",
         }:
             flag = "archify" if ident == "archify" else ident

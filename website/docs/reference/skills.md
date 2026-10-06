@@ -15,7 +15,8 @@ Each skill is `.pipeline/skills/{name}/SKILL.md`. Listed on a workflow allowlist
 | `architecture-visualization` | Optional Archify deliver |
 | `spec-generation` | BA loop |
 | `epic-breakdown` | Epic children to specs |
-| `jira-intake` | Read-only tracker fetch |
+| `jira-intake` | Read-only Jira fetch |
+| `github-intake` | Read-only GitHub Issues/PR fetch |
 | `bug-fix` | Analyst then repair |
 | `test-design` | Structured cases |
 | `test-knowledge-bootstrap` | Curator parent procedure |

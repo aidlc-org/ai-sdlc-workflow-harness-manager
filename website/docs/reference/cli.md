@@ -63,7 +63,7 @@ Needs the optional memory package. See [Memory bank and MCP](/docs/capabilities/
 
 ## Features
 
-`features list | status | enable \| disable` with ids `test-design`, `playwright`, `telemetry`, `tester`, `archify`, `jira-intake`, `agent-observability`.
+`features list | status | enable \| disable` with ids `test-design`, `playwright`, `telemetry`, `tester`, `archify`, `jira-intake`, `github-intake`, `agent-observability`.
 
 ## Observability
 

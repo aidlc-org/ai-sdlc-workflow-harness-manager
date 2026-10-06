@@ -1,0 +1,97 @@
+{
+  "name": "github-story",
+  "context": {
+    "parent": {
+      "files": [
+        ".pipeline/skills/orchestration/SKILL.md",
+        ".pipeline/skills/feature-development/SKILL.md",
+        ".pipeline/config.json",
+        ".pipeline/skills/github-intake/SKILL.md",
+        ".pipeline/workflows/github-story.json"
+      ]
+    },
+    "steps": {
+      "product-manager-agent": {
+        "files": [
+          ".pipeline/agents/product-manager-agent.md",
+          ".pipeline/skills/product-planning/SKILL.md"
+        ]
+      },
+      "architect-agent": {
+        "files": [
+          ".pipeline/agents/architect-agent.md",
+          ".pipeline/skills/architecture-design/SKILL.md",
+          ".pipeline/skills/test-design/SKILL.md",
+          ".pipeline/skills/architecture-visualization/SKILL.md"
+        ]
+      },
+      "ba-agent": {
+        "files": [
+          ".pipeline/agents/ba-agent.md",
+          ".pipeline/skills/spec-generation/SKILL.md",
+          ".pipeline/skills/test-design/SKILL.md"
+        ]
+      },
+      "ba-critic-agent": {
+        "files": [
+          ".pipeline/agents/ba-critic-agent.md",
+          ".pipeline/skills/test-design/SKILL.md"
+        ]
+      },
+      "test-designer-agent": {
+        "files": [
+          ".pipeline/agents/test-designer-agent.md",
+          ".pipeline/skills/test-design/SKILL.md"
+        ]
+      },
+      "telemetry-agent": {
+        "files": [
+          ".pipeline/agents/telemetry-agent.md",
+          ".pipeline/skills/observability-telemetry/SKILL.md"
+        ]
+      },
+      "developer-agent": {
+        "files": [
+          ".pipeline/agents/developer-agent.md",
+          ".pipeline/skills/secure-implementation/SKILL.md"
+        ]
+      },
+      "developer-critic-agent": {
+        "files": [
+          ".pipeline/agents/developer-critic-agent.md"
+        ]
+      },
+      "tester-agent": {
+        "files": [
+          ".pipeline/agents/tester-agent.md",
+          ".pipeline/skills/testing-ui-playwright/SKILL.md",
+          ".pipeline/skills/testing-e2e/SKILL.md",
+          ".pipeline/skills/testing-api/SKILL.md",
+          ".pipeline/skills/testing-unit/SKILL.md",
+          ".pipeline/skills/test-design/SKILL.md"
+        ]
+      },
+      "devops-agent": {
+        "files": [
+          ".pipeline/agents/devops-agent.md",
+          ".pipeline/skills/local-deployment/SKILL.md"
+        ]
+      },
+      "retro-agent": {
+        "files": [
+          ".pipeline/agents/retro-agent.md",
+          ".pipeline/skills/pipeline-retro/SKILL.md",
+          ".pipeline/wiki/README.md",
+          ".pipeline/wiki/INDEX.md"
+        ]
+      },
+      "intake-agent": {
+        "files": [
+          ".pipeline/agents/intake-agent.md",
+          ".pipeline/skills/github-intake/SKILL.md",
+          ".pipeline/config.json"
+        ]
+      }
+    }
+  }
+}

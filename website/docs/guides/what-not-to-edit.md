@@ -15,7 +15,7 @@ After install, the contract is `.pipeline/docs/DOCUMENT-STANDARD.md`.
 **You should edit**
 
 - Local-deploy runbook and `deploy-local.sh`
-- `config.json` (`verify`, `deploy`, `intake.jira`)
+- `config.json` (`verify`, `deploy`, `intake.jira`, `intake.github`)
 - Testing skills if the default runners are wrong
 - Root `AGENTS.md` (installer does not write it)
 

@@ -35,14 +35,17 @@ Entry point is `.cursor/skills/orchestration/SKILL.md` (O1 detect → O2 intake 
 | story or task | `jira-story` | intake → sign-off requirements → architect? → sign-off → BA → BA critic → sign-off BA → waves → tester → devops → retro |
 | epic | `jira-epic` | same, BA gets `epic-plan.md` and writes one child spec per story |
 | bug | `jira-bug` | intake → bug analyst → developer → developer critic → tester → devops → retro |
+| GitHub issue / PR | `github-story` / `github-bug` / `github-epic` | same ladders as the Jira rows; `connection` defaults to `cli` (`gh`) |
 
-`route.md` gained `workflow`, `work_source`, `jira_key`, `issue_type`. BA takes `PLAN_SOURCE_KIND` + `PLAN_SOURCE_PATH` instead of `PLAN_PATH`.
+`route.md` gained `workflow`, `work_source`, `jira_key` or `github_ref`, `issue_type`. BA takes `PLAN_SOURCE_KIND` + `PLAN_SOURCE_PATH` instead of `PLAN_PATH`.
 
-No tracker MCP reachable is not a reason to guess: intake returns `BLOCKED` and the user either connects MCP, sets `intake.jira.mcp_namespaces`, or pastes the description as plain text.
+No tracker connection reachable is not a reason to guess: intake returns `BLOCKED` and the user either sets `intake.jira.connection` or `intake.github.connection` (`mcp`, `cli`, or `api`), fixes auth, or pastes the description as plain text.
+
+Bare `#123` is GitHub only when `intake.github.enabled` is true and `repo` is set.
 
 ## Files
 
-`.cursor/skills/orchestration/SKILL.md`, `.pipeline/skills/jira-intake/SKILL.md`, `.pipeline/skills/epic-breakdown/SKILL.md`, `.pipeline/skills/bug-fix/SKILL.md`, `.pipeline/config.json`, `.cursor/hooks/subagent-start.py`
+`.cursor/skills/orchestration/SKILL.md`, `.pipeline/skills/jira-intake/SKILL.md`, `.pipeline/skills/github-intake/SKILL.md`, `.pipeline/skills/epic-breakdown/SKILL.md`, `.pipeline/skills/bug-fix/SKILL.md`, `.pipeline/config.json`, `.cursor/hooks/subagent-start.py`
 
 ## Verify
 

@@ -69,6 +69,8 @@ Do not import Graphify. Do not invent a graph.
 
 ## Intake step (tracker workflows only, first step)
 
+**Jira** (`work_source: jira`):
+
 ```text
 subagent_type: generalPurpose
 {isolation preamble}
@@ -82,6 +84,23 @@ CONFIG_PATH: .pipeline/config.json
 
 Fetch read-only. Normalize to features/{slug}/intake.md. Write state/intake-agent.json.
 Do not write back to the tracker. Do not write specs or code.
+```
+
+**GitHub** (`work_source: github`):
+
+```text
+subagent_type: generalPurpose
+{isolation preamble}
+PRIOR_STATE_PATH: none
+You are the intake agent. Follow .pipeline/agents/intake-agent.md and .pipeline/skills/github-intake/SKILL.md exactly.
+If the issue is an epic, continue in this same Task with .pipeline/skills/epic-breakdown/SKILL.md.
+
+GITHUB_REF: {REF}
+USER_REQUEST: {verbatim}
+CONFIG_PATH: .pipeline/config.json
+
+Fetch read-only. Normalize to features/{slug}/intake.md. Write state/intake-agent.json.
+Do not write back to GitHub. Do not write specs or code.
 ```
 
 The parent writes `route.md` **after** this HANDOFF, using its `ISSUE_TYPE` / `WORKFLOW`, and updates `pipeline-state.json`.

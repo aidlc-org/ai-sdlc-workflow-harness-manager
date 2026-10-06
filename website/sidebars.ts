@@ -66,6 +66,7 @@ const sidebars: SidebarsConfig = {
         'workflows/ask',
         'workflows/feature-development',
         'workflows/jira',
+        'workflows/github',
         'workflows/knowledge-bootstrap',
       ],
     },

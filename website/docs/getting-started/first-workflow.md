@@ -27,11 +27,19 @@ Details: [Feature development](/docs/workflows/feature-development).
 
 ## 3. Tracker key (only if Jira is on)
 
-If `intake.jira.enabled` is true and MCP is connected:
+If `intake.jira.enabled` is true and `connection` is set (`mcp`, `cli`, or `api`):
 
 > Work on ABC-123
 
 Expect intake first, then `jira-story`, `jira-epic`, or `jira-bug` from the issue type. Do not paste the ticket body into chat to “save a step.”
+
+## 4. GitHub issue (only if GitHub intake is on)
+
+If `intake.github.enabled` is true (`pipeline-kit features enable github-intake`):
+
+> Work on https://github.com/acme/app/issues/12
+
+Expect intake first (`gh` by default), then `github-story`, `github-epic`, or `github-bug`. Bare `#12` only works when `intake.github.repo` is set.
 
 ## If nothing happens
 

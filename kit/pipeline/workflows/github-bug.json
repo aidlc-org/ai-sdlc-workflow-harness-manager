@@ -1,0 +1,64 @@
+{
+  "name": "github-bug",
+  "context": {
+    "parent": {
+      "files": [
+        ".pipeline/skills/orchestration/SKILL.md",
+        ".pipeline/skills/bug-fix/SKILL.md",
+        ".pipeline/skills/github-intake/SKILL.md",
+        ".pipeline/config.json",
+        ".pipeline/workflows/github-bug.json"
+      ]
+    },
+    "steps": {
+      "intake-agent": {
+        "files": [
+          ".pipeline/agents/intake-agent.md",
+          ".pipeline/skills/github-intake/SKILL.md",
+          ".pipeline/config.json"
+        ]
+      },
+      "bug-analyst-agent": {
+        "files": [
+          ".pipeline/agents/bug-analyst-agent.md",
+          ".pipeline/skills/bug-fix/SKILL.md"
+        ]
+      },
+      "developer-agent": {
+        "files": [
+          ".pipeline/agents/developer-agent.md",
+          ".pipeline/skills/secure-implementation/SKILL.md",
+          ".pipeline/skills/bug-fix/SKILL.md"
+        ]
+      },
+      "developer-critic-agent": {
+        "files": [
+          ".pipeline/agents/developer-critic-agent.md"
+        ]
+      },
+      "tester-agent": {
+        "files": [
+          ".pipeline/agents/tester-agent.md",
+          ".pipeline/skills/testing-ui-playwright/SKILL.md",
+          ".pipeline/skills/testing-e2e/SKILL.md",
+          ".pipeline/skills/testing-api/SKILL.md",
+          ".pipeline/skills/testing-unit/SKILL.md"
+        ]
+      },
+      "devops-agent": {
+        "files": [
+          ".pipeline/agents/devops-agent.md",
+          ".pipeline/skills/local-deployment/SKILL.md"
+        ]
+      },
+      "retro-agent": {
+        "files": [
+          ".pipeline/agents/retro-agent.md",
+          ".pipeline/skills/pipeline-retro/SKILL.md",
+          ".pipeline/wiki/README.md",
+          ".pipeline/wiki/INDEX.md"
+        ]
+      }
+    }
+  }
+}

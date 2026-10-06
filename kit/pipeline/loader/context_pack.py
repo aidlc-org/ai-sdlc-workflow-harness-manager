@@ -97,7 +97,8 @@ def _pipeline_rel(pack_rel: str) -> str:
 
 
 def _is_asset(rel: str) -> bool:
-    return "/assets/" in normalize_rel(rel)
+    n = normalize_rel(rel)
+    return "/assets/" in n or "/scripts/" in n
 
 
 def _markdown_hrefs(text: str) -> list[str]:

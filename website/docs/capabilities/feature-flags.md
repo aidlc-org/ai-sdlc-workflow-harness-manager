@@ -22,6 +22,7 @@ pipeline-kit features disable telemetry
 | `tester` | Tester policy / `run_tester` related switch |
 | `archify` | `architecture_diagrams.enabled` |
 | `jira-intake` | `intake.jira.enabled` |
+| `github-intake` | `intake.github.enabled` (free; no Jira license) |
 | `agent-observability` | `agent_observability.enabled` (still need `obs install` for hooks) |
 
 Enable flags only when the matching install path is done (knowledge overlay, plugin skill, obs hooks, tracker MCP).

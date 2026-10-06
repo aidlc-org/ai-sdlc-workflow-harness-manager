@@ -34,8 +34,10 @@ def test_features_status_matches_init_defaults(
     assert "telemetry" in out
     assert "tester" in out
     assert "agent-observability" in out
+    assert "github-intake" in out
     cfg = json.loads((app / ".pipeline" / "config.json").read_text())
     assert cfg["test_design"]["enabled"] is not True
+    assert cfg["intake"]["github"]["enabled"] is not True
     assert cfg["workflows"]["feature-development"]["skips"]["skip_telemetry"] is True
 
 
@@ -64,3 +66,15 @@ def test_features_playwright_requires_test_design(tmp_path: Path):
     cfg = json.loads((app / ".pipeline" / "config.json").read_text())
     assert cfg["test_design"]["enabled"] is False
     assert (app / "test-knowledge" / "manifest.json").is_file()
+
+
+def test_features_enable_github_intake(tmp_path: Path):
+    app = tmp_path / "app"
+    app.mkdir()
+    _init(app)
+    assert _run_cli(["features", "enable", "github-intake", str(app)]) == 0
+    cfg = json.loads((app / ".pipeline" / "config.json").read_text())
+    assert cfg["intake"]["github"]["enabled"] is True
+    assert _run_cli(["features", "disable", "github-intake", str(app)]) == 0
+    cfg = json.loads((app / ".pipeline" / "config.json").read_text())
+    assert cfg["intake"]["github"]["enabled"] is False

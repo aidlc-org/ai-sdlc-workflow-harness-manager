@@ -2,7 +2,8 @@
 name: epic-breakdown
 description: >-
   Invoke when tracker intake resolves an issue to the epic workflow. Pull the
-  epic’s child stories over MCP (read-only), then write a plan-shaped
+  epic’s child stories using the same tracker connection as intake
+  (mcp, cli, or api; read-only), then write a plan-shaped
   features/{slug}/epic-plan.md whose proposed child specs are one per story, so
   the BA can specify the whole epic. Not for a single story or a bug. Does not
   write specifications, code, or tests.
@@ -18,7 +19,7 @@ description: >-
 
 An epic is a **plan source**, not a spec. This skill produces the same artifact shape the product manager would hand the BA — problem, direction, and a stable **one child spec per story** split — sourced from the tracker instead of from research.
 
-Runs **inside the intake Task** (the tracker connection is already open). Extends [`../jira-intake/SKILL.md`](../jira-intake/SKILL.md) step I6.
+Runs **inside the intake Task** (the tracker connection is already open). Extends [`../jira-intake/SKILL.md`](../jira-intake/SKILL.md) or [`../github-intake/SKILL.md`](../github-intake/SKILL.md) step I6.
 
 **Success:** every in-scope child story has a row, a kebab slug, and enough scope for BA to write a spec against.
 **Failure:** inventing stories the epic does not have, merging several stories into one child, or writing acceptance criteria the tracker never stated.
@@ -35,9 +36,21 @@ Runs **inside the intake Task** (the tracker connection is already open). Extend
 
 ### E1 Query children
 
-Use `intake.jira.epic_children_jql` from [`.pipeline/config.json`](../../config.json), substituting `{KEY}` with the epic key, and call the configured `tools.search`. Cap results at `max_children`.
+Cap results at `max_children`. Use the **same** tracker `connection` intake used — do not switch.
+
+**Jira** (`JIRA_KEY` injected): use `intake.jira.epic_children_jql`, substituting `{KEY}` with the epic key.
+
+- **mcp** — call the configured `tools.search`.
+- **cli** — run `{cli.bin}` plus `cli.search` with `{JQL}` replaced. Parse stdout; do not call MCP.
+- **api** — `python .pipeline/skills/jira-intake/scripts/jira_api.py search "{JQL}" --max {max_children}`. Parse JSON `issues`.
 
 The JQL is config because trackers model epic links differently. Do not hardcode a link field, board, or project. If the configured JQL returns nothing, retry once with the epic key as parent link; if still nothing, treat the epic as childless (E5).
+
+**GitHub** (`GITHUB_REF` injected): list sub-issues. There is no JQL.
+
+- **mcp** — call the GitHub MCP tool that lists sub-issues or child issues for the number; if none exists, treat as childless (E5).
+- **cli** — run `{cli.bin}` plus `cli.sub_issues` with `{N}` and `{REPO}` replaced. A 404 means no sub-issues.
+- **api** — `python .pipeline/skills/github-intake/scripts/github_api.py sub-issues {REF} --max {max_children}`. Parse JSON `issues`. Empty or 404 is childless (E5).
 
 For each child fetch the same fields intake collects for a single issue: key, type, status, summary, description, acceptance criteria, labels, components, links.
 

@@ -35,6 +35,17 @@ DEPS = re.compile(
 REMOTE = re.compile(r"\b(ssh\s+|scp\s+|rsync\s+.*:)", re.I)
 NET = re.compile(r"\b(curl|wget|nc|ncat|npx\s+--yes)\b", re.I)
 LOCAL_NET = re.compile(r"(127\.0\.0\.1|localhost|\[::1\])", re.I)
+JIRA_MUTATE = re.compile(
+    r"(\b(jira|acli)\b[\s\S]*\b(create|edit|update|comment|delete|move|transition|assign)\b)"
+    r"|(jira_api\.py\b[\s\S]*\b(create|edit|update|comment|delete|transition)\b)",
+    re.I,
+)
+GITHUB_MUTATE = re.compile(
+    r"(\bgh\b[\s\S]*\b(issue|pr)\b[\s\S]*\b(create|edit|comment|close|delete|lock|merge|reopen)\b)"
+    r"|(\bgh\s+api\b[\s\S]*\b(-X|--method)\s+(POST|PATCH|PUT|DELETE)\b)"
+    r"|(github_api\.py\b[\s\S]*\b(create|edit|comment|close|delete)\b)",
+    re.I,
+)
 INSTALL_VERB = re.compile(
     r"\b(?:npm\s+i(?:nstall)?|pnpm\s+add|yarn\s+add|pip\d?\s+install|uv\s+add)\b",
     re.I,
@@ -135,6 +146,18 @@ def main() -> int:
         return emit_permission(
             False,
             "Blocked non-localhost network command (possible exfil). Use 127.0.0.1 or set PIPELINE_ALLOW_NET=1.",
+            extra,
+        )
+    if os.environ.get("PIPELINE_ALLOW_JIRA") != "1" and JIRA_MUTATE.search(cmd):
+        return emit_permission(
+            False,
+            "Blocked Jira CLI/api-script mutation. Set PIPELINE_ALLOW_JIRA=1 only when the user asked to mutate Jira issues.",
+            extra,
+        )
+    if os.environ.get("PIPELINE_ALLOW_GITHUB") != "1" and GITHUB_MUTATE.search(cmd):
+        return emit_permission(
+            False,
+            "Blocked GitHub CLI/api-script mutation. Set PIPELINE_ALLOW_GITHUB=1 only when the user asked to mutate GitHub issues.",
             extra,
         )
     return emit_permission(True, "allow", extra)
