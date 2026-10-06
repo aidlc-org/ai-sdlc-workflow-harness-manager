@@ -17,4 +17,4 @@ Use this on every new engagement. The full customer surface is **AGENTS.md + con
 7. Open the repo root in the IDE. Kit mode: confirm the `run-workflow` skill is visible. Orchestrator mode: confirm `CURSOR_API_KEY` and try `pipeline-kit run --dry-run`.
 8. Smoke test. Kit mode: ask “How does X work?” (expect `ask`) and “Add a small label change” (expect `feature-development`). Orchestrator mode: `pipeline-kit run --slug try --workflow ask --request "How does X work?" --runner fake`.
 
-Optional later: tracker MCP, wiki pages after retro, [knowledge](/docs/capabilities/knowledge), [plugins and observability](/docs/capabilities/plugins).
+Optional later: tracker MCP, wiki pages after retro, [knowledge](/docs/capabilities/knowledge), [memory bank](/docs/capabilities/memory) (`uv tool install -e ".[memory]"` then `memory link`), [plugins and observability](/docs/capabilities/plugins).

@@ -4,56 +4,113 @@ External **artifact memory bank** for pipeline-kit: keep `features/{slug}/`
 artifacts in a separate git repo, index them with SQLite FTS5, and expose
 search over a **stdio MCP server** that you register in your IDE/agent client.
 
-## Install
+## Contents
 
-From the pipeline-kit checkout (recommended while developing):
+1. [When to use this](#when-to-use-this)
+2. [Step 1 — Install into the same CLI](#step-1--install-into-the-same-cli)
+3. [Step 2 — Product already has `.pipeline/`](#step-2--product-already-has-pipeline)
+4. [Step 3 — Link a memory bank](#step-3--link-a-memory-bank)
+5. [Step 4 — Import, index, smoke-test](#step-4--import-index-smoke-test)
+6. [Step 5 — MCP (optional)](#mcp-server--what-the-user-must-do)
+7. [Layout](#layout)
+8. [Config](#config-pipelineconfigjson)
+9. [CLI reference](#cli-reference-non-mcp)
+10. [Troubleshooting](#troubleshooting)
+
+## When to use this
+
+Skip this package if a single product repo and local `features/{slug}/` is enough.
+
+Use it when:
+
+- several product repos should share one artifact archive
+- agents need FTS over past requests, decisions, and handoffs
+- you do not want those artifacts committed in the product repo
+
+`pipeline-kit init` does **not** install memory. It is an optional extra.
+
+## Step 1 — Install into the same CLI
+
+`pipeline-kit memory --help` only parses flags. Real commands (`status`,
+`doctor`, `link`, …) import `pipeline_memory` from the **same environment as
+`pipeline-kit`**. If the CLI is a `uv tool` binary (`~/.local/bin/pipeline-kit`
+on Windows too), install the extra with `uv tool`, not `pip` into system Python.
+
+From the **pipeline-kit checkout** (this repo, not the product):
 
 ```bash
-pip install -e packages/pipeline-kit-memory -e .
+cd /path/to/pipeline-kit-checkout
+uv tool install -e ".[memory]"
 ```
 
-> Note: `pip install -e ".[memory]"` may fail until the optional extra is
-> published or resolved as a path dependency. Prefer the direct path install above.
+That is the same pattern as `.[orchestrator]` and `.[assess]`.
 
-This installs:
+Confirm the extra is in the CLI you actually run:
+
+```bash
+command -v pipeline-kit        # Windows: Get-Command pipeline-kit
+pipeline-kit memory --help
+pipeline-kit memory doctor .
+```
+
+`doctor` / `status` may still exit 1 until you link a bank. The line
+`pipeline-kit-memory is not installed` must be gone.
+
+| How `pipeline-kit` was installed | How to add memory |
+|----------------------------------|-------------------|
+| `uv tool install …` or `./install.sh` | `uv tool install -e ".[memory]"` from this checkout |
+| Same venv as an editable kit install | `pip install -e packages/pipeline-kit-memory -e .` |
+
+`pip install -e ".[memory]"` can fail until the extra resolves as a path
+dependency. Prefer `uv tool install -e ".[memory]"` when the CLI is a uv tool.
+
+This adds:
 
 | Entry point | Purpose |
 |-------------|---------|
 | `pipeline-kit memory …` | CLI (link, index, search, mcp, …) |
 | `pipeline-memory-mcp` | Stdio MCP server binary (for IDE MCP config) |
 
-Confirm:
+## Step 2 — Product already has `.pipeline/`
+
+From the **product** root (customer app), not the kit checkout:
 
 ```bash
-pipeline-kit memory --help
-pipeline-memory-mcp --help
+cd /path/to/your-product
+pipeline-kit init --ide cursor    # skip if already initialized
+pipeline-kit doctor --ide cursor
 ```
 
-## One-time product setup (before MCP)
+## Step 3 — Link a memory bank
 
-From the **product project** root (must already have `.pipeline/`):
+Still in the product root. The bank path is a separate git folder (created
+if missing):
 
 ```bash
-# 1. Link an external memory bank (creates/scaffolds the bank repo)
 pipeline-kit memory link /abs/path/to/my-memory-bank .
 # multi-product shared bank:
 # pipeline-kit memory link /abs/path/to/org-bank . --project-id my-app --layout namespaced
+```
 
-# 2. Optional: copy existing local features/ into the bank
+Link writes `memory` into `.pipeline/config.json`. The MCP server reads that
+config via `--project` (the product path, not the bank).
+
+## Step 4 — Import, index, smoke-test
+
+```bash
+# Optional: copy existing local features/ into the bank
 pipeline-kit memory import-local .
 
-# 3. Build the FTS index (re-run after artifact changes)
+# Required before search returns hits (re-run after artifact changes)
 pipeline-kit memory index .
 
-# 4. Smoke-test without MCP
 pipeline-kit memory search "architecture" . --limit 5
 pipeline-kit memory status .
 pipeline-kit memory doctor .
 ```
 
-Link writes `memory` into `.pipeline/config.json`. The MCP server reads that
-config via `--project` (see below). **Indexing is required** before search tools
-return hits.
+**Indexing is required** before search tools return hits. MCP does not
+re-index on its own.
 
 ## Layout
 
@@ -267,19 +324,20 @@ Writes from MCP are not exposed; bank updates go through normal git +
 
 | Symptom | Fix |
 |---------|-----|
-| Server won’t start / command not found | Install package; use full path to `pipeline-memory-mcp` or `python.exe`; ensure same env as `pip install` |
+| Server won’t start / command not found | Install with `uv tool install -e ".[memory]"`; use full path to `pipeline-memory-mcp` or `python.exe` from **that** env |
+| `pipeline-kit memory --help` works, `status`/`doctor` say not installed | Extra is in a different Python than the CLI. Re-run `uv tool install -e ".[memory]"` from the kit checkout; do not `pip install` into system Python |
 | Tools missing in IDE | Config JSON invalid; wrong file location; restart client; check MCP logs |
 | `memory not enabled` / empty bank | Run `memory link` and check `.pipeline/config.json` → `memory.enabled` + `root` |
 | Search always `[]` | Run `memory index .`; query terms must appear in artifacts; try `memory_list_slugs` first |
 | Wrong project’s features | `--project` points at another repo; fix absolute path in MCP config |
-| PATH has old `pipeline-kit` | Prefer `pipeline-memory-mcp` from the env where you installed this package, or call via that Python |
+| PATH has old `pipeline-kit` | Prefer `pipeline-memory-mcp` from the env where you installed this extra, or call via that Python |
 
 ### Team checklist (copy into onboarding)
 
-1. Install: `pip install -e packages/pipeline-kit-memory -e .` (or your internal wheel).  
-2. In product repo: `memory link`, `import-local` (if needed), `memory index`.  
-3. Add **stdio MCP** entry with `pipeline-memory-mcp` and `--project <abs product path>`.  
-4. Restart IDE → verify `memory_list_slugs` / `memory_search`.  
+1. From the kit checkout: `uv tool install -e ".[memory]"` (same CLI as `pipeline-kit`).
+2. In the product repo: `memory link`, `import-local` (if needed), `memory index`.
+3. Add **stdio MCP** entry with `pipeline-memory-mcp` and `--project <abs product path>`.
+4. Restart IDE → verify `memory_list_slugs` / `memory_search`.
 5. After large artifact changes: re-run `memory index` (MCP does not auto-reindex).
 
 ---

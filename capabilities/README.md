@@ -2,6 +2,13 @@
 
 Optional add-ons. `pipeline-kit init` does **not** turn these on.
 
+## Contents
+
+1. [What ships here](#what-ships-here)
+2. [How to turn extras on](#how-to-turn-extras-on)
+
+## What ships here
+
 | Folder | Import name (unchanged) | CLI | What it is |
 |--------|-------------------------|-----|------------|
 | [`plugins/`](./plugins/) | `pipeline_plugins` | `pipeline-kit plugins` | External Graphify and Archify lifecycle |
@@ -10,7 +17,21 @@ Optional add-ons. `pipeline-kit init` does **not** turn these on.
 | [`eval/`](./eval/) | `pipeline_eval` | `pipeline-kit eval` | Judge catalog sync (Langfuse) |
 | [`feature_flags/`](./feature_flags/) | `pipeline_features` | `pipeline-kit features` | Named on/off keys that mirror `config.json` |
 | `packages/pipeline-kit-assess/` | `pipeline_assess` | `pipeline-kit scan` | Paid area (`assess` license). Install with `uv tool install -e ".[assess]"` |
-| `packages/pipeline-kit-memory/` | `pipeline_memory` | `pipeline-kit memory` | External artifact bank, FTS search, MCP server. Install with `.[memory]` |
+| `packages/pipeline-kit-memory/` | `pipeline_memory` | `pipeline-kit memory` | External artifact bank, FTS search, MCP. Install with `uv tool install -e ".[memory]"` |
+
+## How to turn extras on
+
+Install extras into the **same** CLI as `pipeline-kit` (usually `uv tool`):
+
+```bash
+cd /path/to/pipeline-kit-checkout
+uv tool install -e ".[orchestrator]"   # paid: pipeline-kit run
+uv tool install -e ".[assess]"         # paid: pipeline-kit scan
+uv tool install -e ".[memory]"         # free: pipeline-kit memory
+```
+
+Memory walkthrough: [`packages/pipeline-kit-memory/README.md`](../packages/pipeline-kit-memory/README.md).
+Package map: [`packages/README.md`](../packages/README.md).
 
 The web portal is not in this repository. It is the separate Enterprise Pipeline
 Portal, which reads these capabilities' state and calls their commands.

@@ -8,8 +8,22 @@ Associates add extra workflows with `pipeline_extensions/` in the
 customer app, or a `pipeline_kit.workflows` entry point. Kit mode never
 loads those files.
 
+## Contents
+
+1. [Steps](#steps)
+2. [Model choice](#model-choice)
+
+## Steps
+
+1. From the kit checkout, install the extra into the same CLI:
+
 ```bash
 uv tool install -e ".[orchestrator]"
+```
+
+2. Initialize the product:
+
+```bash
 cd /path/to/your-app
 pipeline-kit init --mode orchestrator --ide cursor
 pipeline-kit run --slug checkout-redesign --workflow feature-development \

@@ -30,7 +30,7 @@ Pipeline Kit ships **two kits**. [Kit mode](/docs/capabilities/modes) is the mar
 | Capability | How you turn it on |
 |------------|--------------------|
 | [Knowledge base](/docs/capabilities/knowledge) | `pipeline-kit knowledge init` |
-| [Memory bank and MCP](/docs/capabilities/memory) | `pip install -e packages/pipeline-kit-memory`, then `pipeline-kit memory link` |
+| [Memory bank and MCP](/docs/capabilities/memory) | `uv tool install -e ".[memory]"`, then `pipeline-kit memory link` |
 | [Plugins](/docs/capabilities/plugins) | External Graphify/Archify (`plugins install`) and bundled observability (`obs install`) |
 | [Graphify](/docs/capabilities/graphify) | Official CLI + skill registration |
 | [Archify](/docs/capabilities/archify) | Pinned Agent Skill `v2.16.0` |

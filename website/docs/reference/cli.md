@@ -45,7 +45,7 @@ See [Knowledge base](/docs/capabilities/knowledge).
 
 ## Memory
 
-Needs the optional memory package. See [Memory bank and MCP](/docs/capabilities/memory).
+Needs the optional memory extra (`uv tool install -e ".[memory]"` from the kit checkout, same CLI as `pipeline-kit`). See [Memory bank and MCP](/docs/capabilities/memory).
 
 | Command | Purpose |
 |---------|---------|

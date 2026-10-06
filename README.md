@@ -32,6 +32,33 @@ Requires **Python 3.11+**. No other runtime dependencies.
 
 ---
 
+## Contents
+
+1. [Why this exists](#why-this-exists)
+2. [Quick start](#quick-start) — install the CLI, init a project, optional extras
+3. [What you get after install](#what-you-get-after-install)
+4. [Adapt per customer](#adapt-per-customer)
+5. [Repository map](#repository-map)
+6. [QA knowledge flow](#qa-knowledge-flow-opt-in)
+7. [Project features](#project-features-opt-in-flags)
+8. [Optional plugins](#optional-plugins)
+9. [Tests](#tests)
+
+**How to move through this repo**
+
+1. Install `pipeline-kit` once ([Quick start](#quick-start)).
+2. In each product repo: `pipeline-kit init --ide cursor`, then `doctor` / `workflows`.
+3. Overlay the engagement ([Adapt per customer](#adapt-per-customer)).
+4. Optional extras — install into the **same** `uv tool` CLI, then use:
+   - Orchestrator: `uv tool install -e ".[orchestrator]"`
+   - Assess: `uv tool install -e ".[assess]"`
+   - Memory: `uv tool install -e ".[memory]"` — [step-by-step](./packages/pipeline-kit-memory/README.md)
+5. Optional plugins and observability ([Optional plugins](#optional-plugins)).
+
+Handbook: [CUSTOMER-GUIDE.md](./CUSTOMER-GUIDE.md). Docs site: [website/](./website/).
+
+---
+
 ## Why this exists
 
 Teams already use coding agents. They lack a repeatable operating model:
@@ -85,6 +112,30 @@ from the Graphify graph. It does not call a model. In chat, the shipped
 `repo-assessment` workflow fills rule, skill, and agent drafts from the
 templates in `.pipeline/skills/repo-assessment/assets/`. Details:
 [CUSTOMER-GUIDE.md](./CUSTOMER-GUIDE.md).
+
+Optional **memory bank** keeps `features/{slug}/` artifacts in a separate git
+repo (FTS search + optional MCP). It is **free**. `pipeline-kit init` does not
+install it. If you installed the CLI with `uv tool` / `./install.sh`, add the
+extra in the **same** environment (do not `pip install` into another Python):
+
+```bash
+cd /path/to/this-checkout
+uv tool install -e ".[memory]"
+pipeline-kit memory doctor .
+```
+
+Then in the **product** repo (must already have `.pipeline/`):
+
+```bash
+pipeline-kit memory link /abs/path/to/memory-bank .
+pipeline-kit memory import-local .    # skip if no local features/ yet
+pipeline-kit memory index .
+pipeline-kit memory search "architecture" . --limit 5
+```
+
+`--help` on `memory` only proves argparse. A real subcommand (`doctor`,
+`status`, `link`) is what imports `pipeline_memory`. Full steps:
+[packages/pipeline-kit-memory/README.md](./packages/pipeline-kit-memory/README.md).
 
 **Open and paid.** Kit mode, `ask`, `feature-development`, `obs report` and the
 other local commands are open. These areas need an org **license** (a signed
@@ -211,8 +262,9 @@ Folder names are the product map.
 | [`orchestrator/`](./orchestrator/) | Orchestrator-mode engine (`--mode orchestrator`) |
 | [`extensions/`](./extensions/) | Add workflows in kit mode or orchestrator mode |
 | [`capabilities/`](./capabilities/) | Plugins, knowledge, observability, eval, feature flags |
-| [`packages/pipeline-kit-assess/`](./packages/pipeline-kit-assess/) | Licensed repo assessment. Install with `.[assess]` |
-| [`packages/pipeline-kit-memory/`](./packages/pipeline-kit-memory/README.md) | External artifact bank + MCP. Install with `.[memory]` |
+| [`packages/`](./packages/README.md) | Optional extras (`assess`, `memory`). Same `uv tool` CLI as `pipeline-kit` |
+| [`packages/pipeline-kit-assess/`](./packages/pipeline-kit-assess/) | Licensed repo assessment. Install with `uv tool install -e ".[assess]"` |
+| [`packages/pipeline-kit-memory/`](./packages/pipeline-kit-memory/README.md) | External artifact bank + MCP. Install with `uv tool install -e ".[memory]"` |
 | Enterprise Pipeline Portal | Separate repository and product (enterprise plan). Projects report to it with `pipeline-kit portal connect`. See [the docs page](./website/docs/capabilities/portal.md) |
 | [CUSTOMER-GUIDE.md](./CUSTOMER-GUIDE.md) | Architect / developer handbook |
 | `website/` | Local Docusaurus documentation (`npm start` in that folder) |
@@ -272,6 +324,10 @@ pipeline-kit obs flush
 # Full guide: OBSERVABILITY.md
 pipeline-kit license status       # org, expiry, and which paid areas are on
 pipeline-kit license activate     # store the token from PIPELINE_KIT_LICENSE
+pipeline-kit memory link <bank> . # optional extra: uv tool install -e ".[memory]"
+pipeline-kit memory index .
+pipeline-kit memory search "query" .
+pipeline-kit memory doctor .
 pipeline-kit portal connect --url <portal> --key <key>   # report this project to a portal
 pipeline-kit portal status        # connection, and when the portal last heard from this project
 pipeline-kit portal push          # send the current state now

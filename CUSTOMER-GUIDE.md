@@ -14,6 +14,28 @@ framework every time.
 The rest of this file is the adaptation handbook (install, `AGENTS.md`,
 config, deploy, tests). Read the problem and architecture first.
 
+## Contents
+
+1. [Problem statement](#problem-statement)
+2. [How this architecture solves it](#how-this-architecture-solves-it)
+3. [Two kits](#two-kits-pick-one-at-init) — pick kit or orchestrator at `init`
+4. [What you get](#1-what-you-get)
+5. [Install](#2-install)
+   - [Memory bank](#202-memory-bank-optional-external-artifacts)
+   - [Licensing](#203-licensing-and-paid-areas)
+   - [Portal](#204-enterprise-pipeline-portal-separate-product)
+   - [QA knowledge](#21-optional-qa-knowledge-opt-in)
+   - [Plugins](#22-optional-plugins)
+6. [What you must configure](#3-what-you-must-configure-every-new-project)
+7. [`config.json`](#4-configjson--what-each-area-is-for)
+8. [Adapt local deploy](#5-adapt-local-deploy-different-tech)
+9. [Adapt tests](#6-adapt-tests-different-runners)
+10. [IDE differences](#7-ide-and-editor-differences)
+11. [Git ignore](#8-git-ignore-recommended)
+12. [Optional later](#9-optional-later)
+13. [What you should not edit](#10-what-you-should-not-edit)
+14. [New-project checklist](#11-new-project-checklist)
+
 ---
 
 ## Problem statement
@@ -302,7 +324,7 @@ Sign-off gates do not ask the decider. Full examples:
 | `pipeline-kit obs install [project]` | Merge fail-open agent-run hooks (Langfuse first). Does not replace existing hooks. |
 | `pipeline-kit obs report [project]` | Local scores from the ledger. No network. |
 | `pipeline-kit obs flush [project]` | Ship new ledger rows to the configured adapter. |
-| `pipeline-kit memory link <root> [project]` | Link external artifact bank (needs `.[memory]`) |
+| `pipeline-kit memory link <root> [project]` | Link external artifact bank. First: `uv tool install -e ".[memory]"` from the kit checkout |
 | `pipeline-kit memory index / search / mcp` | Index, query, or run the memory MCP server |
 | `pipeline-kit license status` | Show org, expiry, and which paid areas are on. Never prints the token. |
 | `pipeline-kit license activate` | Verify the token in `PIPELINE_KIT_LICENSE` and store it in `~/.pipeline/license.json` |
@@ -355,10 +377,21 @@ Full hook reference: [`.pipeline/hooks/README.md`](./.pipeline/hooks/README.md)
 
 By default, feature artifacts stay in the product repo under `features/{slug}/`.
 For multi-repo product lines or a shared org archive, install the optional
-memory package and link an external git folder:
+memory package and link an external git folder.
+
+**Step 1 — extra into the same CLI as `pipeline-kit`.** If you installed the
+CLI with `uv tool` / `./install.sh`, do not `pip install` into another Python
+(`memory --help` will work; `status` / `doctor` will say not installed):
 
 ```bash
-pip install -e packages/pipeline-kit-memory -e .
+cd /path/to/pipeline-kit-checkout
+uv tool install -e ".[memory]"
+pipeline-kit memory doctor .
+```
+
+**Step 2 — in the product repo** (must already have `.pipeline/`):
+
+```bash
 pipeline-kit memory link ../pipeline-memory --project-id my-app
 pipeline-kit memory import-local    # one-time copy of existing features/
 pipeline-kit memory index
@@ -372,12 +405,14 @@ pipeline-kit memory doctor
 - Search works from the CLI without MCP (`memory search`). Re-run `memory index`
   after artifact changes.
 
+Full walkthrough: [`packages/pipeline-kit-memory/README.md`](./packages/pipeline-kit-memory/README.md).
+
 #### MCP (optional — user must register the server)
 
 Memory does **not** auto-wire into the IDE. Each developer adds a **stdio MCP
 server** entry in their client config, then restarts the client.
 
-1. Install so `pipeline-memory-mcp` is on PATH (same env as above).
+1. Install so `pipeline-memory-mcp` is on PATH (same env as `uv tool install -e ".[memory]"`).
 2. Ensure the product is linked and indexed (`memory link` / `memory index`).
 3. Add MCP config (absolute `--project` = product repo with `.pipeline/config.json`):
 
@@ -428,9 +463,6 @@ and use args: `-m`, `pipeline_memory.mcp_server`, `--project`, `<product path>`.
    `memory_list_slugs`, `memory_list_files`.
 5. You do not keep `memory mcp` running in a terminal for daily use — the client
    spawns stdio when a tool is called. Use the terminal for link/index/search/debug.
-
-Full detail, troubleshooting, and checklist:
-[`packages/pipeline-kit-memory/README.md`](./packages/pipeline-kit-memory/README.md).
 
 ### 2.0.3 Licensing and paid areas
 

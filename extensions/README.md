@@ -3,6 +3,14 @@
 Add a process without forking the kit. There are **two modes**, and each
 has its own extension contract.
 
+## Contents
+
+1. [Pick a mode](#pick-a-mode)
+2. [Kit mode](#kit-mode)
+3. [Orchestrator mode](#orchestrator-mode)
+
+## Pick a mode
+
 ```text
 kit mode            markdown pack in .pipeline/
   └─ extensions/kit

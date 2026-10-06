@@ -40,6 +40,7 @@ The CLI is the same. The **project** is one kit or the other.
 | **Kit mode** (default) | `pipeline-kit init --ide cursor` | Work in the IDE via `run-workflow` |
 | **Orchestrator mode** | `uv tool install -e ".[orchestrator]"` then `pipeline-kit init --mode orchestrator --ide cursor` | `pipeline-kit run --request "…"` |
 | **Assessment** (either kit) | `uv tool install -e ".[assess]"` and an `assess` license | `pipeline-kit knowledge extract`, then `pipeline-kit scan` |
+| **Memory bank** (either kit, free) | `uv tool install -e ".[memory]"` from the kit checkout | In the product: `memory link`, `memory index`. See [Memory](/docs/capabilities/memory) |
 
 Read [Two kits](/docs/capabilities/modes) before you initialize a customer repo. You should not mix modes in one project.
 

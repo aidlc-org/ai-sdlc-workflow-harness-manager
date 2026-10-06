@@ -9,6 +9,15 @@ The memory bank is an **external archive of feature artifacts**. Instead of leav
 The [Wiki](/docs/capabilities/wiki) holds short reusable *lessons* inside `.pipeline/wiki/`. The memory bank holds the *artifacts of every feature* (requests, architecture, decisions, handoffs), usually in a shared repo. They are separate and do not overlap.
 :::
 
+## Steps
+
+1. [When to use it](#when-to-use-it)
+2. [Install the extra](#install-the-extra) — same CLI as `pipeline-kit`
+3. [Set up a product](#set-up-a-product) — `link` → `index` → `search`
+4. [Register the MCP server](#register-the-mcp-server) (optional)
+5. [Tools](#tools)
+6. [Troubleshooting](#troubleshooting)
+
 ## When to use it
 
 - A product line spans several repos and you want one shared archive.
@@ -17,15 +26,23 @@ The [Wiki](/docs/capabilities/wiki) holds short reusable *lessons* inside `.pipe
 
 If you have a single repo and are happy with `features/{slug}/` in it, you do not need this.
 
-## Install
+## Install the extra
 
-It is an optional package. From the kit checkout:
+It is optional and **free** ([Licensing](/docs/reference/licensing)). `pipeline-kit init` does not install it.
+
+`pipeline-kit memory --help` only parses flags. Real commands import `pipeline_memory` from the **same environment as the CLI**. If you installed `pipeline-kit` with `uv tool` / `./install.sh`, add the extra with `uv tool` from the kit checkout — not `pip` into another Python.
 
 ```bash
-pip install -e packages/pipeline-kit-memory -e .
+cd /path/to/pipeline-kit-checkout
+uv tool install -e ".[memory]"
+pipeline-kit memory doctor .
 ```
 
-This adds `pipeline-kit memory ...` and the `pipeline-memory-mcp` server binary. Using it is part of the free tier, see [Licensing](/docs/reference/licensing).
+That is the same pattern as `.[orchestrator]` and `.[assess]`. This adds `pipeline-kit memory ...` and the `pipeline-memory-mcp` server binary.
+
+`doctor` / `status` can still exit 1 until you `memory link`. The line `pipeline-kit-memory is not installed` must be gone.
+
+If the kit is an editable install in the **same** venv as the CLI, `pip install -e packages/pipeline-kit-memory -e .` is an alternative.
 
 ## Set up a product
 
@@ -105,7 +122,8 @@ To verify, restart the IDE, call `memory_list_slugs`, then `memory_search` with 
 
 | Symptom | Fix |
 |---------|-----|
-| Command not found | Use the full path to `pipeline-memory-mcp` or `python.exe`, from the env where you ran `pip install` |
+| Command not found | Use the full path to `pipeline-memory-mcp` or `python.exe`, from the env where you ran `uv tool install -e ".[memory]"` |
+| `--help` works, `status`/`doctor` say not installed | Extra is in a different Python than the CLI. Re-run `uv tool install -e ".[memory]"` from the kit checkout |
 | Tools missing in the IDE | Invalid JSON or wrong file location. Restart the client and check MCP logs |
 | `memory not enabled` | Run `memory link` and check `memory.enabled` and `memory.root` in `.pipeline/config.json` |
 | Search always empty | Run `pipeline-kit memory index .`, then try `memory_list_slugs` first |
