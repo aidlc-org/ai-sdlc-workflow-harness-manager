@@ -9,8 +9,10 @@ default branch. Older tags may not receive backports.
 
 Please **do not** open a public GitHub issue for security problems.
 
-Email the maintainers at the contact listed on the GitHub organization, or use
-GitHub's private vulnerability reporting for this repository if it is enabled.
+**Preferred:** use [GitHub private vulnerability reporting](https://github.com/digitalneedstech/ai-sdlc-workflow-harness-manager/security/advisories/new) for this repository (enable “Private vulnerability reporting” in repo settings if it is not on yet).
+
+If that is unavailable, email the maintainers via the contact on the
+[digitalneedstech](https://github.com/digitalneedstech) GitHub organization profile.
 
 Include:
 
@@ -24,7 +26,10 @@ before public disclosure.
 ## Secrets and keys
 
 - License **issue and validation** live in the private `pipeline-kit-license`
-  package. The Ed25519 **public** key ships only with that package.
+  package (not this repository). Paying customers receive an **installable**
+  package/wheel from the vendor — not the signing private key, and not
+  unrestricted source access by default.
+- The Ed25519 **public** key ships only with that private package.
 - The license **signing** private key must never appear in any repository, CI
   logs, issues, or pull requests.
 - Portal ingest keys, customer license tokens, and deployment secrets belong in

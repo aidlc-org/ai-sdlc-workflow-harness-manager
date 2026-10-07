@@ -472,9 +472,11 @@ checks support commercial entitlement; they do not replace or narrow the MIT
 grant.
 
 **Issue and validation** live in a separate **private** package,
-`pipeline-kit-license` (not this repo). Install that package for enterprise
-use, then activate a vendor token. Without it, paid commands fail closed
-(exit 73). Six areas require an org license when using the distributed CLI:
+`pipeline-kit-license` (not this repo, not public PyPI). After you purchase an
+enterprise plan, the vendor gives you an **installable** package (private index
+or wheel) plus a signed token. Install that package next to `pipeline-kit`, then
+activate the token. Without it, paid commands fail closed (exit 73). Six areas
+require an org license when using the distributed CLI:
 
 | Area (`license status` name) | What it unlocks |
 |------------------------------|-----------------|

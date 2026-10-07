@@ -27,9 +27,14 @@ python3 install.py --sync-kit
 ## Tests
 
 ```bash
-python3 -m pip install pytest
+python3 -m pip install -e ".[dev]"
 python3 -m pytest -q tests
 ```
+
+Public CI has no private `pipeline-kit-license`. Crypto and full entitlement
+tests are marked `requires_license_engine` and skip there. Fail-closed paths use
+`license_absent`. Maintainers with a sibling checkout can
+`pip install -e ../pipeline-kit-license` to run the full suite.
 
 ## Release a new version
 

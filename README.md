@@ -36,17 +36,18 @@ Requires **Python 3.11+**. Optional extras add more packages (orchestrator SDK, 
 
 1. [Why this exists](#why-this-exists)
 2. [Quick start](#quick-start) — install the CLI, init a project, optional extras
-3. [What you get after install](#what-you-get-after-install)
-4. [Adapt per customer](#adapt-per-customer)
-5. [Repository map](#repository-map)
-6. [QA knowledge flow](#qa-knowledge-flow-opt-in)
-7. [Project features](#project-features-opt-in-flags)
-8. [Optional plugins](#optional-plugins)
-9. [Tests](#tests)
+3. [Local setup (developers)](#local-setup-developers) — clone, editable install, tests, sibling packages
+4. [What you get after install](#what-you-get-after-install)
+5. [Adapt per customer](#adapt-per-customer)
+6. [Repository map](#repository-map)
+7. [QA knowledge flow](#qa-knowledge-flow-opt-in)
+8. [Project features](#project-features-opt-in-flags)
+9. [Optional plugins](#optional-plugins)
+10. [Tests](#tests)
 
 **How to move through this repo**
 
-1. Install `pipeline-kit` once ([Quick start](#quick-start)).
+1. Install `pipeline-kit` once ([Quick start](#quick-start) or [Local setup](#local-setup-developers)).
 2. In each product repo: `pipeline-kit init --ide cursor`, then `doctor` / `workflows`.
 3. Overlay the engagement ([Adapt per customer](#adapt-per-customer)).
 4. Optional extras — install into the **same** `uv tool` CLI, then use:
@@ -77,15 +78,23 @@ guide:
 
 ## Quick start
 
-Install the `pipeline-kit` tool once:
+Install the `pipeline-kit` tool once (Python **3.11+**):
 
 ```bash
-uv tool install git+<this-repo-url>
-# or: pipx install git+<this-repo-url>
+# Recommended: tool install from the public repo
+uv tool install git+https://github.com/digitalneedstech/ai-sdlc-workflow-harness-manager.git
+# or: pipx install git+https://github.com/digitalneedstech/ai-sdlc-workflow-harness-manager.git
 ```
 
 For a local clone, `./install.sh` performs the same tool install with `uv`
 or `pipx`.
+
+Editable checkout (contributors):
+
+```bash
+python -m pip install -e ".[dev]"
+python -m pytest -q
+```
 
 Set up a customer repository:
 
@@ -189,91 +198,90 @@ After install, the same handbook is copied to
 
 ---
 
-## What you get after install
+## Local setup (developers)
 
-| Path | Role |
-|------|------|
-| `.pipeline/` | Workflows, skills, agent briefs, rules, wiki, loader |
-| `.pipeline/config.json` | This engagement: chains, tracker, verify, deploy |
-| `.pipeline/docs/CUSTOMER-GUIDE.md` | Copied handbook |
-| `.pipeline/docs/OBSERVABILITY.md` | Agent-run observability (after `init`; see repo [OBSERVABILITY.md](./OBSERVABILITY.md)) |
-| `.pipeline/hooks/` | Policy guardrails (shell, MCP, pack allowlist). Merged on `init --ide cursor` / `claude-code` |
-| `.pipeline/hooks/obs/` | Observability collectors (off until `obs install`) |
-| `.cursor/skills/run-workflow/` or `.claude/skills/run-workflow/` | The only IDE-discovered skill |
+For a local clone of this repo:
 
-Shipped workflows: `ask`, `feature-development`, `jira-story` / `jira-epic` /
-`jira-bug`, `test-knowledge-bootstrap`. Structured test design is opt-in
-(`pipeline-kit knowledge init`). Details: [What you get](./CUSTOMER-GUIDE.md#1-what-you-get).
+1. Install the `pipeline-kit` tool once (Python **3.11+**):
 
----
+   ```bash
+   # Recommended: tool install from the public repo
+   uv tool install git+https://github.com/digitalneedstech/ai-sdlc-workflow-harness-manager.git
+   # or: pipx install git+https://github.com/digitalneedstech/ai-sdlc-workflow-harness-manager.git
+   ```
 
-## Adapt per customer
+   For a local clone, `./install.sh` performs the same tool install with `uv`
+   or `pipx`.
 
-The kit is generic. Every new project must customize two files, then deploy
-and test runbooks if the sample script does not match the stack.
+2. Editable checkout:
 
-| Step | Where |
-|------|--------|
-| Routing table + product blurb | [AGENTS.md](./CUSTOMER-GUIDE.md#31-agentsmd-create-or-edit) |
-| Verify, deploy targets, Jira on/off | [`config.json`](./CUSTOMER-GUIDE.md#4-configjson--what-each-area-is-for) |
-| Local start / health checks | [Adapt local deploy](./CUSTOMER-GUIDE.md#5-adapt-local-deploy-different-tech) |
-| Test runners | [Adapt tests](./CUSTOMER-GUIDE.md#6-adapt-tests-different-runners) |
-| Cursor / Claude Code / GitHub / none | [IDE and editor differences](./CUSTOMER-GUIDE.md#7-ide-and-editor-differences) |
-| Ignore run artifacts | [Git ignore](./CUSTOMER-GUIDE.md#8-git-ignore-recommended) |
-| Tracker MCP, wiki, hooks, new workflow | [Optional later](./CUSTOMER-GUIDE.md#9-optional-later) |
-| Loader, workflow JSON, secrets | [What you should not edit](./CUSTOMER-GUIDE.md#10-what-you-should-not-edit) |
-| End-to-end checklist | [New-project checklist](./CUSTOMER-GUIDE.md#11-new-project-checklist) |
+   ```bash
+   python -m pip install -e ".[dev]"
+   python -m pytest -q
+   ```
 
-Must-configure overview:
-[What you must configure](./CUSTOMER-GUIDE.md#3-what-you-must-configure-every-new-project).
+3. Set up a customer repository (example):
 
----
+   ```bash
+   cd /path/to/customer-app
+   pipeline-kit init --ide cursor
+   pipeline-kit doctor --ide cursor
+   pipeline-kit workflows
+   ```
 
-## Repository map
+4. Optional **orchestrator mode** (`--mode orchestrator`) runs the same
+   workflows from Python in the wheel via the Cursor SDK. Install the extra
+   (`uv tool install -e ".[orchestrator]"`) and pass the user ask with
+   `--request` or `features/<slug>/request.md` — the chat session is not
+   inherited. Kit mode stays the default. Associates add extra workflows with
+   `pipeline-kit workflows --scaffold NAME` (orchestrator only).
+   Copy-ready examples (security review, CI audit, dependency audit,
+   accessibility review): [`extensions/orchestrator/`](./extensions/orchestrator/).
 
-```text
-kit/                    kit mode — portable pack copied to .pipeline
-orchestrator/           orchestrator mode — Python engine (import: pipeline_orchestrator)
-extensions/
-  kit/                  add a markdown workflow (skill + JSON + config)
-  orchestrator/         associate Python workflows (copy pipeline_extensions/)
-capabilities/
-  plugins/              Graphify + Archify (import: pipeline_plugins)
-  knowledge/            QA overlay that consumes Graphify
-  observability/        agent-run traces (import: pipeline_observability)
-  eval/                 judges / Langfuse eval (import: pipeline_eval)
-  feature_flags/        named on/off keys (import: pipeline_features)
-packages/               separate installable extras (own pyproject.toml each)
-  pipeline-kit-assess/  licensed repo assessment (import: pipeline_assess)
-  pipeline-kit-memory/  external artifact bank + MCP (import: pipeline_memory)
-website/                local Docusaurus docs
-tests/
-```
+5. Optional **assessment** is a separate package, the same kind of extra as
+   orchestrator. It is a **paid area**: install it with
+   `uv tool install -e ".[assess]"` and activate a license that includes `assess`. `pipeline-kit scan` then writes `features/assessment/`
+   from the Graphify graph. It does not call a model. In chat, the shipped
+   `repo-assessment` workflow fills rule, skill, and agent drafts from the
+   templates in `.pipeline/skills/repo-assessment/assets/`. Details:
+   [CUSTOMER-GUIDE.md](./CUSTOMER-GUIDE.md).
 
-Python **import names are unchanged** (`pipeline_plugins`,
-`pipeline_orchestrator`, …) so hooks and associate workflows keep working.
-Folder names are the product map.
+6. Optional **memory bank** keeps `features/{slug}/` artifacts in a separate git
+   repo (FTS search + optional MCP). It is **free**. `pipeline-kit init` does not
+   install it. If you installed the CLI with `uv tool` / `./install.sh`, add the
+   extra in the **same** environment (do not `pip install` into another Python):
 
-| Path | Role |
-|------|------|
-| `pyproject.toml` / `install.sh` | Install the `pipeline-kit` command with `uv` or `pipx` |
-| `install.py` | CLI implementation and backward-compatible Python installer |
-| [`kit/`](./kit/) | Kit-mode pack (`kit/pipeline/` → `<app>/.pipeline`) |
-| [`orchestrator/`](./orchestrator/) | Orchestrator-mode engine (`--mode orchestrator`) |
-| [`extensions/`](./extensions/) | Add workflows in kit mode or orchestrator mode |
-| [`capabilities/`](./capabilities/) | Plugins, knowledge, observability, eval, feature flags |
-| [`packages/`](./packages/README.md) | Optional extras (`assess`, `memory`). Same `uv tool` CLI as `pipeline-kit` |
-| [`packages/pipeline-kit-assess/`](./packages/pipeline-kit-assess/) | Licensed repo assessment. Install with `uv tool install -e ".[assess]"` |
-| [`packages/pipeline-kit-memory/`](./packages/pipeline-kit-memory/README.md) | External artifact bank + MCP. Install with `uv tool install -e ".[memory]"` |
-| Enterprise Pipeline Portal | Separate **proprietary** repository and product (enterprise plan). Projects report to it with `pipeline-kit portal connect`. See [the docs page](./website/docs/capabilities/portal.md) |
-| [CUSTOMER-GUIDE.md](./CUSTOMER-GUIDE.md) | Architect / developer handbook |
-| `website/` | Local Docusaurus documentation (`npm start` in that folder) |
-| `tests/` | Installer tests (`pytest`) |
+   ```bash
+   cd /path/to/this-checkout
+   uv tool install -e ".[memory]"
+   pipeline-kit memory doctor .
+   ```
 
-Maintainers who edit a live `.pipeline` in this repo can refresh the bundle
-using the backward-compatible maintainer command:
+   Then in the **product** repo (must already have `.pipeline/`):
 
-```bash
+   ```bash
+   pipeline-kit memory link /abs/path/to/memory-bank .
+   pipeline-kit memory import-local .    # skip if no local features/ yet
+   pipeline-kit memory index .
+   pipeline-kit memory search "architecture" . --limit 5
+   ```
+
+   `--help` on `memory` only proves argparse. A real subcommand (`doctor`,
+   `status`, `link`) is what imports `pipeline_memory`. Full steps:
+   [packages/pipeline-kit-memory/README.md](./packages/pipeline-kit-memory/README.md).
+
+7. **Open and paid.** Kit mode, free workflows, `obs report`, and most local commands
+   are open. These areas need an org **license** (private `pipeline-kit-license`
+   package + signed token): **orchestrator**, **Jira** intake, **governance**
+   workflows, **evidence** (agent-run observability and eval), **assess**
+   (`pipeline-kit scan`), and **portal** connect/push. Check with
+   `pipeline-kit license status`; activate with `pipeline-kit license activate`.
+   Details: [CUSTOMER-GUIDE.md](./CUSTOMER-GUIDE.md).
+
+8. **Enterprise Pipeline Portal.** The web portal is a **separate proprietary
+   product** in its own repository (not open source). It gives a team one place to
+   see every project: fleet health, features, plugins, packages, runs and licenses,
+   with sign-in, roles (admin, project operator, viewer), an analysis dashboard,
 python3 install.py --sync-kit
 ```
 
@@ -465,6 +473,9 @@ troubleshooting: **[OBSERVABILITY.md](./OBSERVABILITY.md)**.
 ## Tests
 
 ```bash
-python3 -m pip install pytest
+python3 -m pip install -e ".[dev]"
 python3 -m pytest -q tests
 ```
+
+Public CI does not install the private license package. Crypto entitlement tests
+skip unless `pipeline-kit-license` is available locally.

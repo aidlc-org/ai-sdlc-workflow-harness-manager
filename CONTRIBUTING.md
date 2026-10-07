@@ -3,6 +3,9 @@
 Thanks for helping improve the open kit. This repository is the **MIT-licensed**
 harness: installer, pack, orchestrator engine, extensions, and optional packages.
 
+**Package name:** `pipeline-kit` (install/import).  
+**Repository:** [ai-sdlc-workflow-harness-manager](https://github.com/digitalneedstech/ai-sdlc-workflow-harness-manager).
+
 ## What belongs here
 
 - Bug fixes and tests for the CLI, pack, hooks, plugins, knowledge, memory, and
@@ -14,6 +17,7 @@ harness: installer, pack, orchestrator engine, extensions, and optional packages
 ## What does not belong here
 
 - The **Enterprise Pipeline Portal** server or UI (separate proprietary product)
+- The private **`pipeline-kit-license`** package source (vendor-only)
 - Signing keys, customer licenses, ingest keys, or production credentials
 - Customer project overlays, private configs, or engagement-specific secrets
 
@@ -22,8 +26,26 @@ harness: installer, pack, orchestrator engine, extensions, and optional packages
 Requires Python 3.11+.
 
 ```bash
-python -m pip install -e ".[dev]"  # if a dev extra exists; otherwise:
-python -m pip install -e . pytest cryptography
+python -m pip install -e ".[dev]"
+# Optional extras used by some tests:
+# python -m pip install -e ".[dev,orchestrator,assess,memory]"
+python -m pytest -q
+```
+
+Public CI runs without the private license package. Tests that need real
+crypto are marked `requires_license_engine` and skip there. Maintainers with a
+local sibling checkout can:
+
+```bash
+python -m pip install -e ../pipeline-kit-license
+python -m pytest -q
+```
+
+To simulate public CI on a machine that has the private package:
+
+```bash
+# PowerShell
+$env:PIPELINE_KIT_TEST_WITHOUT_LICENSE = "1"
 python -m pytest -q
 ```
 

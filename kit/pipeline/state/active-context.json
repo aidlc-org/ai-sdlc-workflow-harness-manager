@@ -1,36 +1,28 @@
 {
   "workflow": "feature-development",
-  "step": "architect-agent",
+  "step": "product-manager-agent",
   "slug": "try-pm",
   "allowed_reads": [
-    ".pipeline/agents/architect-agent.md",
-    ".pipeline/skills/architecture-design/SKILL.md",
-    ".pipeline/skills/test-design/SKILL.md",
-    ".pipeline/skills/architecture-visualization/SKILL.md",
-    ".pipeline/skills/test-design/assets/cases-template.json",
-    ".pipeline/skills/test-design/assets/inventory-template.json",
-    ".pipeline/skills/test-design/assets/model-delta-template.json",
-    ".pipeline/skills/architecture-visualization/assets/diagram-manifest-template.json",
-    ".pipeline/skills/feature-development/assets/architect-policy.md",
-    ".pipeline/skills/feature-development/assets/next-agent-policy.md",
-    ".pipeline/skills/feature-development/assets/minimalism-policy.md",
-    ".pipeline/skills/feature-development/assets/pipeline-state.md",
-    ".pipeline/skills/feature-development/assets/decisions-template.md",
+    ".pipeline/agents/product-manager-agent.md",
+    ".pipeline/skills/product-planning/SKILL.md",
     ".pipeline/skills/feature-development/assets/clarify-first.md",
+    ".pipeline/skills/feature-development/assets/pipeline-state.md",
+    ".pipeline/skills/feature-development/assets/ui-designer-policy.md",
+    ".pipeline/skills/feature-development/assets/decisions-template.md",
     ".pipeline/skills/feature-development/assets/questions-format.md",
-    ".pipeline/skills/feature-development/assets/architecture-template.md",
-    ".pipeline/skills/feature-development/assets/implementation-plan-template.md",
-    ".pipeline/skills/feature-development/assets/handoff-architect-template.md",
+    ".pipeline/skills/feature-development/assets/research-template.md",
+    ".pipeline/skills/feature-development/assets/prd-template.md",
+    ".pipeline/skills/feature-development/assets/handoff-pm-template.md",
     ".pipeline/skills/feature-development/assets/agent-state-template.json",
-    ".pipeline/skills/feature-development/assets/test-design-policy.md",
-    ".pipeline/skills/feature-development/assets/architecture-diagrams-policy.md",
+    ".pipeline/skills/feature-development/assets/next-agent-policy.md",
     ".pipeline/skills/feature-development/assets/pipeline-state-template.json"
   ],
   "seed_reads": [
-    ".pipeline/agents/architect-agent.md",
-    ".pipeline/skills/architecture-design/SKILL.md",
-    ".pipeline/skills/test-design/SKILL.md",
-    ".pipeline/skills/architecture-visualization/SKILL.md"
+    ".pipeline/agents/product-manager-agent.md",
+    ".pipeline/skills/product-planning/SKILL.md"
   ],
-  "seed_bundle": "features/try-pm/step-context.md"
+  "seed_bundle": "features/try-pm/step-context.md",
+  "artifact_root": "C:\\Users\\Piyush_Bhatia\\AppData\\Local\\Temp\\pytest-of-PiyushBhatia\\pytest-95\\test_activate_writes_one_seed_0\\app\\features",
+  "feature_dir": "C:\\Users\\Piyush_Bhatia\\AppData\\Local\\Temp\\pytest-of-PiyushBhatia\\pytest-95\\test_activate_writes_one_seed_0\\app\\features\\try-pm",
+  "feature_rel": "features/try-pm"
 }

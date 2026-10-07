@@ -12,12 +12,20 @@ license = "MIT"
 authors = [{ name = "Pipeline Kit maintainers" }]
 dependencies = []
 
+[project.urls]
+Homepage = "https://github.com/digitalneedstech/ai-sdlc-workflow-harness-manager"
+Repository = "https://github.com/digitalneedstech/ai-sdlc-workflow-harness-manager"
+Issues = "https://github.com/digitalneedstech/ai-sdlc-workflow-harness-manager/issues"
+Documentation = "https://github.com/digitalneedstech/ai-sdlc-workflow-harness-manager/tree/main/website"
+
 [project.optional-dependencies]
+dev = ["pytest>=8", "cryptography>=44"]
 orchestrator = ["cursor-sdk", "typesafe-sdk"]
 assess = ["pipeline-kit-assess"]
 memory = ["pipeline-kit-memory"]
 # Enterprise license engine is a private package (not on public PyPI).
-# Install separately: pip install -e ../pipeline-kit-license
+# Paying customers receive an installable wheel/private index entry from the vendor.
+# Maintainers: pip install -e ../pipeline-kit-license
 
 [tool.uv.workspace]
 members = ["packages/pipeline-kit-assess", "packages/pipeline-kit-memory"]
@@ -28,6 +36,10 @@ pipeline-kit-memory = { workspace = true }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+  "license_absent: do not grant a test license (fail-closed paths)",
+  "requires_license_engine: needs private pipeline-kit-license installed",
+]
 
 [project.scripts]
 pipeline-kit = "pipeline_kit.install:cli_main"

@@ -9,9 +9,10 @@ commercial entitlement for vendor-distributed builds; they do not narrow the
 MIT grant.
 
 **Issue and validation** are implemented in a separate **private** package,
-[`pipeline-kit-license`](https://github.com/) (not published with this open
-repo). Enterprise users install that package, then activate a vendor token.
-Without it, paid commands exit **73**.
+`pipeline-kit-license` (not published with this open repository and not on
+public PyPI). Enterprise customers receive an **installable** package (private
+index or wheel) from the vendor, then activate a signed token. Without that
+package, paid commands exit **73**.
 
 Six areas need an org **license** in the distributed CLI: a signed token that
 names the organization, an expiry date and the areas it covers.
@@ -34,6 +35,7 @@ Kit mode, `ask`, `feature-development`, `knowledge`, `plugins`, `memory`,
 
 ```bash
 # Requires the private pipeline-kit-license package on the same Python env as pipeline-kit
+# (vendor-provided wheel or private index — not this public repo)
 export PIPELINE_KIT_LICENSE='<token>'
 pipeline-kit license activate     # verifies, then stores ~/.pipeline/license.json (mode 0600)
 pipeline-kit license status       # org, expiry, and each area on or off

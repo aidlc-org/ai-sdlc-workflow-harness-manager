@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import runpy
 import stat
@@ -22,14 +21,21 @@ def _cli(argv: list[str]) -> int:
 
 
 def _clear(monkeypatch: pytest.MonkeyPatch, home: Path) -> None:
-    import pipeline_license as eng
+    """Point home at a clean temp dir and drop any env token."""
     from pipeline_kit import license as lic
 
     home.mkdir(parents=True, exist_ok=True)
     monkeypatch.delenv(lic.ENV_LICENSE, raising=False)
-    monkeypatch.setattr(eng.Path, "home", lambda: home)
+    monkeypatch.setattr(Path, "home", lambda: home)
+    try:
+        import pipeline_license as eng
+
+        monkeypatch.setattr(eng.Path, "home", lambda: home)
+    except ImportError:
+        pass
 
 
+@pytest.mark.license_absent
 def test_kit_mode_stays_open_without_a_license(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     _clear(monkeypatch, tmp_path / "home")
     app = tmp_path / "app"
@@ -39,6 +45,7 @@ def test_kit_mode_stays_open_without_a_license(tmp_path: Path, monkeypatch: pyte
     assert _cli(["features", "enable", "telemetry", str(app)]) == 0
 
 
+@pytest.mark.license_absent
 def test_paid_commands_exit_73_without_a_license(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ):
@@ -74,6 +81,7 @@ def test_paid_commands_exit_73_without_a_license(
     assert "PIPELINE_KIT_LICENSE=" not in err
 
 
+@pytest.mark.requires_license_engine
 def test_governance_needs_its_own_area(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -108,6 +116,7 @@ def test_governance_needs_its_own_area(
     )
 
 
+@pytest.mark.requires_license_engine
 def test_activate_stores_a_private_file_and_status_hides_the_token(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -145,6 +154,7 @@ def test_activate_stores_a_private_file_and_status_hides_the_token(
     assert token not in out
 
 
+@pytest.mark.requires_license_engine
 def test_expired_token_is_rejected(enterprise_license: dict, monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     from pipeline_kit import license as lic
 
@@ -176,6 +186,7 @@ def test_issue_requires_a_kit_checkout(tmp_path: Path):
     )
 
 
+@pytest.mark.requires_license_engine
 def test_issue_signs_a_token_that_activates(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -222,6 +233,7 @@ def test_issue_signs_a_token_that_activates(
     assert claims["features"] == ["jira", "orchestrator"]
 
 
+@pytest.mark.requires_license_engine
 def test_public_signing_helpers_match_private_aliases(
     tmp_path: Path,
     enterprise_license: dict,
@@ -250,6 +262,7 @@ def test_public_signing_helpers_match_private_aliases(
     assert lic.verify_token(token)["features"] == ["assess"]
 
 
+@pytest.mark.requires_license_engine
 def test_issue_defaults_to_every_paid_area_including_portal(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -277,6 +290,7 @@ def test_issue_defaults_to_every_paid_area_including_portal(
     assert "portal" in lic.FEATURES
 
 
+@pytest.mark.license_absent
 def test_scan_needs_the_assess_area(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]):
     _clear(monkeypatch, tmp_path / "home")
     app = tmp_path / "app"
@@ -286,9 +300,17 @@ def test_scan_needs_the_assess_area(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     assert "pipeline-kit license activate" in err or "pipeline-kit-license" in err
 
 
+def test_shim_features_list_is_public():
+    from pipeline_kit import license as lic
+
+    assert "portal" in lic.FEATURES
+    assert "orchestrator" in lic.FEATURES
+    assert "assess" in lic.FEATURES
+
+
+@pytest.mark.requires_license_engine
 def test_shim_available_when_private_package_present():
     from pipeline_kit import license as lic
 
     assert lic.available() is True
-    assert "portal" in lic.FEATURES
 
