@@ -1,4 +1,6 @@
 include VERSION
 include CUSTOMER-GUIDE.md
+include LICENSE
+include license_public_key.txt
 recursive-include kit/pipeline *
 

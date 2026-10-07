@@ -10,7 +10,8 @@ description: Python 3.11+, uv or pipx, and an optional IDE.
 | **Python 3.11+** | The `pipeline-kit` CLI and pack loader |
 | **uv** or **pipx** | Install the CLI as a user tool |
 
-The CLI has **no other runtime dependencies**. You do not need Node.js for the kit itself.
+The CLI requires **Python 3.11+** and the `cryptography` package (pulled in with
+`pipeline-kit`). You do not need Node.js for the kit itself.
 
 ## Optional, by feature
 

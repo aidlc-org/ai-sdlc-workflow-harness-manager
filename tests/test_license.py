@@ -1,4 +1,4 @@
-"""Org license gates the paid areas (orchestrator, jira, governance, evidence, assess). Kit mode stays open."""
+"""Org license gates the paid areas (orchestrator, jira, governance, evidence, assess, portal). Kit mode stays open."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ import importlib.util
 import json
 import runpy
 import stat
+import sys
 import time
 from pathlib import Path
 
@@ -21,11 +22,12 @@ def _cli(argv: list[str]) -> int:
 
 
 def _clear(monkeypatch: pytest.MonkeyPatch, home: Path) -> None:
+    import pipeline_license as eng
     from pipeline_kit import license as lic
 
     home.mkdir(parents=True, exist_ok=True)
     monkeypatch.delenv(lic.ENV_LICENSE, raising=False)
-    monkeypatch.setattr(lic.Path, "home", lambda: home)
+    monkeypatch.setattr(eng.Path, "home", lambda: home)
 
 
 def test_kit_mode_stays_open_without_a_license(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
@@ -64,9 +66,11 @@ def test_paid_commands_exit_73_without_a_license(
     assert _cli(["features", "enable", "agent-observability", str(app)]) == 73
     assert _cli(["obs", "install", str(app), "--ide", "cursor"]) == 73
     assert _cli(["eval", "judges", "sync", str(app)]) == 73
+    assert _cli(["portal", "connect", str(app), "--url", "http://127.0.0.1:9", "--key", "x"]) == 73
+    assert _cli(["portal", "push", str(app)]) == 73
     assert _cli(["obs", "report", str(app)]) == 1
     err = capsys.readouterr().err
-    assert "pipeline-kit license activate" in err
+    assert "pipeline-kit license activate" in err or "pipeline-kit-license" in err
     assert "PIPELINE_KIT_LICENSE=" not in err
 
 
@@ -123,14 +127,21 @@ def test_activate_stores_a_private_file_and_status_hides_the_token(
     assert _cli(["license", "activate", "--home", str(home)]) == 0
     stored = home / ".pipeline" / "license.json"
     assert json.loads(stored.read_text(encoding="utf-8"))["token"] == token
-    assert stat.S_IMODE(stored.stat().st_mode) == 0o600
+    # POSIX owner-only mode; Windows ACLs do not map to 0o600 the same way.
+    if sys.platform != "win32":
+        assert stat.S_IMODE(stored.stat().st_mode) == 0o600
     monkeypatch.delenv(lic.ENV_LICENSE, raising=False)
-    monkeypatch.setattr(lic.Path, "home", lambda: home)
+    monkeypatch.setattr(lic.Path if hasattr(lic, "Path") else Path, "home", lambda: home)
+    # Engine stores/reads under Path.home when --home is not enough for status path helpers
+    import pipeline_license as eng
+
+    monkeypatch.setattr(eng.Path, "home", lambda: home)
     assert _cli(["license", "status", "--home", str(home)]) == 0
     out = capsys.readouterr().out
     assert "org: Acme" in out
     assert "jira: on" in out
     assert "orchestrator: off" in out
+    assert "portal: off" in out
     assert token not in out
 
 
@@ -211,7 +222,35 @@ def test_issue_signs_a_token_that_activates(
     assert claims["features"] == ["jira", "orchestrator"]
 
 
-def test_issue_defaults_to_every_paid_area_including_assess(
+def test_public_signing_helpers_match_private_aliases(
+    tmp_path: Path,
+    enterprise_license: dict,
+):
+    from cryptography.hazmat.primitives.serialization import (
+        Encoding,
+        NoEncryption,
+        PrivateFormat,
+    )
+
+    from pipeline_kit import license as lic
+
+    key_file = tmp_path / "signing.pem"
+    key_file.write_bytes(
+        enterprise_license["signing_key"].private_bytes(
+            Encoding.PEM,
+            PrivateFormat.PKCS8,
+            NoEncryption(),
+        )
+    )
+    exp = lic.expiry_day("2027-06-01")
+    assert exp == lic._expiry_day("2027-06-01")
+    key = lic.load_signing_key(key_file)
+    assert type(key) is type(lic._load_signing_key(key_file))
+    token = lic.sign_token(key, org="Northline", exp=exp, features=["assess"])
+    assert lic.verify_token(token)["features"] == ["assess"]
+
+
+def test_issue_defaults_to_every_paid_area_including_portal(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     enterprise_license: dict,
@@ -235,6 +274,7 @@ def test_issue_defaults_to_every_paid_area_including_assess(
     token = capsys.readouterr().out.strip().splitlines()[-1]
     assert lic.verify_token(token)["features"] == sorted(lic.FEATURES)
     assert "assess" in lic.FEATURES
+    assert "portal" in lic.FEATURES
 
 
 def test_scan_needs_the_assess_area(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]):
@@ -242,5 +282,13 @@ def test_scan_needs_the_assess_area(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     app = tmp_path / "app"
     app.mkdir()
     assert _cli(["scan", str(app)]) == 73
-    assert "pipeline-kit license activate" in capsys.readouterr().err
+    err = capsys.readouterr().err
+    assert "pipeline-kit license activate" in err or "pipeline-kit-license" in err
+
+
+def test_shim_available_when_private_package_present():
+    from pipeline_kit import license as lic
+
+    assert lic.available() is True
+    assert "portal" in lic.FEATURES
 

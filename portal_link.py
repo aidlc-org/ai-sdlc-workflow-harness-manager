@@ -366,6 +366,13 @@ def push_after(command: str, subcommand: str | None, project: Path, *, home: Pat
     if not should_push(command, subcommand) or load_connection(project, home) is None:
         return
     try:
+        from pipeline_kit.license import has_feature
+
+        if not has_feature("portal", home=home):
+            return
+    except Exception:  # noqa: BLE001
+        return
+    try:
         push(project, f"{command}{'.' + subcommand if subcommand else ''}", home=home)
     except PortalLinkError as exc:
         print(f"portal: could not report this change ({exc}). It will be included in the next report.", file=sys.stderr)
@@ -377,6 +384,15 @@ def push_after(command: str, subcommand: str | None, project: Path, *, home: Pat
 
 
 def cmd_connect(project: Path, *, url: str, key: str, home: Path | None = None) -> int:
+    try:
+        from pipeline_kit.license import require as require_license
+
+        blocked = int(require_license("portal", home=home))
+        if blocked:
+            return blocked
+    except Exception as exc:  # noqa: BLE001
+        print(f"portal: license check failed ({exc})", file=sys.stderr)
+        return 73
     try:
         url = validate_url(url)
     except PortalLinkError as exc:
@@ -417,6 +433,15 @@ def cmd_status(project: Path, *, home: Path | None = None) -> int:
 
 
 def cmd_push(project: Path, *, home: Path | None = None) -> int:
+    try:
+        from pipeline_kit.license import require as require_license
+
+        blocked = int(require_license("portal", home=home))
+        if blocked:
+            return blocked
+    except Exception as exc:  # noqa: BLE001
+        print(f"portal: license check failed ({exc})", file=sys.stderr)
+        return 73
     try:
         push(project, "manual", home=home)
     except PortalLinkError as exc:

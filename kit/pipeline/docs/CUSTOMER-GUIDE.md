@@ -328,7 +328,7 @@ Sign-off gates do not ask the decider. Full examples:
 | `pipeline-kit memory index / search / mcp` | Index, query, or run the memory MCP server |
 | `pipeline-kit license status` | Show org, expiry, and which paid areas are on. Never prints the token. |
 | `pipeline-kit license activate` | Verify the token in `PIPELINE_KIT_LICENSE` and store it in `~/.pipeline/license.json` |
-| `pipeline-kit license issue --org NAME --expires YYYY-MM-DD [--features …]` | Vendor only: sign a token. Needs the signing key. Default features: all five paid areas. |
+| `pipeline-kit license issue --org NAME --expires YYYY-MM-DD [--features …]` | Vendor only (needs private `pipeline-kit-license` + signing key). Default: all six paid areas including `portal`. |
 | `pipeline-kit portal connect --url URL --key KEY [project]` | Report this project to a portal. Verifies the key, then sends the first report. |
 | `pipeline-kit portal status [project]` | Show the connection and when the portal last heard from this project |
 | `pipeline-kit portal push [project]` | Send the current state now |
@@ -412,7 +412,7 @@ Full walkthrough: [`packages/pipeline-kit-memory/README.md`](./packages/pipeline
 Memory does **not** auto-wire into the IDE. Each developer adds a **stdio MCP
 server** entry in their client config, then restarts the client.
 
-1. Install so `pipeline-memory-mcp` is on PATH (same env as above).
+1. Install so `pipeline-memory-mcp` is on PATH (same env as `uv tool install -e ".[memory]"`).
 2. Ensure the product is linked and indexed (`memory link` / `memory index`).
 3. Add MCP config (absolute `--project` = product repo with `.pipeline/config.json`):
 
@@ -464,13 +464,17 @@ and use args: `-m`, `pipeline_memory.mcp_server`, `--project`, `<product path>`.
 5. You do not keep `memory mcp` running in a terminal for daily use — the client
    spawns stdio when a tool is called. Use the terminal for link/index/search/debug.
 
-Full detail, troubleshooting, and checklist:
-[`packages/pipeline-kit-memory/README.md`](./packages/pipeline-kit-memory/README.md).
-
 ### 2.0.3 Licensing and paid areas
 
-The kit is open for everyday use. Five areas are **paid** and need an org
-license, a signed token you activate once per machine:
+The kit source in this repository is **MIT**. You may use, modify, and
+redistribute it, including areas that check a local license token. Those
+checks support commercial entitlement; they do not replace or narrow the MIT
+grant.
+
+**Issue and validation** live in a separate **private** package,
+`pipeline-kit-license` (not this repo). Install that package for enterprise
+use, then activate a vendor token. Without it, paid commands fail closed
+(exit 73). Six areas require an org license when using the distributed CLI:
 
 | Area (`license status` name) | What it unlocks |
 |------------------------------|-----------------|
@@ -479,231 +483,36 @@ license, a signed token you activate once per machine:
 | `governance` | Running `security-review`, `ci-audit`, `dependency-audit`, `accessibility-review` |
 | `evidence` | Agent-run observability and eval: every `obs` command except `report`, `eval`, and `features enable agent-observability` |
 | `assess` | Repository assessment: `pipeline-kit scan` (also needs the assess package) |
+| `portal` | `pipeline-kit portal connect` / `push` and automatic project reporting to a portal |
 
-Kit mode, `ask`, `feature-development`, `knowledge`, `plugins`, `memory` and
-`obs report` do not read the license.
+Kit mode, `ask`, `feature-development`, `knowledge`, `plugins`, `memory`,
+`obs report`, and `portal status` / `disconnect` do not require a license.
 
 ```bash
+# After installing pipeline-kit-license (private):
 export PIPELINE_KIT_LICENSE='<the token you were given>'
 pipeline-kit license activate     # verifies it and stores ~/.pipeline/license.json (mode 0600)
 pipeline-kit license status       # org, expiry, and each area on/off
 ```
 
-- The token is checked **offline** against a public key shipped with the kit.
-  Nothing is sent anywhere.
+- The token is checked **offline** against a public key shipped with
+  `pipeline-kit-license`. Nothing is sent anywhere.
 - `PIPELINE_KIT_LICENSE` in the environment wins over the stored file for that
   process, which suits CI.
 - A command in a paid area without a valid token exits **73** and prints the
   reason: `missing`, `expired`, or `<area> is not on this license`.
 - Expiry is the end of the licensed day (UTC). Ask your vendor for a renewed token.
-- Tokens are issued by the vendor with `pipeline-kit license issue`, which needs
-  the vendor's signing key. Customers never have that key. The
-  [Enterprise portal](#204-enterprise-pipeline-portal-separate-product) can issue and
-  activate tokens from a web page instead of the command line.
+- Tokens are issued by the vendor (CLI via the private package, or the
+  [Enterprise portal](#204-enterprise-pipeline-portal-separate-product)).
+  Customers never hold the signing private key.
 
 ### 2.0.4 Enterprise Pipeline Portal (separate product)
 
-The web portal is a separate product in its own repository, sold on the
-enterprise plan. It is a place where a team sees every project at once. It does
-not change how the CLI works, and it never reaches into your projects.
-
-**How it works.** Projects report to the portal; the portal does not read them.
-
-1. In the portal, an operator or admin chooses **Connect project**, names it,
-   and gets an **ingest key** (shown once).
-2. In the project folder you run:
-
-   ```bash
-   pipeline-kit portal connect --url https://portal.example.com --key pk_...
-   ```
-
-   The command checks the key, stores the connection in `~/.pipeline/portal.json`
-   (not in the project, so it is never committed), and sends a first report.
-3. From then on, **every local change is reported automatically**: `features
-   enable/disable`, `plugins install/uninstall`, `obs install/uninstall/flush`,
-   `memory link`, `knowledge init/extract`, `init`/`update`/`uninstall`, `scan`, orchestrator `run`/`resume`/
-   `approve`, and `license activate`. `pipeline-kit portal push` sends the
-   current state on demand. In CI, set `PIPELINE_PORTAL_URL` and
-   `PIPELINE_PORTAL_KEY` instead of running `connect`.
-
-**Reporting never gets in the way.** If the portal is unreachable, the command
-you ran still succeeds. It prints one line saying the change was not reported;
-the next report carries the full state, so nothing is lost. Reports are sent
-with a 4-second limit.
-
-**What is sent.** Metadata only: project name, kit version and mode, which
-features are on, plugin and package state, observability status, run and gate
-status, the license state (organization, expiry, areas) and the names of failed
-doctor checks. **Never sent:** `config.json`, file paths, prompts, source code,
-or the license token. The portal also drops any field it does not know, so a
-modified client cannot make it store more. The full list is in
-[what is sent](./website/docs/reference/portal-protocol.md).
-
-**Read-only in this version.** The portal shows what projects report. It cannot
-change a feature, plugin or setting in a project. Change those in the project
-with the CLI; the portal updates within seconds.
-
-**Keys.** Each project has its own key. A key is stored hashed in the portal, so
-it cannot be shown again; if you lose it, rotate it. Rotating or removing a
-project stops the old key immediately, so a leaked key affects one project and
-can be shut off without touching the others. The connection requires `https://`
-(plain `http://` is accepted only for `localhost`).
-
-**What the portal offers.**
-
-- **Sign-in with roles** per organization: **Admin**, **Project operator**,
-  **Viewer**. The first run creates one default user per role; each must change
-  the password at first sign-in.
-- **Fleet and project pages**: health, version drift, features, plugins,
-  packages, runs, license state, and when each project last reported. A project
-  that has been silent for 48 hours shows as *not reporting*.
-- **History**: a tab on each project listing what changed and when (a feature
-  turned on, a kit upgrade, a license state change) with the command that caused
-  it. It never records who made the change. Only changes are stored, for 90 days.
-- **Analysis**: a dashboard of project health, runs, feature adoption, kit
-  version drift, observability, licenses and packages, for all projects or one.
-  Operators and admins add widgets; viewers see them.
-  Three 30-day trend charts show feature adoption, kit version drift and reporting
-  health over time.
-- **Licenses**: what was issued to your organization, and what each project
-  reports about its own license. Your vendor issues tokens; you activate them on
-  each machine with `pipeline-kit license activate`.
-- **Users and audit log** (admins): who can sign in, and who did what.
-- **Organizations**: each customer is its own organization with separate users,
-  projects and data. Vendor staff create organizations.
-
-| | Admin | Project operator | Viewer |
-|---|:-:|:-:|:-:|
-| See fleet, projects, analysis, licenses | yes | yes | yes |
-| Connect, rename, rotate the key of, and remove projects | yes | yes | no |
-| Add analysis widgets | yes | yes | no |
-| Manage users, read the audit log | yes | no | no |
-
-**Not in this version:** changing a project's settings from the portal,
-single sign-on, who made a change (history records what and when only), history
-longer than 90 days, and a self-hosted edition (the cloud portal comes first; the same protocol is meant
-to serve a portal an enterprise hosts itself). A license cannot be revoked from
-the portal, because the kit verifies tokens offline.
-
-More: the [Enterprise portal](./website/docs/capabilities/portal.md) docs page.
-
-### 2.1 Optional QA knowledge (opt-in)
-
-`pipeline-kit init` / `update` do **not** turn this on. Absent
-`test_design.enabled` keeps today’s planning ladder.
-
-```bash
-pipeline-kit init --ide cursor
-pipeline-kit knowledge init --register-skill
-# If graphify is missing, install it the official way, then:
-pipeline-kit knowledge extract
-```
-
-Official Graphify (not a kit extra):
-
-```text
-uv tool install graphifyy
-graphify install
-graphify extract . --code-only
-```
-
-That writes `graphify-out/graph.json`. Pipeline-kit never imports Graphify
-and never invents a substitute graph. If extract fails, stop and run those
-commands. Then in the IDE: **Bootstrap QA knowledge for this repo**. Approve
-one Markdown report. After that, “work on …” writes stepwise click-path
-cases in `features/{slug}/qa-test-cases.md` when `test_design.enabled` is
-true (open → sign-in from env names → navigate → click → assert).
-
-Per feature when the flag is on: Architect writes a model delta (or
-`no_test_model_change`) → BA binds ACs to overlay nodes → test-designer
-writes `cases.json` and `qa-test-cases.md` → you sign off BA → developers
-→ tester wave (unit / api / ui in parallel).
-
-`pipeline-kit knowledge playwright --slug {slug}` is a projector of
-`cases.json` + `locators.json` into the existing `automation-tests/` tree.
-It is not Graphify and not `pipeline-kit plugins`.
-
-`graphify-out/` is Graphify-owned. The team chooses whether to commit it or
-ignore it. Do not create a second graph store.
-
-### 2.2 Optional plugins
-
-`pipeline-kit init` does not turn these on. Two kinds:
-
-| Kind | What it is | Command |
-|------|------------|---------|
-| **External plugins** | Graphify and Archify. The kit never vendors them. | `pipeline-kit plugins …` |
-| **Bundled add-on** | Agent-run observability (collector, ledger, scores, flush). Langfuse is an adapter, not a plugin. | `pipeline-kit obs install` — not `plugins install` |
-
-```bash
-pipeline-kit plugins list
-pipeline-kit plugins status
-pipeline-kit obs status
-```
-
-Graphify (QA graph) and Archify (Architect diagrams) are the **external**
-plugins. Pipeline-kit never vendors them.
-
-**Graphify** — official CLI. Compatibility path:
-`pipeline-kit knowledge init --register-skill` still registers the Graphify
-skill. Equivalent: `pipeline-kit plugins install graphify --ide cursor`.
-
-```bash
-uv tool install graphifyy
-pipeline-kit plugins install graphify --ide cursor
-pipeline-kit knowledge extract
-pipeline-kit plugins uninstall graphify --ide cursor
-pipeline-kit plugins uninstall graphify --ide cursor --purge   # also deletes graphify-out/
-```
-
-**Archify** — pinned Agent Skill `tt-a1i/archify` `v2.16.0`. Needs GitHub CLI
-v2.90+ (`gh skill`) and Node.js 18+. Chrome is optional for `visual-check`.
-Cursor project scope installs to `.agents/skills/archify/`. `--scope user`
-installs under the home directory instead.
-
-```bash
-pipeline-kit plugins install archify --ide cursor --scope project
-pipeline-kit plugins status --plugin archify
-pipeline-kit plugins uninstall archify --ide cursor
-```
-
-The kit runs:
-
-```text
-gh skill install tt-a1i/archify archify --pin v2.16.0 --agent cursor --scope project
-```
-
-It never tracks the default branch. Uninstall deletes only a managed Archify
-skill directory after verifying the source and path. Generated
-`features/{slug}/diagrams/` files stay. `gh skill` has no remove command.
-
-Architect mermaid in `architecture.md` remains required. When
-`architecture_diagrams.enabled` is true, Architect also writes
-`features/{slug}/diagrams/manifest.json` (`delivered` or `mermaid-fallback`).
-Missing GitHub CLI, Node, Chrome, or a failed `deliver` must not block a
-valid mermaid architecture.
-
-Delivered HTML is self-contained interactive HTML (inline JavaScript). Treat
-it as active content when publishing. Unattended runs should set
-`ARCHIFY_UPDATE_CHECK_DISABLED=1` so Archify does not fetch an update
-manifest. Archify does not send repository contents on that check.
-
-**Agent-run observability** is first-party kit code copied into
-`.pipeline/hooks/obs/` on `init` (off until you install). It records what
-the coding agent did, not product analytics (`telemetry-agent`).
-
-```bash
-pipeline-kit obs install --ide cursor --adapter langfuse
-# LANGFUSE_* in .env, never in config.json
-pipeline-kit obs report
-pipeline-kit obs flush
-pipeline-kit obs uninstall
-```
-
-`features enable agent-observability` only sets
-`agent_observability.enabled`. You still need `obs install` to merge IDE
-hooks. Handbook: **[OBSERVABILITY.md](./OBSERVABILITY.md)** (also
-`.pipeline/docs/OBSERVABILITY.md` after `init`).
+The web portal is a **separate proprietary product** in its own repository,
+offered on the enterprise plan. It is not open source. It is a place where a
+team sees every project at once. It does not change how the CLI works, and it
+never reaches into your projects. The kit ships a public reporting client and
+protocol so projects can connect; the portal server and UI stay closed.
 
 ---
 
@@ -820,13 +629,17 @@ repository (section 5). Set `targets` to the names you will implement.
 | Situation | What to set |
 |-----------|-------------|
 | No Jira (or Azure Boards, GitHub Issues only) | `"enabled": false` |
-| Jira + IDE MCP connected | `"enabled": true`, fill `mcp_namespaces` if the server name is not discovered |
+| Jira + IDE MCP connected | `"enabled": true`, `"connection": "mcp"`, fill `mcp_namespaces` if the server name is not discovered |
+| Jira MCP banned, CLI allowed | `"enabled": true`, `"connection": "cli"` (default bin `jira`; change `cli.bin` / argv for `acli`) |
+| Jira MCP and CLI banned, token allowed | `"enabled": true`, `"connection": "api"`; set `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN` in the environment |
 | Jira types differ (`Defect`, `Incident`, `Spike`) | Edit `issue_type_map` |
+| GitHub Issues instead of Jira | Leave Jira `enabled` false. See [4.3.1](#431-intakegithub--issues-without-mcp). |
 
 ```json
 "intake": {
   "jira": {
     "enabled": false,
+    "connection": "mcp",
     "key_pattern": "\\b[A-Z][A-Z0-9_]+-[0-9]+\\b",
     "mcp_namespaces": [],
     "issue_type_map": {
@@ -846,9 +659,62 @@ story, bug, or epic workflow. No one pastes the ticket by hand.
 **Use case, disabled:** The same sentence is treated as text
 (`feature-development` or `ask`). Correct for repos with no tracker.
 
-Connect the tracker MCP in the IDE. Tool names in config default to
-`getJiraIssue` and `searchJiraIssuesUsingJql`. Change `tools` if your MCP
-uses different names. Do not put the Jira site URL or API token in this file.
+`connection` is one of `mcp`, `cli`, `api`. Intake uses **only** that path. If it
+fails, it returns `BLOCKED` — it does not try the others. Missing `connection`
+means `mcp`.
+
+- **mcp:** connect the tracker MCP in the IDE. Tool names default to
+  `getJiraIssue` and `searchJiraIssuesUsingJql`. Change `tools` if your MCP
+  uses different names.
+- **cli:** authenticate the client in `cli.bin` yourself (`jira` by default).
+  Intake runs `cli.issue_view` / `cli.search` with `{KEY}` / `{JQL}` substituted.
+- **api:** run the bundled `jira_api.py` helper. Site URL and token stay in
+  env (`JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`). Do not put them in this
+  file.
+
+Do not put the Jira site URL or API token in this file. Agents must not call
+`curl` / `wget` for the tracker.
+
+### 4.3.1 `intake.github` — Issues without MCP
+
+| Situation | What to set |
+|-----------|-------------|
+| No GitHub Issues | `"enabled": false` (default) |
+| MCP banned, `gh` allowed | `"enabled": true`, `"connection": "cli"`; set `repo` to `owner/repo` if people type `#123` |
+| Token only | `"connection": "api"`; set `GH_TOKEN` or `GITHUB_TOKEN` in the environment |
+| GitHub MCP in the IDE | `"connection": "mcp"`; fill `mcp_namespaces` if discovery fails |
+
+```json
+"intake": {
+  "github": {
+    "enabled": true,
+    "connection": "cli",
+    "repo": "acme/app",
+    "issue_type_map": {
+      "issue": "github-story",
+      "bug": "github-bug",
+      "pull_request": "github-story",
+      "epic": "github-epic",
+      "default": "github-story"
+    }
+  }
+}
+```
+
+**Use case, enabled:** “Work on acme/app#12” or a github.com issues URL → intake
+fetches once → `github-story`, `github-bug`, or `github-epic`. These workflows
+do **not** need the Jira license. Turn the flag on with
+`pipeline-kit features enable github-intake`.
+
+Missing `connection` means `cli`. Intake uses **only** that path. If it fails,
+it returns `BLOCKED`. Bare `#12` is ignored unless `repo` is set.
+
+- **cli:** authenticate `gh` yourself. Intake runs `cli.issue_view` with `{N}` /
+  `{REPO}` substituted.
+- **api:** bundled `github_api.py`. Token in env only.
+- **mcp:** connect GitHub MCP. Tool names default to `get_issue` / `list_issues`.
+
+CLI writes need `PIPELINE_ALLOW_GITHUB=1`. Do not put a PAT in this file.
 
 ### 4.4 Leave as-is until you have a reason
 
@@ -1015,7 +881,7 @@ not commit those. Commit `features/` only if you want specs in git.
 
 | Item | When a real project needs it |
 |------|------------------------------|
-| Tracker MCP | Jira (or compatible) workflows. Enable `intake.jira` and authenticate the MCP in the IDE. |
+| Tracker intake | Jira: enable `intake.jira` and set `connection`. GitHub: `features enable github-intake` and set `intake.github.connection` (`cli` by default). |
 | Wiki | After a painful run, retro adds one page under `.pipeline/wiki/`. Start with the shipped index or empty it. |
 | `.pipeline/rules/*.mdc` | Durable coding standards. They do **not** auto-apply in Cursor (not under `.cursor/rules`). Mention a rule in `AGENTS.md` or on a step allowlist. |
 | Hooks | Policy guardrails ship in `.pipeline/hooks/` (sibling of `hooks/obs/`). `init --ide cursor` or `--ide claude-code` merges them into the IDE hook file without replacing existing entries. Agent-run observability stays opt-in via `pipeline-kit obs install`. |
@@ -1050,7 +916,7 @@ repository. After install the same file is `.pipeline/docs/DOCUMENT-STANDARD.md`
 - Secrets, tokens, tracker site URLs — environment or IDE MCP settings only
 
 You **should** edit the local-deploy runbook, `deploy-local.sh`,
-`config.json` (`verify`, `deploy`, `intake.jira`), and testing skills if the
+`config.json` (`verify`, `deploy`, `intake.jira`, `intake.github`), and testing skills if the
 default runners are wrong.
 
 ---
@@ -1063,6 +929,7 @@ default runners are wrong.
    - `verify.rules` for your folders (or leave `[]`)
    - `deploy.targets` for your apps
    - `intake.jira.enabled` (`false` unless you use Jira)
+   - `intake.github.enabled` (`false` unless you use GitHub Issues; then set `connection` and `repo`)
 4. Rewrite the local-deploy runbook and `deploy-local.sh` for your stack (section 5).
 5. Skim `.pipeline/docs/DOCUMENT-STANDARD.md` before editing any other pack markdown.
 6. Add `features/` and `.pipeline/state/` to `.gitignore`.

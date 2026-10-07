@@ -28,7 +28,7 @@ Opens `http://127.0.0.1:3000`. The in-repo adaptation contract remains
 [OBSERVABILITY.md](./OBSERVABILITY.md) — install without running the full
 pipeline ladder, trace identity, token usage, score meanings, and ideal values.
 
-Requires **Python 3.11+**. No other runtime dependencies.
+Requires **Python 3.11+**. Optional extras add more packages (orchestrator SDK, assess, memory). Enterprise license **issue/validate** is a separate private package (`pipeline-kit-license`); without it, paid CLI areas fail closed.
 
 ---
 
@@ -137,17 +137,17 @@ pipeline-kit memory search "architecture" . --limit 5
 `status`, `link`) is what imports `pipeline_memory`. Full steps:
 [packages/pipeline-kit-memory/README.md](./packages/pipeline-kit-memory/README.md).
 
-**Open and paid.** Kit mode, `ask`, `feature-development`, `obs report` and the
-other local commands are open. These areas need an org **license** (a signed
-token you activate once): **orchestrator** mode, **Jira** intake, the
-**governance** workflows, **evidence** (agent-run observability and eval), and
-**assess** (`pipeline-kit scan`). Check what you have with
+**Open and paid.** Kit mode, free workflows, `obs report`, and most local commands
+are open. These areas need an org **license** (private `pipeline-kit-license`
+package + signed token): **orchestrator**, **Jira** intake, **governance**
+workflows, **evidence** (agent-run observability and eval), **assess**
+(`pipeline-kit scan`), and **portal** connect/push. Check with
 `pipeline-kit license status`; activate with `pipeline-kit license activate`.
 Details: [CUSTOMER-GUIDE.md](./CUSTOMER-GUIDE.md).
 
-**Enterprise Pipeline Portal.** The web portal is a separate product in its own
-repository, offered on the enterprise plan. It gives a team one place to see
-every project: fleet health, features, plugins, packages, runs and licenses,
+**Enterprise Pipeline Portal.** The web portal is a **separate proprietary
+product** in its own repository (not open source). It gives a team one place to
+see every project: fleet health, features, plugins, packages, runs and licenses,
 with sign-in, roles (admin, project operator, viewer), an analysis dashboard,
 user management and an audit log. This repository does not contain it.
 
@@ -265,7 +265,7 @@ Folder names are the product map.
 | [`packages/`](./packages/README.md) | Optional extras (`assess`, `memory`). Same `uv tool` CLI as `pipeline-kit` |
 | [`packages/pipeline-kit-assess/`](./packages/pipeline-kit-assess/) | Licensed repo assessment. Install with `uv tool install -e ".[assess]"` |
 | [`packages/pipeline-kit-memory/`](./packages/pipeline-kit-memory/README.md) | External artifact bank + MCP. Install with `uv tool install -e ".[memory]"` |
-| Enterprise Pipeline Portal | Separate repository and product (enterprise plan). Projects report to it with `pipeline-kit portal connect`. See [the docs page](./website/docs/capabilities/portal.md) |
+| Enterprise Pipeline Portal | Separate **proprietary** repository and product (enterprise plan). Projects report to it with `pipeline-kit portal connect`. See [the docs page](./website/docs/capabilities/portal.md) |
 | [CUSTOMER-GUIDE.md](./CUSTOMER-GUIDE.md) | Architect / developer handbook |
 | `website/` | Local Docusaurus documentation (`npm start` in that folder) |
 | `tests/` | Installer tests (`pytest`) |

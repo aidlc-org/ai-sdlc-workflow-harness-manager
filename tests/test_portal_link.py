@@ -69,14 +69,18 @@ def portal():
 
 
 @pytest.fixture
-def env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+def env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, enterprise_license: dict):
+    import pipeline_license as eng
     from pipeline_kit import license as lic
 
     home = tmp_path / "home"
     home.mkdir()
-    monkeypatch.setattr(lic.Path, "home", lambda: home)
-    for name in (lic.ENV_LICENSE, "PIPELINE_PORTAL_URL", "PIPELINE_PORTAL_KEY"):
+    monkeypatch.setattr(eng.Path, "home", lambda: home)
+    # Keep enterprise_license token; only clear portal connection env.
+    for name in ("PIPELINE_PORTAL_URL", "PIPELINE_PORTAL_KEY"):
         monkeypatch.delenv(name, raising=False)
+    # Ensure autouse token is still present (other fixtures must not wipe it).
+    assert lic.available() and eng.FEATURES
     app = tmp_path / "checkout-api"
     app.mkdir()
     assert _cli(["init", str(app), "--ide", "none"]) == 0

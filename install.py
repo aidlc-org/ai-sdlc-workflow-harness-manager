@@ -1072,7 +1072,10 @@ def cli_main(argv: list[str] | None = None) -> int:
         try:
             _ensure_pkg_path()
             from pipeline_kit import portal_link
+            from pipeline_kit.license import has_feature
 
+            if not has_feature("portal"):
+                return code
             project = Path(getattr(args, "project", ".")).expanduser().resolve()
             portal_link.push_after(args.command, sub if isinstance(sub, str) else None, project)
         except Exception:  # noqa: BLE001 - never let reporting change a command's result
@@ -1441,8 +1444,8 @@ def _cli_run(argv: list[str] | None = None) -> int:
     issue_parser.add_argument("--expires", required=True, help="YYYY-MM-DD, valid through that UTC day")
     issue_parser.add_argument(
         "--features",
-        default="orchestrator,jira,governance,evidence,assess",
-        help="comma list: orchestrator, jira, governance, evidence, assess",
+        default="orchestrator,jira,governance,evidence,assess,portal",
+        help="comma list: orchestrator, jira, governance, evidence, assess, portal",
     )
     issue_parser.add_argument("--repo", default="", help="pipeline-kit checkout")
     activate_parser = license_commands.add_parser(
@@ -1715,10 +1718,16 @@ def _cli_run(argv: list[str] | None = None) -> int:
 
         action = args.portal_command
         if action == "connect":
+            blocked = _require_license("portal")
+            if blocked:
+                return blocked
             return portal_link.cmd_connect(project, url=args.url, key=args.key, home=home)
         if action == "status":
             return portal_link.cmd_status(project, home=home)
         if action == "push":
+            blocked = _require_license("portal")
+            if blocked:
+                return blocked
             return portal_link.cmd_push(project, home=home)
         return portal_link.cmd_disconnect(project, home=home)
     if args.command == "plugins":

@@ -4,8 +4,10 @@ description: The enterprise web portal for pipeline-kit. Projects report their o
 ---
 
 The **Enterprise Pipeline Portal** is a web application where a team sees every
-pipeline-kit project in one place. It is a **separate product in its own repository**,
-offered on the enterprise plan.
+pipeline-kit project in one place. It is a **separate proprietary product in its
+own repository** (not open source), offered on the enterprise plan. This kit
+ships the public reporting client and protocol; the portal server and UI do not
+live in the kit repository.
 
 It works the way an observability tool does. **Projects report to the portal;
 the portal never reads a project's folders and never changes a project.** Each

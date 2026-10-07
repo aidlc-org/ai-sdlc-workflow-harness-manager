@@ -10,12 +10,14 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 authors = [{ name = "Pipeline Kit maintainers" }]
-dependencies = ["cryptography>=44"]
+dependencies = []
 
 [project.optional-dependencies]
 orchestrator = ["cursor-sdk", "typesafe-sdk"]
 assess = ["pipeline-kit-assess"]
 memory = ["pipeline-kit-memory"]
+# Enterprise license engine is a private package (not on public PyPI).
+# Install separately: pip install -e ../pipeline-kit-license
 
 [tool.uv.workspace]
 members = ["packages/pipeline-kit-assess", "packages/pipeline-kit-memory"]
@@ -42,7 +44,7 @@ version = { file = "VERSION" }
 pipeline_kit = [
   "VERSION",
   "CUSTOMER-GUIDE.md",
-  "license_public_key.txt",
+  "LICENSE",
   "kit/pipeline/**/*",
 ]
 pipeline_orchestrator = [

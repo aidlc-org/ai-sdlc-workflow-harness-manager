@@ -1,2 +1,0 @@
-# Ed25519 public key for pipeline-kit license verification. Safe to commit.
-MCowBQYDK2VwAyEAWit5cInQ57qSjv+78YaNT68U+BJbsq7mh7zUjkGLXbU=

@@ -14,3 +14,13 @@ features/
 website/node_modules/
 website/.docusaurus/
 .pipeline/
+# secrets and local env — never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+license.json
+portal.json
+_tmp_*.py
+_restore_*.py

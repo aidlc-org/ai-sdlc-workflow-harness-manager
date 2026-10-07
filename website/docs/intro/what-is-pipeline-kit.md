@@ -56,7 +56,7 @@ How the source repo is grouped: [Repository layout](/docs/intro/repo-layout).
 
 ## Requirements
 
-Python **3.11+**. The CLI has no other runtime dependencies. Optional plugins (Graphify, Archify) and bundled observability (Langfuse keys) are separate.
+Python **3.11+** and the `cryptography` package (installed with `pipeline-kit`). Optional plugins (Graphify, Archify) and bundled observability (Langfuse keys) are separate.
 
 ## Next
 
