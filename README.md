@@ -186,6 +186,8 @@ Before each orchestrator agent, a decider chooses the Cursor model. `jev` (defau
 
 `--dry-run` prints `need`, `basis`, `sent`, and a `summary` table. It does not start Cursor agents. Details: [`orchestrator/README.md`](./orchestrator/README.md#model-choice).
 
+**Kit mode** resolves the same `orchestrator.models` pins/fallback when `load_workflow.py` activates a specialist step (`chosen_model` in the loader JSON and `features/{slug}/model-routing.json`). That is **advisory** for agent-CLI Task spawn; **IDE chat does not force** the model. **Enforced** routing remains orchestrator (`pipeline-kit run`). Disable kit resolution with `PIPELINE_KIT_MODEL_ROUTING=0`.
+
 Use `--ide claude-code`, `--ide github`, or `--ide none` when appropriate.
 To install a shared user pack instead, run `pipeline-kit setup --ide cursor`.
 
