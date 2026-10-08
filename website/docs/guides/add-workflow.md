@@ -3,6 +3,10 @@ title: Add a workflow
 description: Skill, workflow JSON, config chain, optional agent brief, receptionist row, loader smoke test.
 ---
 
+:::tip Prefer the cookbook
+Step-by-step tutorial with done-when checks: [Add a custom workflow](/docs/cookbooks/add-workflow).
+:::
+
 A new customer process should be a **workflow**, not a fork of the kit. There are two contracts — pick the mode the project was initialized with.
 
 ## Kit mode (default)

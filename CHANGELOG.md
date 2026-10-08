@@ -9,6 +9,10 @@ Version numbers come from `VERSION`.
 
 ### Added
 
+- **Documentation site (issue #11):** Tessl-style information architecture on Docusaurus
+  - Components hubs: overview, packages, testing, governance
+  - Cookbooks: first feature, orchestrator first run, add workflow, knowledge/plugins, obs/eval/testing, memory bank, enterprise governance
+  - Navbar/footer: Components + Cookbooks; polished docs chrome CSS; updated `llms.txt`
 - **Large codebase documentation platform** (`pipeline_docs`):
   - CLI: `pipeline-kit docs init-modules | extract-modules | merge-modules | status | link-index | link-agents`
   - Manual inventory `.pipeline/docs-modules.yaml`; artifacts under `wiki/codebase/` (not `.pipeline/wiki/`)

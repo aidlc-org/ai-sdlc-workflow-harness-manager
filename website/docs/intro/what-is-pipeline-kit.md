@@ -1,28 +1,57 @@
 ---
 title: What is Pipeline Kit
-description: A portable workflow pack and installer for coding agents. Process lives in .pipeline. The IDE is a thin adapter.
+description: A portable operating model for coding agents — six components, two kits, and cookbooks for real use cases.
 ---
 
-Pipeline Kit is a **portable operating model** plus a Python installer for coding agents. It ships **two kits**. You pick one per project at `init`.
+Pipeline Kit is an **open platform for running coding agents as a repeatable factory**: named workflows, thin IDE adapters, opt-in extras, and an engagement overlay you take from customer to customer.
+
+It ships **two kits**. You pick one per project at `init`.
 
 | Kit | What you install | How work runs |
 |-----|------------------|---------------|
 | **Kit mode** (default) | The markdown pack → `.pipeline/` | IDE `run-workflow` + loader allowlist |
 | **Orchestrator mode** | The Python engine in the wheel | `pipeline-kit run` / `approve` / `resume` |
 
-Same first-party workflow names either way: `ask`, `feature-development`, Jira story/epic/bug. The pack is not tied to a product, a language, or an editor.
-
-Full comparison: [Two kits — pack and orchestrator](/docs/capabilities/modes).
+Same first-party workflow names either way: `ask`, `feature-development`, Jira/GitHub intake, and more. The pack is not tied to a product, a language, or an editor.
 
 :::info Handbook vs this site
-This documentation site is the guided product manual. After `pipeline-kit init`, the same adaptation contract is copied to `.pipeline/docs/CUSTOMER-GUIDE.md` in the target repo. Keep that file as the in-repo handbook; use these pages to learn the product.
+This site is the guided product manual. After `pipeline-kit init`, the adaptation contract is copied to `.pipeline/docs/CUSTOMER-GUIDE.md` in the target repo. Keep that file as the in-repo handbook; use these pages to learn the product.
 :::
 
-## What you take where
+## Takeaways
 
-| You ship | You change per engagement |
-|----------|---------------------------|
-| The **kit** (installer + bundled pack) | `AGENTS.md`, `.pipeline/config.json`, local-deploy and test runbooks |
+- What problems does Pipeline Kit remove from agentic delivery?
+- What are the six components you can use and extend?
+- When do you choose kit mode vs orchestrator mode?
+- Where do tutorials (cookbooks) start?
+
+## Six components
+
+| Component | Role |
+|-----------|------|
+| [Workflows](/docs/capabilities/workflows) | Named procedures with chains, change classes, and allowlists |
+| [Packages](/docs/components/packages) | Installable extras — assess scan, memory bank + MCP |
+| [Plugins](/docs/capabilities/plugins) | Opt-in wrappers for Graphify, Archify, and related tools |
+| [Capabilities](/docs/capabilities/overview) | Modes, extensions, knowledge, obs, wiki, loader, flags, gates |
+| [Testing & evaluation](/docs/components/testing) | Your product runners + agent-run scores |
+| [Governance](/docs/components/governance) | Planning gates, licensing, enterprise portal |
+
+Full map: [Components overview](/docs/components/overview).
+
+## What problems does it solve?
+
+Teams already use coding agents. What they lack is a **portable operating model** — structure, reuse, telemetry, and governance across projects.
+
+→ [Problems we solve](/docs/intro/problems) (each problem links to a cookbook)
+
+## Why Pipeline Kit?
+
+- **Process as files.** Skills, allowlists, and config are versioned with the same rigor as code — not trapped in one chat thread.
+- **IDE-agnostic adapters.** Cursor, Claude Code, GitHub, or none; the pack stays the same.
+- **Extend, don't fork.** New customer process = workflow or extension, not a copy of last year's `.cursor` tree.
+- **Opt-in depth.** Knowledge, plugins, memory, observability, and portal stay off until you turn them on.
+- **Two runtimes, one vocabulary.** Markdown pack or Python engine; same workflow names.
+- **Enterprise-ready path.** Gates, licenses, and a pull-only portal for fleet visibility.
 
 ## What lands after install
 
@@ -34,33 +63,14 @@ This documentation site is the guided product manual. After `pipeline-kit init`,
 | `.pipeline/config.json` | This engagement: chains, tracker, verify, deploy |
 | `.pipeline/docs/CUSTOMER-GUIDE.md` | Copied handbook |
 | `.pipeline/docs/OBSERVABILITY.md` | Agent-run observability handbook |
-| `.cursor/skills/run-workflow/` (or `.claude` / `.github`) | The only IDE-discovered skill |
+| IDE folder (`run-workflow` only) | Thin adapter skill |
 
-Specialist briefs stay under `.pipeline/` so the IDE does not auto-load them. The parent reads only the allowlist from the loader.
+**Orchestrator mode** does **not** copy `agents/`, `skills/`, `loader/`, or `workflows/`. The chain lives in the wheel. You still get `config.json`, docs, hooks, and `features/{slug}/`.
 
-**Orchestrator mode** (`--mode orchestrator`) does **not** copy `agents/`, `skills/`, `loader/`, or `workflows/`. The chain lives in the wheel. You still get `config.json`, docs, hooks, and `features/{slug}/`.
+## Get started
 
-## Shipped workflows
+1. [Install the CLI](/docs/getting-started/install-cli)
+2. [First feature cookbook](/docs/cookbooks/first-feature) — init → ask → small change
+3. Or jump to [Cookbooks](/docs/cookbooks/) for your use case
 
-| Name | When it runs |
-|------|----------------|
-| `ask` | Question about this repo (how / what / why / explain). No Task chain. |
-| `feature-development` | Product work from chat (“add”, “fix”, “change”, “implement”). |
-| `jira-story` / `jira-epic` / `jira-bug` | Tracker issue key, if Jira intake is enabled. |
-| `github-story` / `github-epic` / `github-bug` | GitHub issue or PR, if GitHub intake is enabled. |
-| `test-knowledge-bootstrap` | One-time QA overlay bootstrap. Not the feature ladder. |
-
-Opt-in extras — knowledge, plugins, agent-run observability — are documented under [Capabilities](/docs/capabilities/overview). `pipeline-kit init` does not turn them on.
-
-How the source repo is grouped: [Repository layout](/docs/intro/repo-layout).
-
-## Requirements
-
-Python **3.11+** and the `cryptography` package (installed with `pipeline-kit`). Optional plugins (Graphify, Archify) and bundled observability (Langfuse keys) are separate.
-
-## Next
-
-1. [Two kits — pack and orchestrator](/docs/capabilities/modes)
-2. [Problems it solves](/docs/intro/problems)
-3. [How it works](/docs/intro/how-it-works)
-4. [Install the CLI](/docs/getting-started/install-cli)
+Also: [How it works](/docs/intro/how-it-works) · [Two kits](/docs/capabilities/modes) · [Repository layout](/docs/intro/repo-layout)

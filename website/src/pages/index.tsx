@@ -265,6 +265,9 @@ export default function Home(): ReactNode {
               <Link className={styles.primary} to="/docs/getting-started/install-cli">
                 Install the CLI
               </Link>
+              <Link className={styles.textLink} to="/docs/cookbooks/first-feature">
+                First feature cookbook
+              </Link>
               <button type="button" className={styles.textLink} onClick={() => document.getElementById('factory')?.scrollIntoView({behavior: reduce ? 'auto' : 'smooth'})}>
                 See the factory problems
               </button>
@@ -434,9 +437,11 @@ export default function Home(): ReactNode {
             <p className={styles.foot}>
               <Link to="/docs/capabilities/modes">Compare the two kits</Link>
               {' · '}
-              <Link to="/docs/getting-started/install-cli">Install</Link>
+              <Link to="/docs/components/overview">Components</Link>
               {' · '}
-              <Link to="/docs/capabilities/overview">All capabilities</Link>
+              <Link to="/docs/cookbooks/">Cookbooks</Link>
+              {' · '}
+              <Link to="/docs/getting-started/install-cli">Install</Link>
             </p>
           </div>
         </section>
@@ -486,7 +491,11 @@ export default function Home(): ReactNode {
             </div>
             <p className={styles.foot}>
               One license covers every engagement on the machine. Activate with{' '}
-              <code>pipeline-kit license activate</code>.
+              <code>pipeline-kit license activate</code>
+              {' · '}
+              <Link to="/docs/cookbooks/enterprise-governance">Governance cookbook</Link>
+              {' · '}
+              <Link to="/docs/components/governance">Governance hub</Link>
             </p>
           </div>
         </section>
