@@ -245,8 +245,9 @@ def build_pack(
     slug: str,
     files: list[str],
     seed_bundle: str = "",
+    model: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    return {
+    data: dict[str, Any] = {
         "workflow": workflow.strip().lower(),
         "step": step.strip(),
         "slug": slug.strip(),
@@ -254,6 +255,12 @@ def build_pack(
         "seed_reads": seed_reads_for(files),
         "seed_bundle": seed_bundle,
     }
+    if model is not None:
+        data["model"] = model
+        chosen = model.get("chosen")
+        if chosen:
+            data["chosen_model"] = chosen
+    return data
 
 
 def write_pack(
@@ -333,13 +340,44 @@ def activate(
     *,
     pack: Path | None = None,
     home: Path | None = None,
+    change_class: str = "",
+    user_request: str = "",
+    pin: str = "",
 ) -> dict[str, Any]:
     pack_dir = pack if pack is not None else pack_root_from(project, home=home)
     doc = load_workflow_doc(pack_dir, workflow)
     files = files_for_step(doc, step, pack_dir)
     seed = seed_reads_for(files)
     bundle = write_seed_bundle(project, pack_dir, slug, seed)
-    data = build_pack(workflow, step, slug, files, seed_bundle=bundle)
+
+    model: dict[str, Any] | None = None
+    try:
+        from model_policy import resolve_model, write_routing
+    except ImportError:
+        try:
+            from kit.pipeline.loader.model_policy import resolve_model, write_routing  # type: ignore
+        except ImportError:
+            resolve_model = None  # type: ignore
+            write_routing = None  # type: ignore
+
+    if resolve_model is not None:
+        model = resolve_model(
+            project=project,
+            pack=pack_dir,
+            step=step,
+            workflow=workflow,
+            slug=slug,
+            change_class=change_class,
+            user_request=user_request,
+            pin=pin,
+        )
+        if model and write_routing is not None and model.get("chosen"):
+            rel = write_routing(project, slug, model)
+            if rel:
+                model = dict(model)
+                model["routing_path"] = rel
+
+    data = build_pack(workflow, step, slug, files, seed_bundle=bundle, model=model)
     write_pack(project, pack_dir, slug, data)
     return data
 
@@ -368,6 +406,21 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--slug", required=True)
     parser.add_argument("--repo-root", default="", help="Project root (features/ live here).")
     parser.add_argument("--pack-root", default="", help="Override .pipeline pack directory.")
+    parser.add_argument(
+        "--change-class",
+        default="",
+        help="Optional micro|minor|feature (else read from features/{slug}/route.md).",
+    )
+    parser.add_argument(
+        "--request",
+        default="",
+        help="Optional user request text (used when kit model decider is jev).",
+    )
+    parser.add_argument(
+        "--model-pin",
+        default="",
+        help="Optional one-shot model id pin for this step (kit advisory routing).",
+    )
     args = parser.parse_args(argv)
     blocked = _require_jira(args.workflow)
     if blocked:
@@ -376,7 +429,16 @@ def main(argv: list[str] | None = None) -> int:
     pack_override = Path(args.pack_root).resolve() if args.pack_root else None
     try:
         pack_dir = pack_root_from(project, pack_root=pack_override)
-        data = activate(project, args.workflow, args.step, args.slug, pack=pack_dir)
+        data = activate(
+            project,
+            args.workflow,
+            args.step,
+            args.slug,
+            pack=pack_dir,
+            change_class=args.change_class,
+            user_request=args.request,
+            pin=args.model_pin,
+        )
     except ValueError as exc:
         sys.stderr.write(f"{exc}\n")
         return 1

@@ -29,7 +29,7 @@ After install it lives at `.pipeline/wiki/`. The parent or specialist matches **
 | test-strategy; FEATURE_SIGNOFF | Test layers |
 | Interrupted Task; missing HANDOFF | Interrupted Task |
 
-Human-oriented versions of those lessons are under [Troubleshooting](/docs/troubleshooting/index).
+Human-oriented versions of those lessons are under [Troubleshooting](/docs/troubleshooting).
 
 ### After retro
 

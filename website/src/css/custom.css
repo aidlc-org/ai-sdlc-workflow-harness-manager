@@ -73,3 +73,115 @@ html.pk-foundry .navbar__link--active {
 html.pk-foundry .footer--dark {
   border-top: 1px solid rgba(243, 239, 230, 0.1);
 }
+
+/* Docs layout — cleaner hierarchy (Tessl-inspired, Docusaurus stack) */
+:root {
+  --ifm-font-size-base: 16px;
+  --ifm-line-height-base: 1.65;
+  --ifm-heading-font-weight: 600;
+  --ifm-menu-color-background-active: rgba(15, 118, 110, 0.1);
+  --ifm-menu-color-background-hover: rgba(15, 118, 110, 0.06);
+  --ifm-global-radius: 10px;
+  --ifm-code-border-radius: 8px;
+  --ifm-alert-border-radius: 10px;
+  --ifm-blockquote-border-left-width: 3px;
+}
+
+.theme-doc-markdown {
+  max-width: 52rem;
+}
+
+.theme-doc-markdown h1:first-of-type {
+  font-size: clamp(1.85rem, 2.4vw, 2.35rem);
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+  margin-bottom: 0.75rem;
+}
+
+.theme-doc-markdown h2 {
+  margin-top: 2.25rem;
+  padding-top: 0.35rem;
+  letter-spacing: -0.02em;
+  border-top: 1px solid var(--ifm-toc-border-color);
+}
+
+.theme-doc-markdown h2:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.theme-doc-markdown table {
+  display: table;
+  width: 100%;
+  font-size: 0.92rem;
+}
+
+.theme-doc-markdown table thead tr {
+  border-bottom: 2px solid var(--ifm-color-primary);
+}
+
+.theme-doc-sidebar-container {
+  border-right: 1px solid var(--ifm-toc-border-color);
+}
+
+.menu__list-item-collapsible .menu__link,
+.menu__link--sublist {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.menu__link {
+  border-radius: 8px;
+  font-size: 0.92rem;
+}
+
+.menu__caret:before,
+.menu__link--sublist-caret:after {
+  opacity: 0.7;
+}
+
+.theme-doc-footer {
+  margin-top: 2.5rem;
+  border-top: 1px solid var(--ifm-toc-border-color);
+  padding-top: 1.25rem;
+}
+
+.pagination-nav__link {
+  border-radius: 12px;
+  border: 1px solid var(--ifm-toc-border-color);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pagination-nav__link:hover {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.12);
+}
+
+.card,
+.theme-admonition {
+  border-radius: 12px;
+}
+
+.breadcrumbs__link {
+  font-size: 0.85rem;
+}
+
+.navbar__item.navbar__link {
+  font-weight: 500;
+  font-size: 0.92rem;
+}
+
+[data-theme='dark'] .theme-doc-markdown h2 {
+  border-top-color: rgba(45, 212, 191, 0.18);
+}
+
+[data-theme='dark'] .pagination-nav__link:hover {
+  box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.2);
+}
+
+/* Docs homepage-adjacent content cards via markdown tables stay dense */
+@media (min-width: 997px) {
+  .theme-doc-markdown {
+    padding-bottom: 3rem;
+  }
+}

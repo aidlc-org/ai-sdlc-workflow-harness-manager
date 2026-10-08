@@ -268,8 +268,19 @@ edit their own `site-packages`. Every run records `workflow_provider` and
 
 #### Model choice
 
-The sealed graph still picks the next agent. Before each agent, the engine
-asks a decider which Cursor model should run that step. Configure it under
+**Enforced** model routing is **orchestrator mode** only: `pipeline-kit run`
+picks a model before each agent and passes it to the Cursor SDK.
+
+**Kit mode** uses the same `orchestrator` block in `.pipeline/config.json` when
+the loader activates a specialist step. It writes `chosen_model` into
+`features/{slug}/context-pack.json` and `features/{slug}/model-routing.json`.
+Agent CLIs (Cursor CLI, Claude Code CLI, Copilot CLI) should pass that id when
+spawning a Task **if** their Task API accepts a model field. **IDE chat does
+not enforce** the model. Opt out: `PIPELINE_KIT_MODEL_ROUTING=0`. Kit resolves
+**fixed** pins / fallback by default (no network).
+
+The sealed graph still picks the next agent. Before each orchestrator agent, the
+engine asks a decider which Cursor model should run that step. Configure it under
 `orchestrator` in `.pipeline/config.json`.
 
 | Key | Meaning |
@@ -737,10 +748,10 @@ CLI writes need `PIPELINE_ALLOW_GITHUB=1`. Do not put a PAT in this file.
 | `gates.consult_cap` | Architect/BA UI-designer consult inserts (default 1). Override one run with `CONSULT_UI: true`. |
 | `gates.require_planning_signoff_before_build` | User must approve PM / Architect / BA artifacts before waves (default true). |
 | `waves.child_chain` | Per-child developer → critic. Telemetry only if `RUN_TELEMETRY`. |
-| `orchestrator.decider` | Orchestrator mode only. `jev` or `fixed`. Kit mode ignores this block. |
-| `orchestrator.models.candidates` | Shortlist sent to Jev. See [Model choice](#model-choice). |
+| `orchestrator.decider` | `jev` or `fixed`. **Enforced** in orchestrator mode. Kit loader resolves the same block into `chosen_model` (advisory; agent CLI may apply). |
+| `orchestrator.models.candidates` | Shortlist sent to Jev / kit offline catalog. See [Model choice](#model-choice). |
 | `orchestrator.models.cards` | Optional fit/kind overlay. Do not duplicate an object already in `candidates`. |
-| `orchestrator.models.steps` | Pin one step. That agent skips Jev. |
+| `orchestrator.models.steps` | Pin one step. Orchestrator skips Jev; kit fixed mode uses the pin. |
 | `orchestrator.jev.min_confidence` | Confidence floor before `fallback_model` is used. |
 
 PM, Architect, and BA follow **clarify-first**: they read prior `features/{slug}/`

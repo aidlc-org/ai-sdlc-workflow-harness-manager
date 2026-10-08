@@ -1,7 +1,9 @@
 ---
-title: Capabilities overview
-description: What the kit ships, what is opt-in, and where to drill down.
+title: Capabilities catalog
+description: Core vs opt-in surfaces — modes, extensions, knowledge, memory, plugins, observability, portal, and more.
 ---
+
+This page is the **capability catalog** (what ships and how you turn it on). For the product pillar story (workflows, packages, plugins, testing, governance), start at [Components overview](/docs/components/overview).
 
 Core delivery is on after `pipeline-kit init`. Everything in the second table is **opt-in**.
 
@@ -42,8 +44,17 @@ Pipeline Kit ships **two kits**. [Kit mode](/docs/capabilities/modes) is the mar
 **Agent-run observability** traces what the *coding agent* did (tools, steps, scores). **App telemetry** is a pipeline specialist that extracts *product* analytics events from a spec. Do not mix them.
 :::
 
+## Related pillars
+
+| Pillar | Hub |
+|--------|-----|
+| Packages (assess, memory) | [Packages](/docs/components/packages) |
+| Testing and eval | [Testing and evaluation](/docs/components/testing) |
+| Governance | [Governance and portal](/docs/components/governance) |
+| Hands-on | [Cookbooks](/docs/cookbooks/) |
+
 ## Workflow names
 
-`ask`, `feature-development`, `jira-story`, `jira-epic`, `jira-bug`, `test-knowledge-bootstrap`.
+`ask`, `feature-development`, `jira-story`, `jira-epic`, `jira-bug`, `test-knowledge-bootstrap`, plus GitHub intake and docs workflows when enabled.
 
 Deep dives: [Ask](/docs/workflows/ask), [Feature development](/docs/workflows/feature-development), [Jira](/docs/workflows/jira), [Knowledge bootstrap](/docs/workflows/knowledge-bootstrap).

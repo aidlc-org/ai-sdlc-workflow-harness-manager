@@ -89,13 +89,13 @@ const config: Config = {
           position: 'left',
         },
         {
-          to: '/docs/capabilities/modes',
-          label: 'Two kits',
+          to: '/docs/components/overview',
+          label: 'Components',
           position: 'left',
         },
         {
-          to: '/docs/capabilities/overview',
-          label: 'Capabilities',
+          to: '/docs/cookbooks/',
+          label: 'Cookbooks',
           position: 'left',
         },
         {
@@ -116,18 +116,27 @@ const config: Config = {
           title: 'Start',
           items: [
             {label: 'What is Pipeline Kit', to: '/docs/intro/what-is-pipeline-kit'},
-            {label: 'Two kits', to: '/docs/capabilities/modes'},
+            {label: 'Problems we solve', to: '/docs/intro/problems'},
             {label: 'Install', to: '/docs/getting-started/install-cli'},
             {label: 'First project', to: '/docs/getting-started/first-project'},
           ],
         },
         {
-          title: 'Use',
+          title: 'Components',
           items: [
-            {label: 'Capabilities', to: '/docs/capabilities/overview'},
-            {label: 'Two kits', to: '/docs/capabilities/modes'},
-            {label: 'Knowledge base', to: '/docs/capabilities/knowledge'},
+            {label: 'Overview', to: '/docs/components/overview'},
+            {label: 'Packages', to: '/docs/components/packages'},
             {label: 'Plugins', to: '/docs/capabilities/plugins'},
+            {label: 'Governance', to: '/docs/components/governance'},
+          ],
+        },
+        {
+          title: 'Cookbooks',
+          items: [
+            {label: 'All cookbooks', to: '/docs/cookbooks/'},
+            {label: 'First feature', to: '/docs/cookbooks/first-feature'},
+            {label: 'Add a workflow', to: '/docs/cookbooks/add-workflow'},
+            {label: 'Enterprise governance', to: '/docs/cookbooks/enterprise-governance'},
           ],
         },
         {

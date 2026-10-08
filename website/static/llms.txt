@@ -1,60 +1,44 @@
 # Pipeline Kit
 
-> Portable workflow pack and installer for coding agents. Process lives in `.pipeline`. The IDE is a thin adapter.
+> Portable operating model for coding agents. Process lives in `.pipeline`. Six components, two kits, cookbooks for real use cases.
 
-- [What is Pipeline Kit](http://127.0.0.1:3000/docs/intro/what-is-pipeline-kit): Product definition, what lands after install, shipped workflows.
-- [Problems it solves](http://127.0.0.1:3000/docs/intro/problems): Context explosion, IDE lock-in, customer leakage, install, wrong ladder, hard to extend.
-- [How it works](http://127.0.0.1:3000/docs/intro/how-it-works): Pack vs adapter, workflows, allowlists, config overlay, install scopes.
+## Introduction
+- [What is Pipeline Kit](http://127.0.0.1:3000/docs/intro/what-is-pipeline-kit): Product definition, six components, get started.
+- [Problems we solve](http://127.0.0.1:3000/docs/intro/problems): Context explosion through governance; each links to a cookbook.
+- [How it works](http://127.0.0.1:3000/docs/intro/how-it-works): Pack vs adapter, workflows, allowlists, config overlay.
 - [Who it is for](http://127.0.0.1:3000/docs/intro/who-it-is-for): New users, developers, architects, maintainers.
-- [Prerequisites](http://127.0.0.1:3000/docs/getting-started/prerequisites): Python 3.11+, optional IDE and plugin tools.
-- [Install the CLI](http://127.0.0.1:3000/docs/getting-started/install-cli): uv, pipx, or ./install.sh.
-- [Where you can install](http://127.0.0.1:3000/docs/getting-started/install-scopes): Project vs user pack, override order.
-- [IDE adapters](http://127.0.0.1:3000/docs/getting-started/ide-adapters): Cursor, Claude Code, GitHub, none.
-- [First project](http://127.0.0.1:3000/docs/getting-started/first-project): init, doctor, workflows.
-- [Your first workflow](http://127.0.0.1:3000/docs/getting-started/first-workflow): ask vs a small feature change.
-- [New-project checklist](http://127.0.0.1:3000/docs/getting-started/checklist): AGENTS.md, config, deploy, gitignore, smoke test.
-- [Capabilities overview](http://127.0.0.1:3000/docs/capabilities/overview): Core vs opt-in.
-- [Workflows and change classes](http://127.0.0.1:3000/docs/capabilities/workflows): Named procedures and micro/minor/feature.
-- [Planning gates and waves](http://127.0.0.1:3000/docs/capabilities/planning-gates): Sign-off order and one tester.
-- [Knowledge base](http://127.0.0.1:3000/docs/capabilities/knowledge): Opt-in QA overlay.
-- [Plugins](http://127.0.0.1:3000/docs/capabilities/plugins): Optional Graphify and Archify.
-- [Graphify plugin](http://127.0.0.1:3000/docs/capabilities/graphify): Official graph extract.
-- [Archify plugin](http://127.0.0.1:3000/docs/capabilities/archify): Pinned HTML diagrams; mermaid required.
-- [Agent-run observability](http://127.0.0.1:3000/docs/capabilities/observability): Ledger, Langfuse, scores.
-- [App telemetry vs agent observability](http://127.0.0.1:3000/docs/capabilities/telemetry): Two different products.
-- [Feature flags](http://127.0.0.1:3000/docs/capabilities/feature-flags): config.json toggles.
-- [Wiki / agent memory](http://127.0.0.1:3000/docs/capabilities/wiki): Trigger-routed pages.
-- [Loader and allowlists](http://127.0.0.1:3000/docs/capabilities/loader): Per-step allowed_reads.
-- [Ask workflow](http://127.0.0.1:3000/docs/workflows/ask): Read-only Q&A.
-- [Feature development](http://127.0.0.1:3000/docs/workflows/feature-development): Chat-driven product work.
-- [Jira workflows](http://127.0.0.1:3000/docs/workflows/jira): Story, epic, bug.
-- [Knowledge bootstrap](http://127.0.0.1:3000/docs/workflows/knowledge-bootstrap): Curator-only workflow.
-- [Adapt AGENTS.md](http://127.0.0.1:3000/docs/guides/agents-md): Routing table.
-- [Adapt config.json](http://127.0.0.1:3000/docs/guides/config): verify, deploy, Jira.
-- [Adapt local deploy](http://127.0.0.1:3000/docs/guides/local-deploy): Runbook and script.
-- [Adapt tests](http://127.0.0.1:3000/docs/guides/tests): Point testers at your runners.
-- [Git ignore](http://127.0.0.1:3000/docs/guides/gitignore): features/ and state.
-- [Add a workflow](http://127.0.0.1:3000/docs/guides/add-workflow): Skill, JSON, config, loader.
-- [What you should not edit](http://127.0.0.1:3000/docs/guides/what-not-to-edit): Loader, secrets, planning skills.
-- [Cursor adapter](http://127.0.0.1:3000/docs/adapters/cursor)
-- [Claude Code adapter](http://127.0.0.1:3000/docs/adapters/claude-code)
-- [GitHub adapter](http://127.0.0.1:3000/docs/adapters/github)
-- [No IDE](http://127.0.0.1:3000/docs/adapters/none)
-- [CLI reference](http://127.0.0.1:3000/docs/reference/cli)
-- [config.json reference](http://127.0.0.1:3000/docs/reference/config)
-- [Pack layout](http://127.0.0.1:3000/docs/reference/pack-layout)
-- [Agent roster](http://127.0.0.1:3000/docs/reference/agents)
-- [Skills](http://127.0.0.1:3000/docs/reference/skills)
-- [Document standard](http://127.0.0.1:3000/docs/reference/document-standard)
-- [Troubleshooting](http://127.0.0.1:3000/docs/troubleshooting)
-- [Tracker intake](http://127.0.0.1:3000/docs/troubleshooting/jira-intake)
-- [Slim handoffs](http://127.0.0.1:3000/docs/troubleshooting/slim-handoffs)
-- [Interrupted Task](http://127.0.0.1:3000/docs/troubleshooting/interrupted-task)
-- [Deploy listeners](http://127.0.0.1:3000/docs/troubleshooting/deploy-listeners)
-- [UI copy split](http://127.0.0.1:3000/docs/troubleshooting/ui-copy)
-- [IDE hooks](http://127.0.0.1:3000/docs/troubleshooting/hooks)
-- [Retro](http://127.0.0.1:3000/docs/troubleshooting/retro)
-- [Test layers](http://127.0.0.1:3000/docs/troubleshooting/test-layers)
-- [Observability troubleshooting](http://127.0.0.1:3000/docs/troubleshooting/observability)
-- [This repository](http://127.0.0.1:3000/docs/maintainers/repo)
-- [Authoring pack markdown](http://127.0.0.1:3000/docs/maintainers/authoring)
+- [Repository layout](http://127.0.0.1:3000/docs/intro/repo-layout): Source map of the kit repo.
+
+## Components
+- [Components overview](http://127.0.0.1:3000/docs/components/overview): Workflows, packages, plugins, capabilities, testing, governance.
+- [Packages](http://127.0.0.1:3000/docs/components/packages): assess and memory installable extras.
+- [Testing and evaluation](http://127.0.0.1:3000/docs/components/testing): Product runners + agent-run scores.
+- [Governance and portal](http://127.0.0.1:3000/docs/components/governance): Gates, licensing, enterprise portal.
+- [Capabilities catalog](http://127.0.0.1:3000/docs/capabilities/overview): Core vs opt-in surfaces.
+- [Two kits](http://127.0.0.1:3000/docs/capabilities/modes): Pack vs orchestrator.
+- [Workflows](http://127.0.0.1:3000/docs/capabilities/workflows): Named procedures and change classes.
+- [Plugins](http://127.0.0.1:3000/docs/capabilities/plugins): Graphify, Archify, obs note.
+- [Knowledge](http://127.0.0.1:3000/docs/capabilities/knowledge) · [Memory](http://127.0.0.1:3000/docs/capabilities/memory) · [Observability](http://127.0.0.1:3000/docs/capabilities/observability) · [Portal](http://127.0.0.1:3000/docs/capabilities/portal)
+
+## Getting started
+- [Install the CLI](http://127.0.0.1:3000/docs/getting-started/install-cli)
+- [First project](http://127.0.0.1:3000/docs/getting-started/first-project)
+- [First workflow](http://127.0.0.1:3000/docs/getting-started/first-workflow)
+- [Checklist](http://127.0.0.1:3000/docs/getting-started/checklist)
+
+## Cookbooks
+- [Cookbooks index](http://127.0.0.1:3000/docs/cookbooks/): Problem → tutorial matrix.
+- [First feature end-to-end](http://127.0.0.1:3000/docs/cookbooks/first-feature)
+- [Orchestrator first run](http://127.0.0.1:3000/docs/cookbooks/orchestrator-first-run)
+- [Add a custom workflow](http://127.0.0.1:3000/docs/cookbooks/add-workflow)
+- [Knowledge and plugins](http://127.0.0.1:3000/docs/cookbooks/knowledge-and-plugins)
+- [Observability, eval, testing](http://127.0.0.1:3000/docs/cookbooks/observability-eval-testing)
+- [Memory bank](http://127.0.0.1:3000/docs/cookbooks/memory-bank)
+- [Enterprise governance](http://127.0.0.1:3000/docs/cookbooks/enterprise-governance)
+
+## Workflow reference
+- [Ask](http://127.0.0.1:3000/docs/workflows/ask) · [Feature development](http://127.0.0.1:3000/docs/workflows/feature-development) · [Jira](http://127.0.0.1:3000/docs/workflows/jira) · [GitHub](http://127.0.0.1:3000/docs/workflows/github)
+- [Knowledge bootstrap](http://127.0.0.1:3000/docs/workflows/knowledge-bootstrap) · [System architecture](http://127.0.0.1:3000/docs/workflows/system-architecture)
+
+## Guides · Reference · Troubleshooting
+- [Guides](http://127.0.0.1:3000/docs/guides/agents-md) · [CLI](http://127.0.0.1:3000/docs/reference/cli) · [Licensing](http://127.0.0.1:3000/docs/reference/licensing) · [Troubleshooting](http://127.0.0.1:3000/docs/troubleshooting)

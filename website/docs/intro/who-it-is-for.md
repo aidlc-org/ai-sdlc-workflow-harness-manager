@@ -22,7 +22,7 @@ You already have `.pipeline/` in the repo. Use:
 - [Two kits](/docs/capabilities/modes) — kit mode vs orchestrator mode
 - [Capabilities](/docs/capabilities/overview) — workflows, knowledge, plugins, observability
 - [CLI reference](/docs/reference/cli)
-- [Troubleshooting](/docs/troubleshooting/index) when a run goes sideways
+- [Troubleshooting](/docs/troubleshooting) when a run goes sideways
 
 ## Architects and delivery leads
 
