@@ -226,8 +226,8 @@ cd ai-sdlc-workflow-harness-manager
 
 python -m pip install -U pip
 python -m pip install -e ".[dev]"
-# Optional extras used by some tests and features:
-# python -m pip install -e ".[dev,orchestrator,assess,memory]"
+# Optional extras used by some tests and features (assess/memory are in-repo packages):
+# python -m pip install -e ./packages/pipeline-kit-assess -e ./packages/pipeline-kit-memory -e ".[dev,orchestrator]"
 ```
 
 Install the CLI onto your PATH from the same checkout:
