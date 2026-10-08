@@ -1,0 +1,9 @@
+# pipeline-kit: do not index the agent pack
+.pipeline/
+.cursor/
+.claude/
+.github/skills/
+pipeline_extensions/
+features/
+graphify-out/
+wiki/codebase/

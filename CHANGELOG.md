@@ -5,6 +5,24 @@ All notable changes to the public **pipeline-kit** package are recorded here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Version numbers come from `VERSION`.
 
+## [Unreleased]
+
+### Added
+
+- **Large codebase documentation platform** (`pipeline_docs`):
+  - CLI: `pipeline-kit docs init-modules | extract-modules | merge-modules | status | link-index | link-agents`
+  - Manual inventory `.pipeline/docs-modules.yaml`; artifacts under `wiki/codebase/` (not `.pipeline/wiki/`)
+  - Parallel module Graphify extract via official CLI only (per-module cwd; no Graphify Python import)
+- Kit workflows (free open pack):
+  - `large-codebase-docs` — module handbooks via `module-docs-agent`
+  - `module-security-review` — per-module `security.md` via `module-security-agent`
+  - `system-architecture` — cross-module docs via `system-architect-agent`
+- Graphify helpers: path-scoped `extract_graph_at`, `merge_graphs(..., out=)`; pack ignore for `wiki/codebase/`
+
+### Changed
+
+- Orchestration routes monorepo docs / module security / system architecture intents before the feature ladder
+
 ## [1.2.2] - 2026-10-08
 
 ### Added

@@ -6,7 +6,8 @@ description: >-
   contains a tracker issue key, or asks which skills, sub-agents,
   workflows, rules, or hooks to add, or asks to assess this repo. Decide the **workflow** (ask |
   feature-development | jira-story | jira-bug | jira-epic | github-story |
-  github-bug | github-epic | test-knowledge-bootstrap | repo-assessment). Questions stay on
+  github-bug | github-epic | test-knowledge-bootstrap | large-codebase-docs |
+  module-security-review | system-architecture | repo-assessment). Questions stay on
   `ask` (no Task chain). Product work writes features/{slug}/route.md, then
   drives that workflow’s Task chain. Parent-only. Never implements product
   code and never replaces a workflow skill.
@@ -60,7 +61,12 @@ When `work_source` is `text`, also classify **intent**:
 | `pack_gap` | assess this repo; pack scan; what skills, agents, workflows, rules, or hooks should we add; what is missing from the pipeline. Classify this before `question` and `product` — the words “what” and “add” also appear there |
 | `question` | how / what / why / where / explain / “can you tell”, and no product verb |
 | `knowledge_bootstrap` | bootstrap QA knowledge, bootstrap test knowledge |
+| `codebase_docs` | document the large codebase; monorepo docs; large-codebase-docs; module handbooks under wiki/codebase |
+| `module_security` | module security review; security notes per module; module-security-review |
+| `system_architecture` | system architecture for the monorepo; cross-module architecture; system-architecture wiki |
 | `product` | work on, fix, change, develop, implement, add, build, or an explicit `WORKFLOW:` other than `ask` |
+
+Classify `codebase_docs`, `module_security`, and `system_architecture` **before** `product` when those signals match — they are not the feature ladder.
 
 ### O2 Intake (only when `work_source` is `jira` or `github`)
 
@@ -77,6 +83,9 @@ If intake returns `BLOCKED` because the configured tracker connection failed, re
 | `text` + `pack_gap` | `repo-assessment` — parent only, no Task chain |
 | `text` + `question` | `ask` — parent answers from the allowlist; **no Task chain** |
 | `text` + `knowledge_bootstrap` | `test-knowledge-bootstrap` — not the feature ladder |
+| `text` + `codebase_docs` | `large-codebase-docs` — monorepo module docs under `wiki/codebase/` |
+| `text` + `module_security` | `module-security-review` — per-module security notes |
+| `text` + `system_architecture` | `system-architecture` — cross-module architecture |
 | `text` + `product` | `feature-development` |
 | `jira` | `intake.jira.issue_type_map[{issue_type}]`, falling back to that map’s `default` |
 | `github` | `intake.github.issue_type_map[{issue_type}]`, falling back to that map’s `default` |
@@ -87,6 +96,12 @@ If intake returns `BLOCKED` because the configured tracker connection failed, re
 
 `test-knowledge-bootstrap` runs the loader (`--workflow test-knowledge-bootstrap --step parent`). Then follow [`../test-knowledge-bootstrap/SKILL.md`](../test-knowledge-bootstrap/SKILL.md). Do not classify a change class and do not start feature-development.
 
+`large-codebase-docs` runs the loader (`--workflow large-codebase-docs --step parent`). Then follow [`../large-codebase-docs/SKILL.md`](../large-codebase-docs/SKILL.md). Parent runs `pipeline-kit docs extract-modules`; specialists write module handbooks only. No change class. No `route.md`.
+
+`module-security-review` runs the loader (`--workflow module-security-review --step parent`). Then follow [`../module-security-review/SKILL.md`](../module-security-review/SKILL.md). No change class. No `route.md`.
+
+`system-architecture` runs the loader (`--workflow system-architecture --step parent`). Then follow [`../system-architecture/SKILL.md`](../system-architecture/SKILL.md). No change class. No `route.md`.
+
 Then set `change_class`:
 
 - `feature-development`: classify with [`../feature-development/assets/change-routing.md`](../feature-development/assets/change-routing.md).
@@ -96,7 +111,7 @@ User override: an explicit `WORKFLOW: {name}` or `CHANGE_CLASS: {class}` in the 
 
 ### O4 Write `features/{slug}/route.md`
 
-Skip this step for `ask`, `pack_gap`, and `test-knowledge-bootstrap`.
+Skip this step for `ask`, `pack_gap`, `test-knowledge-bootstrap`, `large-codebase-docs`, `module-security-review`, and `system-architecture`.
 
 Slug rules:
 
@@ -126,8 +141,11 @@ On `CONSULT_REQUESTED` from Architect or BA, spawn one-shot `ui-designer-agent` 
 | `github-epic` | same as `jira-epic` | same, BA reads `epic-plan.md` |
 | `github-bug` | same as `jira-bug` | [`../bug-fix/SKILL.md`](../bug-fix/SKILL.md) |
 | `test-knowledge-bootstrap` | knowledge-curator-agent → one Markdown review → promote | [`../test-knowledge-bootstrap/SKILL.md`](../test-knowledge-bootstrap/SKILL.md) |
+| `large-codebase-docs` | parent: docs extract-modules; then module-docs-agent per module | [`../large-codebase-docs/SKILL.md`](../large-codebase-docs/SKILL.md) |
+| `module-security-review` | parent ensures graphs; module-security-agent per module | [`../module-security-review/SKILL.md`](../module-security-review/SKILL.md) |
+| `system-architecture` | parent merge/extract; one system-architect-agent | [`../system-architecture/SKILL.md`](../system-architecture/SKILL.md) |
 
-Prompts for every step: [`../feature-development/assets/parent-task-prompt.md`](../feature-development/assets/parent-task-prompt.md). Always inject `WORKFLOW`, `CHANGE_CLASS`, `FEATURE_SLUG`, `REPO_ROOT`, and the disk paths that step needs.
+Prompts for every step: [`../feature-development/assets/parent-task-prompt.md`](../feature-development/assets/parent-task-prompt.md). Always inject `WORKFLOW`, `CHANGE_CLASS`, `FEATURE_SLUG`, `REPO_ROOT`, and the disk paths that step needs. For docs/security/system workflows inject `MODULE_ID` (when applicable) instead of a feature slug.
 
 ---
 
@@ -147,6 +165,9 @@ Every specialist is a **fresh context**. The isolation table in [`../feature-dev
 | `bug-analyst-agent` | Deep code tracing; must not share the fixer’s context | **No** — never the same Task as the developer |
 | `knowledge-curator-agent` | Overlay candidates must not mix with feature planning | **No** |
 | `test-designer-agent` | Structured cases must not share BA authoring | **No** — never the same Task as BA |
+| `module-docs-agent` | One module handbook; must not fill the parent with graph text | **No** |
+| `module-security-agent` | One module security note; evidence-scoped | **No** |
+| `system-architect-agent` | Cross-module architecture; not feature Architect | **No** |
 
 ---
 
@@ -164,9 +185,10 @@ Semantics are inherited, not redefined: critic verdicts and failure rows live in
 | Architect `BLOCKED_CHALLENGE_PM` | Void requirements (and downstream) sign-off; re-spawn PM |
 | `CONSULT_REQUESTED` | Spawn `ui-designer-agent` (`UI_JOB: consult`) if under `gates.consult_cap` or `CONSULT_UI: true`; then re-spawn `resume_agent` |
 | Scope grows past the class mid-flight | Rewrite `route.md` to the higher class and restart at that class’s first step |
+| Docs extract failed for a module | Continue only OK modules or stop if user aborts; do not invent graphs |
 
 ---
 
 ## Anti-patterns
 
-Calling tracker MCP from the parent · running a specialist inline “to save a turn” · picking a workflow the user’s issue type does not map to · full PM/BA ladder for a bug · developer before an approved root cause · hardcoding a project key, site URL, app folder, or port anywhere outside `pipeline.config.json` · treating devops SUCCESS as done.
+Calling tracker MCP from the parent · running a specialist inline “to save a turn” · picking a workflow the user’s issue type does not map to · full PM/BA ladder for a bug · developer before an approved root cause · hardcoding a project key, site URL, app folder, or port anywhere outside `pipeline.config.json` · treating devops SUCCESS as done · inventing Graphify graphs · writing monorepo handbooks into `.pipeline/wiki/`.

@@ -1,0 +1,23 @@
+{
+  "name": "module-security-review",
+  "context": {
+    "parent": {
+      "files": [
+        ".pipeline/skills/orchestration/SKILL.md",
+        ".pipeline/skills/module-security-review/SKILL.md",
+        ".pipeline/config.json",
+        ".pipeline/workflows/module-security-review.json",
+        ".pipeline/docs-modules.yaml"
+      ]
+    },
+    "steps": {
+      "module-security-agent": {
+        "files": [
+          ".pipeline/agents/module-security-agent.md",
+          ".pipeline/skills/module-security-review/SKILL.md",
+          ".pipeline/skills/module-security-review/assets/security-template.md"
+        ]
+      }
+    }
+  }
+}

@@ -315,6 +315,12 @@ Sign-off gates do not ask the decider. Full examples:
 | `pipeline-kit knowledge extract [project]` | Run official `graphify extract . --code-only` (no homemade graph) |
 | `pipeline-kit scan [project]` | Assess the repo. Requires the `assess` package and an `assess` license. See Assessment below. |
 | `pipeline-kit knowledge status [project]` | Graphify CLI and `graphify-out/graph.json` |
+| `pipeline-kit docs init-modules [project]` | Create `.pipeline/docs-modules.yaml` template and `wiki/codebase/` skeleton |
+| `pipeline-kit docs extract-modules [project]` | Parallel official Graphify extract per module → `wiki/codebase/modules/{id}/graph/` |
+| `pipeline-kit docs merge-modules [project]` | Merge module graphs → `wiki/codebase/system/graph/graph.json` |
+| `pipeline-kit docs status [project]` | Module inventory, graphs, Graphify CLI |
+| `pipeline-kit docs link-index [project]` | Rebuild `wiki/codebase/INDEX.md` |
+| `pipeline-kit docs link-agents [project]` | Write marked monorepo map section into `AGENTS.md` |
 | `pipeline-kit plugins list` | List Graphify / Archify (observability uses `obs status`) |
 | `pipeline-kit plugins install graphify [project]` | Register the official Graphify IDE skill |
 | `pipeline-kit plugins install archify [project]` | Pin Archify `v2.16.0` and set `architecture_diagrams.enabled` |
@@ -545,6 +551,9 @@ Unrelated asks (weather, locations, trivia): do not run the loader.
 | Product work (“work on …”, “fix …”, “change …”, “develop …”, “implement …”, “add …”, or a tracker issue key) | Follow `.cursor/skills/run-workflow/SKILL.md` (or `.claude/skills/run-workflow/SKILL.md`). Run `.pipeline/loader/load_workflow.py` (or `~/.pipeline/loader/load_workflow.py`). Read **only** `allowed_reads`. |
 | Question about this repo (how / what / why / where / explain) | Same skill, workflow `ask`. No Task chain. |
 | Bootstrap QA knowledge for this repo | Workflow `test-knowledge-bootstrap`. Not the feature ladder. |
+| Document a large / monorepo codebase | Workflow `large-codebase-docs`. Fill `.pipeline/docs-modules.yaml`, then extract under `wiki/codebase/`. Not the feature ladder. |
+| Module security notes (from graphs) | Workflow `module-security-review`. |
+| Cross-module system architecture | Workflow `system-architecture`. |
 | Unrelated asks | Do not run the loader. |
 
 Chains and skips: `.pipeline/config.json`.
@@ -861,6 +870,8 @@ Add:
 ```gitignore
 features/
 .pipeline/state/
+# optional: large regenerated graphs
+# wiki/codebase/**/graph/graph.json
 ```
 
 `graphify-out/` is optional in git. Commit it if the team wants a shared
@@ -868,15 +879,9 @@ structural graph; ignore it if each checkout re-runs
 `pipeline-kit knowledge extract`. `test-knowledge/` (reviewed catalogs) is
 usually committed after a bootstrap promote.
 
-Project-scope Archify lives in `.agents/skills/archify/` (Cursor / GitHub) or
-`.claude/skills/archify/` (Claude Code). Teams often commit the pinned skill.
-`features/{slug}/diagrams/` follows the same policy as other `features/`
-artifacts. Uninstalling Archify never deletes those diagrams. Until Archify is
-installed, Architect keeps **mermaid** diagrams in `architecture.md` (fallback).
-
-`features/` holds plans, specs, HANDOFFs, and deploy logs for one run.
-`.pipeline/state/active-context.json` is the live allowlist. Most teams do
-not commit those. Commit `features/` only if you want specs in git.
+Monorepo docs live under **`wiki/codebase/`** (not `.pipeline/wiki/`). Prefer
+committing module `README.md` / `INDEX.md`; regenerate large `graph/graph.json`
+files with `pipeline-kit docs extract-modules` when needed.
 
 ---
 
@@ -885,7 +890,8 @@ not commit those. Commit `features/` only if you want specs in git.
 | Item | When a real project needs it |
 |------|------------------------------|
 | Tracker intake | Jira: enable `intake.jira` and set `connection`. GitHub: `features enable github-intake` and set `intake.github.connection` (`cli` by default). |
-| Wiki | After a painful run, retro adds one page under `.pipeline/wiki/`. Start with the shipped index or empty it. |
+| Wiki (lessons) | After a painful run, retro adds one page under `.pipeline/wiki/`. Start with the shipped index or empty it. |
+| Codebase wiki | Monorepo handbooks: `pipeline-kit docs init-modules`, fill `docs-modules.yaml`, then `large-codebase-docs` / security / system-architecture workflows. Artifacts under `wiki/codebase/`. |
 | `.pipeline/rules/*.mdc` | Durable coding standards. They do **not** auto-apply in Cursor (not under `.cursor/rules`). Mention a rule in `AGENTS.md` or on a step allowlist. |
 | Hooks | Policy guardrails ship in `.pipeline/hooks/` (sibling of `hooks/obs/`). `init --ide cursor` or `--ide claude-code` merges them into the IDE hook file without replacing existing entries. Agent-run observability stays opt-in via `pipeline-kit obs install`. |
 | New workflow | See `.pipeline/README.md` (“How to add a workflow”). |

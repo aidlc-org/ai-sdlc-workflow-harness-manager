@@ -1,0 +1,23 @@
+{
+  "name": "system-architecture",
+  "context": {
+    "parent": {
+      "files": [
+        ".pipeline/skills/orchestration/SKILL.md",
+        ".pipeline/skills/system-architecture/SKILL.md",
+        ".pipeline/config.json",
+        ".pipeline/workflows/system-architecture.json",
+        ".pipeline/docs-modules.yaml"
+      ]
+    },
+    "steps": {
+      "system-architect-agent": {
+        "files": [
+          ".pipeline/agents/system-architect-agent.md",
+          ".pipeline/skills/system-architecture/SKILL.md",
+          ".pipeline/skills/system-architecture/assets/system-readme-template.md"
+        ]
+      }
+    }
+  }
+}

@@ -870,6 +870,27 @@ def _knowledge_commands():
     )
 
 
+def _docs_commands():
+    _ensure_pkg_path()
+    from pipeline_docs.commands import (  # noqa: WPS433
+        cmd_extract_modules,
+        cmd_init_modules,
+        cmd_link_agents,
+        cmd_link_index,
+        cmd_merge_modules,
+        cmd_status,
+    )
+
+    return {
+        "init-modules": cmd_init_modules,
+        "extract-modules": cmd_extract_modules,
+        "merge-modules": cmd_merge_modules,
+        "status": cmd_status,
+        "link-index": cmd_link_index,
+        "link-agents": cmd_link_agents,
+    }
+
+
 def _plugin_commands():
     _ensure_pkg_path()
     from pipeline_plugins.commands import (  # noqa: WPS433
@@ -1243,6 +1264,45 @@ def _cli_run(argv: list[str] | None = None) -> int:
     )
     k_promote_feature.add_argument("project", nargs="?", default=".")
     k_promote_feature.add_argument("--slug", required=True)
+
+    docs_parser = commands.add_parser(
+        "docs",
+        help="module-scoped codebase graphs and wiki/codebase documentation platform",
+    )
+    docs_commands = docs_parser.add_subparsers(dest="docs_command", required=True)
+    d_init = docs_commands.add_parser(
+        "init-modules",
+        help="create .pipeline/docs-modules.yaml template and wiki/codebase skeleton",
+    )
+    d_init.add_argument("project", nargs="?", default=".")
+    d_extract = docs_commands.add_parser(
+        "extract-modules",
+        help="parallel Graphify extract per module into wiki/codebase/modules/{id}/graph/",
+    )
+    d_extract.add_argument("project", nargs="?", default=".")
+    d_extract.add_argument("--workers", type=int, default=4)
+    d_extract.add_argument("--module", default="", help="single module id")
+    d_extract.add_argument("--force", action="store_true")
+    d_extract.add_argument("--config", default="", help="override path to docs-modules.yaml")
+    d_merge = docs_commands.add_parser(
+        "merge-modules",
+        help="merge module graphs into wiki/codebase/system/graph/graph.json",
+    )
+    d_merge.add_argument("project", nargs="?", default=".")
+    d_merge.add_argument("--config", default="")
+    d_status = docs_commands.add_parser("status", help="modules config and per-module graph status")
+    d_status.add_argument("project", nargs="?", default=".")
+    d_status.add_argument("--config", default="")
+    d_index = docs_commands.add_parser("link-index", help="rebuild wiki/codebase/INDEX.md")
+    d_index.add_argument("project", nargs="?", default=".")
+    d_index.add_argument("--config", default="")
+    d_agents = docs_commands.add_parser(
+        "link-agents",
+        help="write codebase-docs section into AGENTS.md",
+    )
+    d_agents.add_argument("project", nargs="?", default=".")
+    d_agents.add_argument("--dry-run", action="store_true")
+    d_agents.add_argument("--config", default="")
 
     plugins_parser = commands.add_parser(
         "plugins",
@@ -1667,6 +1727,36 @@ def _cli_run(argv: list[str] | None = None) -> int:
         if args.knowledge_command == "promote-feature":
             return cmd_promote_feature(project, slug=args.slug)
         parser.error("unknown knowledge command")
+        return 2
+    if args.command == "docs":
+        if not project.is_dir():
+            print(f"not a directory: {project}", file=sys.stderr)
+            return 64
+        docs_cmds = _docs_commands()
+        cfg = Path(args.config).resolve() if getattr(args, "config", "") else None
+        if args.docs_command == "init-modules":
+            return docs_cmds["init-modules"](project)
+        if args.docs_command == "extract-modules":
+            return docs_cmds["extract-modules"](
+                project,
+                workers=int(getattr(args, "workers", 4) or 4),
+                module=(getattr(args, "module", "") or None) or None,
+                force=bool(getattr(args, "force", False)),
+                config=cfg,
+            )
+        if args.docs_command == "merge-modules":
+            return docs_cmds["merge-modules"](project, config=cfg)
+        if args.docs_command == "status":
+            return docs_cmds["status"](project, config=cfg)
+        if args.docs_command == "link-index":
+            return docs_cmds["link-index"](project, config=cfg)
+        if args.docs_command == "link-agents":
+            return docs_cmds["link-agents"](
+                project,
+                dry_run=bool(getattr(args, "dry_run", False)),
+                config=cfg,
+            )
+        parser.error("unknown docs command")
         return 2
     if args.command == "memory":
         if not project.is_dir() and args.memory_command != "link":
