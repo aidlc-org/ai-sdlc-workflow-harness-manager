@@ -1,5 +1,11 @@
 # test_adequacy — target: pipeline.step tester-agent — score 0–1
 
+| Attribute | Value |
+|-----------|--------|
+| Type | Handbook |
+| Audience | Langfuse evaluator operators and maintainers |
+| Adapt | Do not add product, host, or customer names. Keep score scale and target observation stable. |
+
 You are grading a tester agent's step. Its task brief (with the spec's acceptance
 criteria) is in INPUT; status + HANDOFF clip in OUTPUT.
 

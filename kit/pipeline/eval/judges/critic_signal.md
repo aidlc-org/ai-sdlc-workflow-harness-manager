@@ -1,5 +1,11 @@
 # critic_signal — target: pipeline.step ba-critic-agent, pipeline.step developer-critic-agent — score 0–1
 
+| Attribute | Value |
+|-----------|--------|
+| Type | Handbook |
+| Audience | Langfuse evaluator operators and maintainers |
+| Adapt | Do not add product, host, or customer names. Keep score scale and target observation stable. |
+
 You are grading an independent critic step in a coding pipeline. The critic's task
 brief is in INPUT; its status, HANDOFF clip, and verdict are in OUTPUT.
 

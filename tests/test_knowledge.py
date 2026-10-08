@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import json
+import os
 import runpy
 import stat
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -21,6 +23,28 @@ def _run_cli(argv: list[str]) -> int:
 
 def _init_pack(app: Path) -> None:
     assert _run_cli(["init", str(app), "--ide", "none"]) == 0
+
+
+def _fake_exe(path: Path, *, exit_code: int = 0, stderr: str = "", stdout: str = "") -> None:
+    """Create a PATH-visible executable that works on Windows and POSIX."""
+    if os.name == "nt":
+        cmd = Path(str(path) + ".cmd")
+        lines = ["@echo off"]
+        if stdout:
+            lines.append(f"echo {stdout}")
+        if stderr:
+            lines.append(f"echo {stderr} 1>&2")
+        lines.append(f"exit /b {exit_code}")
+        cmd.write_text("\r\n".join(lines) + "\r\n", encoding="utf-8")
+        return
+    body = "#!/bin/sh\n"
+    if stdout:
+        body += f"echo {stdout}\n"
+    if stderr:
+        body += f"echo {stderr} >&2\n"
+    body += f"exit {exit_code}\n"
+    path.write_text(body, encoding="utf-8")
+    path.chmod(path.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 
 def test_knowledge_package_never_imports_graphify():
@@ -103,9 +127,7 @@ def test_extract_failed_cli_writes_no_graph(
     app.mkdir()
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
-    fake = bin_dir / "graphify"
-    fake.write_text("#!/bin/sh\necho official-fail >&2\nexit 2\n", encoding="utf-8")
-    fake.chmod(fake.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    _fake_exe(bin_dir / "graphify", exit_code=2, stderr="official-fail")
     monkeypatch.setenv("PATH", str(bin_dir))
     assert _run_cli(["knowledge", "extract", str(app)]) == 1
     err = capsys.readouterr().err
@@ -237,7 +259,7 @@ def test_test_designer_allowlist_installs(tmp_path: Path):
     loader = app / ".pipeline" / "loader" / "load_workflow.py"
     result = subprocess.run(
         [
-            "python3",
+            sys.executable,
             str(loader),
             "--workflow",
             "feature-development",
@@ -265,7 +287,7 @@ def test_bootstrap_workflow_installs(tmp_path: Path):
     loader = app / ".pipeline" / "loader" / "load_workflow.py"
     subprocess.run(
         [
-            "python3",
+            sys.executable,
             str(loader),
             "--workflow",
             "test-knowledge-bootstrap",

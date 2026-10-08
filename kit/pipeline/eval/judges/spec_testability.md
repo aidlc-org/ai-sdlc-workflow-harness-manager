@@ -1,5 +1,11 @@
 # spec_testability — target: pipeline.step ba-agent — score 0–1
 
+| Attribute | Value |
+|-----------|--------|
+| Type | Handbook |
+| Audience | Langfuse evaluator operators and maintainers |
+| Adapt | Do not add product, host, or customer names. Keep score scale and target observation stable. |
+
 You are grading whether a specification's acceptance criteria are independently
 verifiable. Task brief in INPUT; the agent's status + HANDOFF clip in OUTPUT.
 

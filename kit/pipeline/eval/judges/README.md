@@ -1,5 +1,11 @@
 # Langfuse judge prompts (observation-level)
 
+| Attribute | Value |
+|-----------|--------|
+| Type | Handbook |
+| Audience | Langfuse evaluator operators and maintainers |
+| Adapt | Do not add product, host, or customer names. Keep score scale and target observation stable. |
+
 Paste these into Langfuse **Evaluators** after `pipeline-kit eval judges sync` has
 created the score configs. One evaluator per file; rule target = observation **name**
 filter listed in the prompt header. Never attach judges to `tool:` / `retriever:` /

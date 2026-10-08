@@ -1,5 +1,11 @@
 # scope_control — target: pipeline.step ba-agent — score 0–1
 
+| Attribute | Value |
+|-----------|--------|
+| Type | Handbook |
+| Audience | Langfuse evaluator operators and maintainers |
+| Adapt | Do not add product, host, or customer names. Keep score scale and target observation stable. |
+
 You are checking a specification for gold-plating against the original ask.
 The original task brief is in INPUT; the agent's status + HANDOFF clip in OUTPUT.
 

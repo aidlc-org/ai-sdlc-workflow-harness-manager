@@ -81,6 +81,7 @@ def _shop(root: Path) -> None:
     _graph(root)
 
 
+@pytest.mark.requires_license_engine
 def test_scan_requires_assess_license(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, enterprise_license: dict) -> None:
     from pipeline_kit import license as lic
 

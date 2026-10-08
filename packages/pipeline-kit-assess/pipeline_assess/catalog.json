@@ -53,6 +53,45 @@
       "benefit": "Fixes record the cause before the code change."
     },
     {
+      "id": "github-story",
+      "category": "workflow",
+      "modes": ["kit", "orchestrator"],
+      "dimension": "integrations",
+      "summary": "Deliver a GitHub issue or pull request as a story.",
+      "relevant_when": "always",
+      "enabled_when": "workflow:github-story",
+      "enable": "Already installed with pipeline-kit init.",
+      "license_area": "",
+      "effort": "M",
+      "benefit": "Work starts from the GitHub item instead of a pasted prompt."
+    },
+    {
+      "id": "github-epic",
+      "category": "workflow",
+      "modes": ["kit", "orchestrator"],
+      "dimension": "integrations",
+      "summary": "Break down and deliver a GitHub epic-style issue.",
+      "relevant_when": "always",
+      "enabled_when": "workflow:github-epic",
+      "enable": "Already installed with pipeline-kit init.",
+      "license_area": "",
+      "effort": "M",
+      "benefit": "Large GitHub issues become a sequenced plan."
+    },
+    {
+      "id": "github-bug",
+      "category": "workflow",
+      "modes": ["kit", "orchestrator"],
+      "dimension": "integrations",
+      "summary": "Fix a GitHub bug issue with a written cause.",
+      "relevant_when": "always",
+      "enabled_when": "workflow:github-bug",
+      "enable": "Already installed with pipeline-kit init.",
+      "license_area": "",
+      "effort": "M",
+      "benefit": "Bug fixes record the cause before the code change."
+    },
+    {
       "id": "test-knowledge-bootstrap",
       "category": "workflow",
       "modes": ["kit", "orchestrator"],

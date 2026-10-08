@@ -6,6 +6,7 @@ import importlib.util
 import json
 import runpy
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -199,11 +200,10 @@ def test_architect_step_allowlist_installs(tmp_path: Path):
     app.mkdir()
     assert _run(["--project", str(app), "--ide", "none"]) == 0
     loader = app / ".pipeline" / "loader" / "load_workflow.py"
-    import subprocess
 
     result = subprocess.run(
         [
-            "python3",
+            sys.executable,
             str(loader),
             "--workflow",
             "feature-development",

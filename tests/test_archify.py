@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import json
+import os
 import runpy
 import stat
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -34,6 +36,30 @@ def _init_pack(app: Path) -> None:
 
 
 def _exe(path: Path, body: str) -> None:
+    """PATH-visible shim. body is a tiny POSIX shell snippet; Windows gets a .cmd port."""
+    if os.name == "nt":
+        cmd = Path(str(path) + ".cmd")
+        # Map the few patterns these tests plant.
+        if '="$1" = "skill"' in body or '"$1" = "skill"' in body:
+            text = '@echo off\r\nif "%~1"=="skill" exit /b 0\r\nexit /b 1\r\n'
+        elif '"$1" = "--version"' in body or '="$1" = "--version"' in body:
+            text = (
+                '@echo off\r\n'
+                'if "%~1"=="--version" (\r\n'
+                '  echo v20.11.0\r\n'
+                '  exit /b 0\r\n'
+                ')\r\n'
+                'exit /b 0\r\n'
+            )
+        elif body.strip() == "exit 0":
+            text = "@echo off\r\nexit /b 0\r\n"
+        elif body.strip() == "exit 1":
+            text = "@echo off\r\nexit /b 1\r\n"
+        else:
+            # Best-effort: always succeed.
+            text = "@echo off\r\nexit /b 0\r\n"
+        cmd.write_text(text, encoding="utf-8")
+        return
     path.write_text("#!/bin/sh\n" + body + "\n", encoding="utf-8")
     path.chmod(path.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
@@ -269,7 +295,7 @@ def test_documented_plugin_commands_match_cli():
     guide = (REPO / "CUSTOMER-GUIDE.md").read_text(encoding="utf-8")
     result = subprocess.run(
         [
-            "python3",
+            sys.executable,
             "-c",
             (
                 "import runpy, sys;\n"

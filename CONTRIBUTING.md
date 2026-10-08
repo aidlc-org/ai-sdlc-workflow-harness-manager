@@ -27,8 +27,8 @@ Requires Python 3.11+.
 
 ```bash
 python -m pip install -e ".[dev]"
-# Optional extras used by some tests:
-# python -m pip install -e ".[dev,orchestrator,assess,memory]"
+# Optional extras used by some tests (assess/memory are path packages, not PyPI yet):
+# python -m pip install -e ./packages/pipeline-kit-assess -e ./packages/pipeline-kit-memory -e ".[dev,orchestrator]"
 python -m pytest -q
 ```
 
