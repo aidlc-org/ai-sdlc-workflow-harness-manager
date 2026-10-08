@@ -1,5 +1,4 @@
-# Pipeline kit
-
+# AI SDLC Workflow Harness Manager
 Portable **workflow pack** and installer for coding agents.
 
 Clone this repository, then install `.pipeline` into any customer project
