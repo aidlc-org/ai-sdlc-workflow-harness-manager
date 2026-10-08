@@ -742,7 +742,7 @@ Architect with `RUN_ARCHITECT: true|false`. Size policy lives in
 
 **New dependencies.** Architect declares each one in
 `features/{slug}/state/architect-agent.json` `context.new_dependencies`
-(`name` + `why_nothing_existing_orks`) and mirrors it in
+(`name` + `why_nothing_existing_works`) and mirrors it in
 `HANDOFF-architect.md`. Developer cannot install or add to a manifest what was
 not declared — the refusal names the package. Micro, minor, and bug work take
 no new dependencies at all. Ladder and table in
