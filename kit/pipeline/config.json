@@ -109,6 +109,54 @@
         "skip_tester": true
       }
     },
+    "large-codebase-docs": {
+      "source": "text",
+      "chain": [
+        "module-docs-agent"
+      ],
+      "skips": {
+        "skip_pm": true,
+        "skip_ba": true,
+        "skip_ba_critic": true,
+        "skip_architect": true,
+        "skip_ui_designer": true,
+        "skip_telemetry": true,
+        "skip_developer_critic": true,
+        "skip_tester": true
+      }
+    },
+    "module-security-review": {
+      "source": "text",
+      "chain": [
+        "module-security-agent"
+      ],
+      "skips": {
+        "skip_pm": true,
+        "skip_ba": true,
+        "skip_ba_critic": true,
+        "skip_architect": true,
+        "skip_ui_designer": true,
+        "skip_telemetry": true,
+        "skip_developer_critic": true,
+        "skip_tester": true
+      }
+    },
+    "system-architecture": {
+      "source": "text",
+      "chain": [
+        "system-architect-agent"
+      ],
+      "skips": {
+        "skip_pm": true,
+        "skip_ba": true,
+        "skip_ba_critic": true,
+        "skip_architect": true,
+        "skip_ui_designer": true,
+        "skip_telemetry": true,
+        "skip_developer_critic": true,
+        "skip_tester": true
+      }
+    },
     "jira-bug": {
       "source": "jira",
       "plan_source": "rca.md",

@@ -15,6 +15,9 @@ A **workflow** answers *where the work came from* and *which chain to run*. A **
 | `jira-epic` | jira | Same; plan source is `epic-plan.md` |
 | `jira-bug` | jira | intake → bug-analyst → developer → critic → tester → devops → retro |
 | `test-knowledge-bootstrap` | text | `knowledge-curator-agent` only |
+| `large-codebase-docs` | text | CLI extract-modules; `module-docs-agent` per module → `wiki/codebase/` |
+| `module-security-review` | text | `module-security-agent` per module → `security.md` |
+| `system-architecture` | text | optional merge; one `system-architect-agent` → `wiki/codebase/system/` |
 
 Chains live in `.pipeline/config.json`. File allowlists live in `.pipeline/workflows/*.json`.
 

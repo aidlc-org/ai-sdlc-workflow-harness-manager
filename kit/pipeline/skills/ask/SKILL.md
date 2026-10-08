@@ -24,6 +24,8 @@ The receptionist already ran the loader with `--workflow ask --step parent`.
 | How / what / why / where / explain about this repo | work on, fix, change, develop, implement, add, build |
 | Point me at the file / function / flow | A tracker issue key (use the Jira workflow) |
 | — | “Bootstrap QA knowledge” (workflow `test-knowledge-bootstrap`) |
+| — | Document large codebase / monorepo docs (`large-codebase-docs`) |
+| — | Module security review / system architecture workflows |
 | Compare two approaches already in the tree | Architecture diagrams (out of scope for this skill) |
 
 Weather, locations, and other asks unrelated to this repository: **stop**. Do not read pack files. Do not invent a pipeline.

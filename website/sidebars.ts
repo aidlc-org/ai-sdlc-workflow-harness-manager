@@ -68,6 +68,9 @@ const sidebars: SidebarsConfig = {
         'workflows/jira',
         'workflows/github',
         'workflows/knowledge-bootstrap',
+        'workflows/large-codebase-docs',
+        'workflows/module-security-review',
+        'workflows/system-architecture',
       ],
     },
     {

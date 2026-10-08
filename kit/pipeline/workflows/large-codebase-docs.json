@@ -1,0 +1,23 @@
+{
+  "name": "large-codebase-docs",
+  "context": {
+    "parent": {
+      "files": [
+        ".pipeline/skills/orchestration/SKILL.md",
+        ".pipeline/skills/large-codebase-docs/SKILL.md",
+        ".pipeline/config.json",
+        ".pipeline/workflows/large-codebase-docs.json",
+        ".pipeline/docs-modules.yaml"
+      ]
+    },
+    "steps": {
+      "module-docs-agent": {
+        "files": [
+          ".pipeline/agents/module-docs-agent.md",
+          ".pipeline/skills/large-codebase-docs/SKILL.md",
+          ".pipeline/skills/large-codebase-docs/assets/module-readme-template.md"
+        ]
+      }
+    }
+  }
+}

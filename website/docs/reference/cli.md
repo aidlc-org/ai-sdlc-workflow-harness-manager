@@ -43,6 +43,21 @@ Kit mode never loads `pipeline_extensions/`. Examples: [Extensions](/docs/capabi
 
 See [Knowledge base](/docs/capabilities/knowledge).
 
+## Codebase docs (monorepo wiki)
+
+Free open kit. Artifacts under `wiki/codebase/` (not `.pipeline/wiki/`). Inventory: `.pipeline/docs-modules.yaml`.
+
+| Command | Purpose |
+|---------|---------|
+| `docs init-modules [project]` | Template `docs-modules.yaml` + `wiki/codebase/` skeleton |
+| `docs extract-modules [project] [--workers N] [--module ID] [--force]` | Parallel official Graphify extract per module |
+| `docs merge-modules [project]` | Merge module graphs → system graph |
+| `docs status [project]` | Inventory, graphs, Graphify CLI |
+| `docs link-index [project]` | Rebuild `wiki/codebase/INDEX.md` |
+| `docs link-agents [project] [--dry-run]` | Marked monorepo map in `AGENTS.md` |
+
+Workflows: [Large codebase docs](/docs/workflows/large-codebase-docs), [Module security](/docs/workflows/module-security-review), [System architecture](/docs/workflows/system-architecture).
+
 ## Memory
 
 Needs the optional memory extra (`uv tool install -e ".[memory]"` from the kit checkout, same CLI as `pipeline-kit`). See [Memory bank and MCP](/docs/capabilities/memory).

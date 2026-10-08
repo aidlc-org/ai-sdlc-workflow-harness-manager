@@ -26,6 +26,7 @@ PACK_IGNORE = (
     "pipeline_extensions/",
     "features/",
     "graphify-out/",
+    "wiki/codebase/",
 )
 _SECRET = re.compile(
     r"(secret|password|api[_-]?key|token|credential|private[_-]?key|\.env|begin )",
@@ -207,15 +208,24 @@ def update_graph(project: Path, *, force: bool = False, runner: RunFn = subproce
     return path
 
 
-def merge_graphs(project: Path, inputs: list[Path], *, runner: RunFn = subprocess.run) -> Path:
-    """Run ``graphify merge-graphs`` into graphify-out/graph.json."""
+def merge_graphs(
+    project: Path,
+    inputs: list[Path],
+    *,
+    out: Path | None = None,
+    runner: RunFn = subprocess.run,
+) -> Path:
+    """Run ``graphify merge-graphs`` into ``out`` or graphify-out/graph.json."""
     if len(inputs) < 2:
-        raise GraphifyError("merge-graphs needs at least two graph.json files.", recovery="graphify merge-graphs <g1> <g2>")
-    out = graph_json_path(project)
-    out.parent.mkdir(parents=True, exist_ok=True)
+        raise GraphifyError(
+            "merge-graphs needs at least two graph.json files.",
+            recovery="graphify merge-graphs <g1> <g2>",
+        )
+    target = out if out is not None else graph_json_path(project)
+    target.parent.mkdir(parents=True, exist_ok=True)
     completed = _run_graphify(
         project,
-        ["merge-graphs", *[str(path) for path in inputs], "--out", str(out)],
+        ["merge-graphs", *[str(path) for path in inputs], "--out", str(target)],
         runner=runner,
         timeout=300,
     )
@@ -223,11 +233,14 @@ def merge_graphs(project: Path, inputs: list[Path], *, runner: RunFn = subproces
         detail = (completed.stderr or completed.stdout or "").strip()
         raise GraphifyError(
             f"graphify merge-graphs failed (exit {completed.returncode}). {detail}".strip(),
-            recovery="graphify merge-graphs <g1> <g2> --out graphify-out/graph.json",
+            recovery="graphify merge-graphs <g1> <g2> --out <path>",
         )
-    if not out.is_file():
-        raise GraphifyError("graphify merge-graphs exited 0 but wrote no graph.", recovery=EXTRACT_HINT)
-    return out
+    if not target.is_file():
+        raise GraphifyError(
+            "graphify merge-graphs exited 0 but wrote no graph.",
+            recovery=EXTRACT_HINT,
+        )
+    return target
 
 
 def god_nodes(project: Path, *, top: int = 10, runner: RunFn = subprocess.run) -> list[dict[str, Any]]:
@@ -295,8 +308,29 @@ def graphify_owned_files(project: Path) -> list[str]:
     return found
 
 
-def extract_graph(project: Path, *, force: bool = False) -> Path:
+def extract_graph(project: Path, *, force: bool = False, runner: RunFn | None = None) -> Path:
     """Run ``graphify extract . --code-only``. Do not write a substitute graph."""
+    return extract_graph_at(project, path=".", force=force, runner=runner)
+
+
+def extract_graph_at(
+    project: Path,
+    *,
+    path: str = ".",
+    force: bool = False,
+    dest: Path | None = None,
+    runner: RunFn | None = None,
+) -> Path:
+    """Run official extract under ``path``; optionally copy graph.json to ``dest``.
+
+    ``path`` is repo-relative (``.`` or a module folder). Graphify is always
+    invoked with ``cwd=project``. For a subdirectory it runs
+    ``graphify extract <rel> --code-only``, which writes
+    ``{rel}/graphify-out/graph.json`` (safe for parallel module extracts).
+    When ``dest`` is set, the produced graph is copied there without inventing
+    content; a module-local scratch ``graphify-out/`` is removed after copy.
+    """
+    run = runner or subprocess.run
     exe = graphify_executable()
     if not exe:
         raise GraphifyError(
@@ -304,13 +338,36 @@ def extract_graph(project: Path, *, force: bool = False) -> Path:
             recovery=RECOVERY,
         )
     ensure_graphifyignore(project)
-    command = [exe, "extract", ".", "--code-only"]
+    rel = path.replace("\\", "/").strip() or "."
+    module_local = False
+    if rel in {".", "./"}:
+        extract_target = "."
+        work = project
+    else:
+        module_root = (project / rel).resolve()
+        try:
+            module_root.relative_to(project.resolve())
+        except ValueError as exc:
+            raise GraphifyError(
+                f"extract path escapes project root: {path}",
+                recovery="Use a path inside the project.",
+            ) from exc
+        if not module_root.is_dir():
+            raise GraphifyError(
+                f"extract path is not a directory: {path}",
+                recovery="Fix docs-modules.yaml path.",
+            )
+        # Official CLI: extract <subdir> from repo root → <subdir>/graphify-out/
+        extract_target = rel
+        work = project
+        module_local = True
+    command = [exe, "extract", extract_target, "--code-only"]
     if force:
         command.append("--force")
     try:
-        completed = subprocess.run(
+        completed = run(
             command,
-            cwd=project,
+            cwd=work,
             check=False,
             capture_output=True,
             text=True,
@@ -334,13 +391,41 @@ def extract_graph(project: Path, *, force: bool = False) -> Path:
             f"graphify extract failed (exit {completed.returncode}).{suffix}",
             recovery=recovery,
         )
-    path = graph_json_path(project)
-    if not path.is_file():
+    candidates: list[Path] = []
+    if module_local:
+        candidates.append(project / rel / GRAPH_DIR / GRAPH_JSON)
+    candidates.extend(
+        [
+            graph_json_path(project),
+            work / GRAPH_DIR / GRAPH_JSON,
+        ]
+    )
+    produced: Path | None = None
+    for candidate in candidates:
+        if candidate.is_file():
+            produced = candidate
+            break
+    if produced is None:
+        detail = (completed.stderr or completed.stdout or "").strip()
+        suffix = f"\n{detail}" if detail else ""
         raise GraphifyError(
-            "graphify extract exited 0 but graphify-out/graph.json is missing.",
+            f"graphify extract exited 0 but graph.json is missing.{suffix}",
             recovery=EXTRACT_HINT,
         )
-    return path
+    if dest is None:
+        return produced
+    dest = Path(dest)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if produced.resolve() != dest.resolve():
+        shutil.copy2(produced, dest)
+        if module_local:
+            scratch = project / rel / GRAPH_DIR
+            if scratch.is_dir() and produced.resolve().is_relative_to(scratch.resolve()):
+                try:
+                    shutil.rmtree(scratch)
+                except OSError:
+                    pass
+    return dest
 
 
 def register_command(*, ide: str) -> list[str] | None:

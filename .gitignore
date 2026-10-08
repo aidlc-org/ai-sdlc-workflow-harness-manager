@@ -24,3 +24,5 @@ license.json
 portal.json
 _tmp_*.py
 _restore_*.py
+wiki/
+.cursor/
