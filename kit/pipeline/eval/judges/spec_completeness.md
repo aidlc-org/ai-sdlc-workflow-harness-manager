@@ -1,5 +1,11 @@
 # spec_completeness — target: pipeline.step ba-agent — score 0–1
 
+| Attribute | Value |
+|-----------|--------|
+| Type | Handbook |
+| Audience | Langfuse evaluator operators and maintainers |
+| Adapt | Do not add product, host, or customer names. Keep score scale and target observation stable. |
+
 You are grading the specification work of a business-analyst agent in a coding
 pipeline. The task brief is in INPUT; the agent's status, HANDOFF summary, and any
 critic verdict are in OUTPUT.

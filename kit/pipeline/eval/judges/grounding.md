@@ -1,5 +1,11 @@
 # grounding — target: pipeline.step developer-agent — score 0–1
 
+| Attribute | Value |
+|-----------|--------|
+| Type | Handbook |
+| Audience | Langfuse evaluator operators and maintainers |
+| Adapt | Do not add product, host, or customer names. Keep score scale and target observation stable. |
+
 You are checking whether a developer agent's HANDOFF claims are grounded rather
 than fabricated. Task brief in INPUT; status + HANDOFF clip in OUTPUT.
 

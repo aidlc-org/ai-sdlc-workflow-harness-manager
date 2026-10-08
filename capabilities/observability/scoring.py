@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from collections import defaultdict
 from pathlib import Path
@@ -26,16 +27,18 @@ TOOL_EVENTS = {
 
 
 def _rel(path: str | None, repo: Path) -> str | None:
+    """Repo-relative path with forward slashes (Windows-safe)."""
     if not path:
         return None
     raw = path.strip()
     try:
-        resolved = Path(raw).expanduser()
-        if resolved.is_absolute():
-            return str(resolved.resolve().relative_to(repo.resolve()))
+        # realpath expands 8.3 short names so relative_to works across forms.
+        abs_file = Path(os.path.realpath(raw))
+        abs_repo = Path(os.path.realpath(repo))
+        return str(abs_file.relative_to(abs_repo)).replace("\\", "/")
     except (OSError, ValueError):
         pass
-    return raw.lstrip("./")
+    return raw.replace("\\", "/").lstrip("./")
 
 
 def _allowlisted(path: str | None, allowed: list[str], repo: Path) -> bool:
@@ -80,19 +83,14 @@ def _extract_paths(text: str) -> set[str]:
     return found
 
 
-def _feature_root(repo: Path, slug: str) -> Path:
-    try:
-        from pipeline_kit.paths import feature_dir as _fd
-
-        return _fd(repo, str(slug))
-    except Exception:
-        return repo / "features" / str(slug)
-
-
 def _plan_paths(repo: Path, slug: str | None) -> set[str]:
     if not slug:
         return set()
-    root = _feature_root(repo, str(slug))
+    try:
+        from pipeline_kit.paths import feature_dir as _fd
+        root = _fd(repo, str(slug))
+    except Exception:
+        root = repo / "features" / slug
     found: set[str] = set()
     for name in ("implementation-plan.md", "spec-order.md", "plan.md"):
         path = root / name
@@ -104,7 +102,11 @@ def _plan_paths(repo: Path, slug: str | None) -> set[str]:
 def _handoff_success(repo: Path, slug: str | None, step: str | None) -> bool | None:
     if not slug:
         return None
-    root = _feature_root(repo, str(slug))
+    try:
+        from pipeline_kit.paths import feature_dir as _fd
+        root = _fd(repo, str(slug))
+    except Exception:
+        root = repo / "features" / slug
     if not root.is_dir():
         return None
     files = sorted(root.glob("HANDOFF*.md")) + sorted(root.glob("**/HANDOFF*.md"))
@@ -295,7 +297,7 @@ def score_events(repo: Path, rows: list[dict[str, Any]]) -> dict[str, Any]:
         by_step[str(event.get("step") or "unattributed")].append(event)
     for step, group in by_step.items():
         slug = next((item.get("slug") for item in group if item.get("slug")), None)
-        route = _parse_route(_feature_root(repo, str(slug or "")) / "route.md")
+        route = _parse_route(repo / "features" / str(slug or "") / "route.md")
         plan_files = _plan_paths(repo, slug)
         seen: dict[str, int] = {}
         tools = [item for item in group if _is_tool(item)]

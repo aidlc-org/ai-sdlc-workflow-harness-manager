@@ -1,5 +1,11 @@
 # implementation_faithfulness — target: pipeline.step developer-agent — score 0–1
 
+| Attribute | Value |
+|-----------|--------|
+| Type | Handbook |
+| Audience | Langfuse evaluator operators and maintainers |
+| Adapt | Do not add product, host, or customer names. Keep score scale and target observation stable. |
+
 You are grading a developer agent's implementation step. Its task brief (which
 carries the spec/patch context) is in INPUT; status + HANDOFF clip in OUTPUT.
 

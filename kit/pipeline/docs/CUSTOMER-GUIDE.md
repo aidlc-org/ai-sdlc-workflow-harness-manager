@@ -742,7 +742,7 @@ Architect with `RUN_ARCHITECT: true|false`. Size policy lives in
 
 **New dependencies.** Architect declares each one in
 `features/{slug}/state/architect-agent.json` `context.new_dependencies`
-(`name` + `why_nothing_existing_works`) and mirrors it in
+(`name` + `why_nothing_existing_orks`) and mirrors it in
 `HANDOFF-architect.md`. Developer cannot install or add to a manifest what was
 not declared — the refusal names the package. Micro, minor, and bug work take
 no new dependencies at all. Ladder and table in
@@ -869,7 +869,8 @@ usually committed after a bootstrap promote.
 Project-scope Archify lives in `.agents/skills/archify/` (Cursor / GitHub) or
 `.claude/skills/archify/` (Claude Code). Teams often commit the pinned skill.
 `features/{slug}/diagrams/` follows the same policy as other `features/`
-artifacts. Uninstalling Archify never deletes those diagrams.
+artifacts. Uninstalling Archify never deletes those diagrams. Until Archify is
+installed, Architect keeps **mermaid** diagrams in `architecture.md` (fallback).
 
 `features/` holds plans, specs, HANDOFFs, and deploy logs for one run.
 `.pipeline/state/active-context.json` is the live allowlist. Most teams do

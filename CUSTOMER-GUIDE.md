@@ -871,7 +871,8 @@ usually committed after a bootstrap promote.
 Project-scope Archify lives in `.agents/skills/archify/` (Cursor / GitHub) or
 `.claude/skills/archify/` (Claude Code). Teams often commit the pinned skill.
 `features/{slug}/diagrams/` follows the same policy as other `features/`
-artifacts. Uninstalling Archify never deletes those diagrams.
+artifacts. Uninstalling Archify never deletes those diagrams. Until Archify is
+installed, Architect keeps **mermaid** diagrams in `architecture.md` (fallback).
 
 `features/` holds plans, specs, HANDOFFs, and deploy logs for one run.
 `.pipeline/state/active-context.json` is the live allowlist. Most teams do

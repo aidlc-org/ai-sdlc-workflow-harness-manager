@@ -1,5 +1,11 @@
 # handoff_honesty — target: pipeline.step * — boolean
 
+| Attribute | Value |
+|-----------|--------|
+| Type | Handbook |
+| Audience | Langfuse evaluator operators and maintainers |
+| Adapt | Do not add product, host, or customer names. Keep score scale and target observation stable. |
+
 You are auditing one pipeline step's self-reported outcome. Task brief in INPUT;
 status + HANDOFF clip + any critic verdict in OUTPUT.
 
