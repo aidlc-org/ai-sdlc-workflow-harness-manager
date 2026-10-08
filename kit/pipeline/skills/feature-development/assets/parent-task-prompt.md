@@ -31,6 +31,8 @@ PIPELINE_STATE_PATH: features/{slug}/pipeline-state.json
 PRIOR_STATE_PATH: features/{slug}/state/{prior-agent}.json | none
 CONTEXT_PACK: features/{slug}/context-pack.json
 SEED_BUNDLE: features/{slug}/step-context.md
+CHOSEN_MODEL: {from context-pack.json chosen_model | none}
+MODEL_APPLY: advisory
 
 1. Read PIPELINE_STATE_PATH.
 2. If PRIOR_STATE_PATH is not none, read it. Open only outputs and context.next_must_read.
@@ -40,6 +42,13 @@ SEED_BUNDLE: features/{slug}/step-context.md
 6. Update your row in pipeline-state.json.
 7. Return a short HANDOFF. The parent will not paste that HANDOFF into the next Task.
 ```
+
+**Model routing (parent, before each specialist Task):**
+
+1. After the loader JSON prints, read `chosen_model` / `model` from that JSON (also on `features/{slug}/context-pack.json` and `features/{slug}/model-routing.json`).
+2. When spawning the Task from an **agent CLI** (Cursor CLI, Claude Code CLI, Copilot CLI) and the Task/subagent API accepts a model field, pass `chosen_model`.
+3. When running in an **IDE chat** UI, do **not** claim the model was forced — kit model routing is advisory there. Enforced per-step models require **orchestrator** (`pipeline-kit run`).
+4. Always put `CHOSEN_MODEL: {id|none}` in the specialist prompt for audit even if the CLI cannot apply it.
 
 ---
 

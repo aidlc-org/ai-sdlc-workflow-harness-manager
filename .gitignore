@@ -26,3 +26,4 @@ _tmp_*.py
 _restore_*.py
 wiki/
 .cursor/
+.github/

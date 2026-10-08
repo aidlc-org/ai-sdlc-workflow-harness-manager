@@ -9,6 +9,7 @@ Version numbers come from `VERSION`.
 
 ### Added
 
+- **Kit model routing (advisory):** loader resolves `orchestrator.models` pins / `fallback_model` for specialist steps into `chosen_model` on the context pack and `features/{slug}/model-routing.json`. Agent CLIs may pass the id when Task spawn supports a model field. IDE chat does not enforce. Enforced routing stays orchestrator (`pipeline-kit run`). Opt out: `PIPELINE_KIT_MODEL_ROUTING=0`.
 - **Documentation site (issue #11):** Tessl-style information architecture on Docusaurus
   - Components hubs: overview, packages, testing, governance
   - Cookbooks: first feature, orchestrator first run, add workflow, knowledge/plugins, obs/eval/testing, memory bank, enterprise governance

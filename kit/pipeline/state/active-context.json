@@ -1,28 +1,36 @@
 {
   "workflow": "feature-development",
-  "step": "product-manager-agent",
-  "slug": "try-pm",
+  "step": "developer-agent",
+  "slug": "smoke-model",
   "allowed_reads": [
-    ".pipeline/agents/product-manager-agent.md",
-    ".pipeline/skills/product-planning/SKILL.md",
-    ".pipeline/skills/feature-development/assets/clarify-first.md",
+    ".pipeline/agents/developer-agent.md",
+    ".pipeline/skills/secure-implementation/SKILL.md",
+    ".pipeline/skills/secure-implementation/assets/security-preflight-template.md",
+    ".pipeline/skills/feature-development/assets/minimalism-policy.md",
     ".pipeline/skills/feature-development/assets/pipeline-state.md",
-    ".pipeline/skills/feature-development/assets/ui-designer-policy.md",
-    ".pipeline/skills/feature-development/assets/decisions-template.md",
-    ".pipeline/skills/feature-development/assets/questions-format.md",
-    ".pipeline/skills/feature-development/assets/research-template.md",
-    ".pipeline/skills/feature-development/assets/prd-template.md",
-    ".pipeline/skills/feature-development/assets/handoff-pm-template.md",
-    ".pipeline/skills/feature-development/assets/agent-state-template.json",
-    ".pipeline/skills/feature-development/assets/next-agent-policy.md",
-    ".pipeline/skills/feature-development/assets/pipeline-state-template.json"
+    ".pipeline/skills/feature-development/assets/pipeline-state-template.json",
+    ".pipeline/skills/feature-development/assets/agent-state-template.json"
   ],
   "seed_reads": [
-    ".pipeline/agents/product-manager-agent.md",
-    ".pipeline/skills/product-planning/SKILL.md"
+    ".pipeline/agents/developer-agent.md",
+    ".pipeline/skills/secure-implementation/SKILL.md"
   ],
-  "seed_bundle": "features/try-pm/step-context.md",
-  "artifact_root": "C:\\Users\\Piyush_Bhatia\\AppData\\Local\\Temp\\pytest-of-PiyushBhatia\\pytest-95\\test_activate_writes_one_seed_0\\app\\features",
-  "feature_dir": "C:\\Users\\Piyush_Bhatia\\AppData\\Local\\Temp\\pytest-of-PiyushBhatia\\pytest-95\\test_activate_writes_one_seed_0\\app\\features\\try-pm",
-  "feature_rel": "features/try-pm"
+  "seed_bundle": "features/smoke-model/step-context.md",
+  "model": {
+    "chosen": "gpt-5.5",
+    "reason": "pin",
+    "decider": "jev",
+    "fallback": "grok-4.6",
+    "apply": "advisory",
+    "capability": "",
+    "runtime": "kit",
+    "step": "developer-agent",
+    "workflow": "feature-development",
+    "change_class": "micro",
+    "routing_path": "features/smoke-model/model-routing.json"
+  },
+  "chosen_model": "gpt-5.5",
+  "artifact_root": "C:\\Users\\Piyush_Bhatia\\AppData\\Local\\Temp\\tmpC755.tmp-pk\\features",
+  "feature_dir": "C:\\Users\\Piyush_Bhatia\\AppData\\Local\\Temp\\tmpC755.tmp-pk\\features\\smoke-model",
+  "feature_rel": "features/smoke-model"
 }

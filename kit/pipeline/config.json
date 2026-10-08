@@ -387,13 +387,12 @@
     "rules": []
   },
   "orchestrator": {
-    "_note": "Model choice for orchestrator mode. decider jev asks TypeSafe before each agent. decider fixed skips that call. Secrets stay in TYPESAFE_API_KEY and CURSOR_API_KEY.",
+    "_note": "Model choice. Orchestrator mode (pipeline-kit run) ENFORCES the chosen model via the Cursor SDK. Kit mode loader also RESOLVES the same config (pins, fallback, candidates) into context-pack.json chosen_model + features/{slug}/model-routing.json for agent-CLI Task spawn when the CLI supports a model field. IDE chat does not force the model. Kit defaults to fixed offline resolution; set PIPELINE_KIT_MODEL_DECIDER=jev only if the orchestrator extra is installed. Disable kit resolution with PIPELINE_KIT_MODEL_ROUTING=0. Secrets stay in TYPESAFE_API_KEY and CURSOR_API_KEY.",
     "decider": "jev",
-    "fallback_model": "composer-2.5",
+    "fallback_model": "grok-4.6",
     "models": {
       "steps": {},
       "candidates": [
-        "composer-2.5",
         "grok-4.5",
         "grok-4.6",
         "grok-4.7",

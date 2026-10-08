@@ -7,12 +7,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 DEFAULT_DECIDER = "jev"
-DEFAULT_FALLBACK = "composer-2.5"
+DEFAULT_FALLBACK = "grok-4.6"
 DEFAULT_JEV_MODEL = "jev-latest"
 DEFAULT_MIN_CONFIDENCE = 0.5
 KNOWN_DECIDERS = ("fixed", "jev")
 DEFAULT_CANDIDATES = (
-    "composer-2.5",
     "grok-4.5",
     "grok-4.6",
     "grok-4.7",
