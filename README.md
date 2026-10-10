@@ -1,6 +1,8 @@
 # AI SDLC Workflow Harness Manager
 Portable **workflow pack** and installer for coding agents.
 
+# If you are an enterprise and working on any project, make it AI ready in 2 weeks rather than 3-6 months which organizations take today
+
 Clone this repository, then install `.pipeline` into any customer project
 (or into `~/.pipeline`). Process lives in the pack. The IDE is a thin adapter
 (`run-workflow` only). The pack is not tied to a product, language, or IDE.
