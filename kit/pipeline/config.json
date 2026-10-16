@@ -382,6 +382,32 @@
     "dataset": "pipeline-kit-agent-runs",
     "retention_days": 14
   },
+  "agent_security": {
+    "_note": "Opt-in agentic detection and response. Disabled by default. Modes: audit (record only), warn (allow + message), block (deny when thresholds met). Uber ADR and Copilot CLI collectors run on explicit scan only.",
+    "enabled": false,
+    "mode": "audit",
+    "sources": ["cursor", "copilot-cli"],
+    "providers": [
+      {"name": "local-policy", "enabled": true, "priority": 100, "inline": true},
+      {"name": "uber-adr-sensor", "enabled": true, "priority": 200, "inline": false},
+      {"name": "copilot-cli-native", "enabled": true, "priority": 210, "inline": false}
+    ],
+    "inline_timeout_ms": 100,
+    "fail_mode": "open",
+    "block": {
+      "minimum_severity": "high",
+      "minimum_confidence": 0.9
+    },
+    "capture": {
+      "prompts": false,
+      "tool_results": false,
+      "max_field_chars": 4000
+    },
+    "redact": [".env", "*secret*", "*credential*"],
+    "retention_days": 14,
+    "export_observability_projection": true,
+    "state_dir": ".pipeline/state/security"
+  },
   "verify": {
     "_note": "Add path-substring reminders for this repo after install. Optional expect is a regex the scorer uses for integrity checks.",
     "rules": []

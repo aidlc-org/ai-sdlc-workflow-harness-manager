@@ -23,6 +23,7 @@ dev = ["pytest>=8", "cryptography>=44"]
 orchestrator = ["cursor-sdk", "typesafe-sdk"]
 assess = ["pipeline-kit-assess"]
 memory = ["pipeline-kit-memory"]
+agent-security = ["adr-sensor==1.0.0"]
 # Enterprise license engine is a private package (not on public PyPI).
 # Paying customers receive an installable wheel/private index entry from the vendor.
 # Maintainers: pip install -e ../pipeline-kit-license
@@ -44,9 +45,12 @@ markers = [
 [project.scripts]
 pipeline-kit = "pipeline_kit.install:cli_main"
 
+[project.entry-points."pipeline_kit.agent_security.providers"]
+# Third parties: name = "pkg.module:Factory"
+
 [tool.setuptools]
-packages = ["pipeline_kit", "knowledge", "pipeline_plugins", "pipeline_features", "pipeline_observability", "pipeline_observability.adapters", "pipeline_eval", "pipeline_docs", "pipeline_orchestrator", "pipeline_orchestrator.deciders", "pipeline_orchestrator.runners"]
-package-dir = { pipeline_kit = ".", knowledge = "capabilities/knowledge", pipeline_plugins = "capabilities/plugins", pipeline_features = "capabilities/feature_flags", pipeline_observability = "capabilities/observability", pipeline_eval = "capabilities/eval", pipeline_docs = "capabilities/docs", pipeline_orchestrator = "orchestrator" }
+packages = ["pipeline_kit", "knowledge", "pipeline_plugins", "pipeline_features", "pipeline_observability", "pipeline_observability.adapters", "pipeline_eval", "pipeline_docs", "pipeline_orchestrator", "pipeline_orchestrator.deciders", "pipeline_orchestrator.runners", "pipeline_agent_security", "pipeline_agent_security.providers"]
+package-dir = { pipeline_kit = ".", knowledge = "capabilities/knowledge", pipeline_plugins = "capabilities/plugins", pipeline_features = "capabilities/feature_flags", pipeline_observability = "capabilities/observability", pipeline_eval = "capabilities/eval", pipeline_docs = "capabilities/docs", pipeline_orchestrator = "orchestrator", pipeline_agent_security = "capabilities/agent_security" }
 include-package-data = true
 
 [tool.setuptools.dynamic]

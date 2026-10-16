@@ -11,6 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import (
     portal_owns_gate,
+    apply_agent_security,
     declared_dependencies,
     emit_permission,
     feature_slug,
@@ -53,9 +54,7 @@ SECRET_BODY = re.compile(
     r"|console\.(log|debug|info|warn)\([^)]{0,200}\b(email|password|ssn|authorization)\b"
     r"|\b(gtag|fbq|mixpanel\.init|analytics\.load)\s*\("
 )
-UI_ARTIFACT_REF = re.compile(
-    r"(?:features|[A-Za-z]:[\\/][^\s\"']+)[\\/][a-z0-9][a-z0-9_-]*[\\/]ui[\\/]", re.I
-)
+UI_ARTIFACT_REF = re.compile(r"features/[a-z0-9][a-z0-9_-]*/ui/", re.I)
 _REPO = Path(__file__).resolve().parents[2]
 
 _MINIMALISM = load_config().get("code_minimalism")
@@ -143,13 +142,9 @@ def _is_mockup_copy(rel: str, body: str) -> bool:
     if name.endswith((".html", ".htm", ".css")) and skeleton:
         return True
     if name.endswith((".html", ".htm", ".css")) and name not in {"index.html", "index.htm"}:
-        from lib import artifact_zone_roots
-
-        for zone in artifact_zone_roots(_CFG, _REPO):
-            if zone.is_dir() and (
-                any(zone.glob(f"*/ui/{name}")) or any(zone.glob(f"*/*/ui/{name}"))
-            ):
-                return True
+        root = _REPO / "features"
+        if root.is_dir() and (any(root.glob(f"*/ui/{name}")) or any(root.glob(f"*/*/ui/{name}"))):
+            return True
     return False
 
 
@@ -163,41 +158,46 @@ def main() -> int:
     body = tool_contents(payload)
     kind = subagent_type(payload).lower()
 
+    denied = False
+    reason = "allow"
+
     if rel and SECRET_PATH.search(rel):
-        return emit_permission(False, f"Blocked write to secret/credential path: {rel}", extra)
-    if rel and JUNK.search(rel):
-        return emit_permission(False, f"Blocked write into generated or VCS dir: {rel}", extra)
-    if body and SECRET_BODY.search(body):
-        return emit_permission(
-            False,
-            "Blocked write: payload looks like a hardcoded secret. Use env vars / secret stores.",
-            extra,
-        )
-    if _is_mockup_copy(rel, body):
-        return emit_permission(
-            False,
+        denied = True
+        reason = f"Blocked write to secret/credential path: {rel}"
+    elif rel and JUNK.search(rel):
+        denied = True
+        reason = f"Blocked write into generated or VCS dir: {rel}"
+    elif body and SECRET_BODY.search(body):
+        denied = True
+        reason = "Blocked write: payload looks like a hardcoded secret. Use env vars / secret stores."
+    elif _is_mockup_copy(rel, body):
+        denied = True
+        reason = (
             f"Blocked copy of pipeline UI mockups into product source ({rel}). "
-            f"Keep mockups under {ARTIFACT_DIR}{{slug}}/ui/; implement production UI in the app stack.",
-            extra,
+            f"Keep mockups under {ARTIFACT_DIR}{{slug}}/ui/; implement production UI in the app stack."
         )
-    if kind in RESTRICTED and rel and not _is_artifact(rel):
-        return emit_permission(
-            False,
-            f"{kind} may not edit product source ({rel}). Write only under {ARTIFACT_DIR}{{slug}}/.",
-            extra,
-        )
-    if DEPS_GATE_ON and rel and not _is_artifact(rel) and feature_slug():
+    elif kind in RESTRICTED and rel and not _is_artifact(rel):
+        denied = True
+        reason = f"{kind} may not edit product source ({rel}). Write only under {ARTIFACT_DIR}{{slug}}/."
+    elif DEPS_GATE_ON and rel and not _is_artifact(rel) and feature_slug():
         undeclared = _undeclared_manifest_deps(rel, body)
         if undeclared:
-            return emit_permission(
-                False,
+            denied = True
+            reason = (
                 "Blocked undeclared dependency in %s: %s. Architect must declare it in "
                 "features/%s/state/architect-agent.json context.new_dependencies "
                 "(name + why_nothing_existing_works). See minimalism-policy.md."
-                % (rel, ", ".join(undeclared), feature_slug()),
-                extra,
+                % (rel, ", ".join(undeclared), feature_slug())
             )
-    return emit_permission(True, "allow", extra)
+
+    allow, sec_reason = apply_agent_security(
+        payload,
+        event_type="pre_write",
+        operation="write",
+        guardrail_denied=denied,
+        guardrail_reason=reason,
+    )
+    return emit_permission(allow, sec_reason if not allow or denied else reason, extra)
 
 
 if __name__ == "__main__":

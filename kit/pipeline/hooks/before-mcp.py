@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib import portal_owns_gate, emit_permission, load_payload, tool_mcp_name, tool_mcp_server
+from lib import portal_owns_gate, apply_agent_security, emit_permission, load_payload, tool_mcp_name, tool_mcp_server
 
 ALLOW_EXACT = {
     "mcp_auth",
@@ -48,33 +48,37 @@ def main() -> int:
     key = name.strip().lower().replace("-", "_")
     label = f"{server}/{name}" if server else (name or "unknown MCP tool")
 
+    denied = False
+    reason = f"MCP read allowed ({label})"
+
     if os.environ.get("PIPELINE_ALLOW_MCP") == "1":
-        return emit_permission(True, f"MCP allowed via PIPELINE_ALLOW_MCP=1 ({label})", extra)
-
-    if not key:
-        return emit_permission(
-            False,
-            "Blocked MCP call with no tool name. Set PIPELINE_ALLOW_MCP=1 only if you asked for a remote write.",
-            extra,
-        )
-
-    if MUTATE.search(key):
-        return emit_permission(
-            False,
+        reason = f"MCP allowed via PIPELINE_ALLOW_MCP=1 ({label})"
+    elif not key:
+        denied = True
+        reason = "Blocked MCP call with no tool name. Set PIPELINE_ALLOW_MCP=1 only if you asked for a remote write."
+    elif MUTATE.search(key):
+        denied = True
+        reason = (
             f"Blocked mutating MCP tool ({label}). "
-            "Reads and search stay allowed. Set PIPELINE_ALLOW_MCP=1 only when the user asked to create/update remote data.",
-            extra,
+            "Reads and search stay allowed. Set PIPELINE_ALLOW_MCP=1 only when the user asked to create/update remote data."
+        )
+    elif key in ALLOW_EXACT or READ_PREFIX.match(key):
+        reason = f"MCP read allowed ({label})"
+    else:
+        denied = True
+        reason = (
+            f"Blocked unknown MCP tool ({label}). "
+            "Treat as a write until it is classified. Set PIPELINE_ALLOW_MCP=1 if the user asked for this call."
         )
 
-    if key in ALLOW_EXACT or READ_PREFIX.match(key):
-        return emit_permission(True, f"MCP read allowed ({label})", extra)
-
-    return emit_permission(
-        False,
-        f"Blocked unknown MCP tool ({label}). "
-        "Treat as a write until it is classified. Set PIPELINE_ALLOW_MCP=1 if the user asked for this call.",
-        extra,
+    allow, sec_reason = apply_agent_security(
+        payload,
+        event_type="pre_mcp",
+        operation="mcp",
+        guardrail_denied=denied,
+        guardrail_reason=reason,
     )
+    return emit_permission(allow, sec_reason if not allow or denied else reason, extra)
 
 
 if __name__ == "__main__":

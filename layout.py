@@ -11,6 +11,7 @@ finder so public imports stay the same:
 * ``pipeline_eval``
 * ``pipeline_orchestrator``
 * ``pipeline_docs``
+* ``pipeline_agent_security``
 * ``pipeline_kit.paths`` / ``pipeline_kit.license`` (root modules)
 """
 
@@ -30,6 +31,7 @@ SOURCE_PACKAGES = {
     "pipeline_eval": ROOT / "capabilities" / "eval",
     "pipeline_orchestrator": ROOT / "orchestrator",
     "pipeline_docs": ROOT / "capabilities" / "docs",
+    "pipeline_agent_security": ROOT / "capabilities" / "agent_security",
 }
 
 
