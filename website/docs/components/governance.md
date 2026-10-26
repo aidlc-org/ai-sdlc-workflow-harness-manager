@@ -25,6 +25,12 @@ Paid surfaces fail closed without a valid license. Free surfaces (kit mode core,
 
 → [Licensing reference](/docs/reference/licensing)
 
+## Agent security
+
+Opt-in detection of risky agent actions (credential reads, destructive shell, risky MCP calls) in `audit`, `warn` or `block` mode, layered on top of the pack guardrails.
+
+→ [Agent security](/docs/capabilities/agent-security)
+
 ## Enterprise portal
 
 Projects **push** metadata (kit version, features, plugins, packages, doctor summary). The portal never mounts your repo and never receives the long-lived license token in history payloads.

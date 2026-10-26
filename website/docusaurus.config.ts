@@ -11,10 +11,11 @@ const config: Config = {
     v4: true,
   },
 
-  url: 'http://127.0.0.1:3000',
+  // Production host on Vercel. Used for canonical URLs, sitemap, social tags and llms.txt.
+  url: 'https://pipeline.marketing91.shop',
   baseUrl: '/',
 
-  onBrokenLinks: 'warn',
+  onBrokenLinks: 'throw',
 
   i18n: {
     defaultLocale: 'en',
@@ -24,7 +25,7 @@ const config: Config = {
   markdown: {
     mermaid: true,
     hooks: {
-      onBrokenMarkdownLinks: 'warn',
+      onBrokenMarkdownLinks: 'throw',
     },
   },
 

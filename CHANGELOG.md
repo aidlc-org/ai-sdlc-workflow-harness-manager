@@ -9,6 +9,8 @@ Version numbers come from `VERSION`.
 
 ### Added
 
+- **Docs guardrails (issue #15):** a `docs` CI job builds the site and type-checks it; broken links and broken Markdown links now fail the build. `tests/test_docs_sync.py` fails when a CLI command in `install.py` is missing from `reference/cli.md`, when the two `CUSTOMER-GUIDE.md` copies differ, or when `VERSION` has no dated `CHANGELOG.md` heading
+- **Docs:** new `capabilities/agent-security` page; `security`, `eval` and `license` sections in the CLI reference; "Changing the docs" section in `CONTRIBUTING.md`
 - **Kit model routing (advisory):** loader resolves `orchestrator.models` pins / `fallback_model` for specialist steps into `chosen_model` on the context pack and `features/{slug}/model-routing.json`. Agent CLIs may pass the id when Task spawn supports a model field. IDE chat does not enforce. Enforced routing stays orchestrator (`pipeline-kit run`). Opt out: `PIPELINE_KIT_MODEL_ROUTING=0`.
 - **Documentation site (issue #11):** Tessl-style information architecture on Docusaurus
   - Components hubs: overview, packages, testing, governance

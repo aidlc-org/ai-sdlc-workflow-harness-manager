@@ -50,6 +50,7 @@ const sidebars: SidebarsConfig = {
             'capabilities/knowledge',
             'capabilities/memory',
             'capabilities/observability',
+            'capabilities/agent-security',
             'capabilities/telemetry',
             'capabilities/feature-flags',
             'capabilities/wiki',

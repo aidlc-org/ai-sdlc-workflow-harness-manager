@@ -86,6 +86,23 @@ Needs the optional memory extra (`uv tool install -e ".[memory]"` from the kit c
 
 See [Agent-run observability](/docs/capabilities/observability).
 
+## Agent security
+
+Opt-in detection and response for what an agent is about to do. Off until you run `security install`. See [Agent security](/docs/capabilities/agent-security).
+
+| Command | Purpose |
+|---------|---------|
+| `security install [project] [--mode audit\|warn\|block]` | Enable `agent_security` in config and set the mode (default `audit`) |
+| `security uninstall [project]` | Disable it; ledgers are kept |
+| `security status [project]` | Mode, providers, ledger sizes |
+| `security scan [project] [--source S]` | Run the offline session collectors (Cursor via ADR Sensor, Copilot CLI). `--source` is repeatable |
+| `security flush [project]` | Project findings into the observability ledger |
+| `security doctor [project]` | Validate config, providers and source paths |
+
+## Eval
+
+`eval judges sync [project]` creates the Langfuse score configs and prints the evaluator and rule steps to finish in the Langfuse UI. It needs the `evidence` licence area. See [Agent-run observability](/docs/capabilities/observability).
+
 ## Portal
 
 Reports this project's local state to an [Enterprise portal](/docs/capabilities/portal).
@@ -111,13 +128,19 @@ must be `https://`, except for `localhost`.
 
 Paid areas are orchestrator mode, Jira intake, the governance workflows (`security-review`, `ci-audit`, `dependency-audit`, `accessibility-review`), agent-run observability / eval (`evidence`), and repository assessment (`pipeline-kit scan`, area `assess`). Kit mode, `ask`, and `feature-development` do not read the license. `obs report` stays local. Full detail: [Licensing](/docs/reference/licensing).
 
+| Command | Purpose |
+|---------|---------|
+| `license activate` | Store `PIPELINE_KIT_LICENSE` in the home pack |
+| `license status` | Print org, expiry and paid areas |
+| `license issue --org NAME --expires YYYY-MM-DD [--features a,b] [--repo PATH]` | Sign a token from a kit checkout (maintainers) |
+
 ```bash
 export PIPELINE_KIT_LICENSE='<token>'
 pipeline-kit license activate
 pipeline-kit license status
 ```
 
-`activate` writes `~/.pipeline/license.json` (mode `0600`). `PIPELINE_KIT_LICENSE` in the environment wins over that file for one process. Maintainers sign a token from a kit checkout with `pipeline-kit license issue --org NAME --expires YYYY-MM-DD [--features a,b]`; without `--features` the token covers all five areas (`orchestrator`, `jira`, `governance`, `evidence`, `assess`). The signing key path is `PIPELINE_KIT_LICENSE_SIGNING_KEY`.
+`activate` writes `~/.pipeline/license.json` (mode `0600`). `PIPELINE_KIT_LICENSE` in the environment wins over that file for one process. Maintainers sign a token from a kit checkout with `pipeline-kit license issue --org NAME --expires YYYY-MM-DD [--features a,b]`; without `--features` the token covers every area (`orchestrator`, `jira`, `governance`, `evidence`, `assess`, `portal`). The signing key path is `PIPELINE_KIT_LICENSE_SIGNING_KEY`.
 
 ## Legacy
 
