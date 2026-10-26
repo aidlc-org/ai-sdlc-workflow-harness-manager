@@ -29,4 +29,6 @@ For product definitions and deep reference, use [Components](/docs/components/ov
 
 ## Also useful
 
+New here? Start with the [Quick start](/docs/getting-started/quick-start). Evaluating for a team? Read [Enterprise readiness](/docs/guides/enterprise-readiness) and [Team best practices](/docs/guides/team-best-practices). Runnable examples are in the repository's `examples/` folder.
+
 Adaptation how-tos that are not full tutorials live under [Guides](/docs/guides/agents-md): `AGENTS.md`, `config.json`, local deploy, gitignore, what not to edit.

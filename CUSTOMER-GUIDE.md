@@ -4,6 +4,7 @@
 |-----------|--------|
 | Type | Handbook |
 | Audience | Developers and architects installing this pack on a customer engagement |
+| Last reviewed | 2026-10-26 (pipeline-kit 1.2.2) |
 | Adapt | Do not add a customer app, host, or tracker URL here. Overlay those in the project `config.json` and local-deploy files. |
 
 Audience: **developers and senior architects** who need a delivery pipeline
@@ -334,7 +335,7 @@ Sign-off gates do not ask the decider. Full examples:
 | `pipeline-kit docs link-agents [project]` | Write marked monorepo map section into `AGENTS.md` |
 | `pipeline-kit plugins list` | List Graphify / Archify (observability uses `obs status`) |
 | `pipeline-kit plugins install graphify [project]` | Register the official Graphify IDE skill |
-| `pipeline-kit plugins install archify [project]` | Pin Archify `v2.16.0` and set `architecture_diagrams.enabled` |
+| `pipeline-kit plugins install archify [project]` | Pin Archify `v2.16.0` and set `architecture_diagrams.enabled`. Adds HTML diagrams; the Mermaid in `architecture.md` stays required |
 | `pipeline-kit plugins status [project]` | Graphify CLI and Archify skill status |
 | `pipeline-kit plugins uninstall graphify [project]` | Remove the Graphify IDE skill (`--purge` deletes `graphify-out/`) |
 | `pipeline-kit plugins uninstall archify [project]` | Remove the managed Archify skill; keep `features/*/diagrams/` |

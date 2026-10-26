@@ -459,11 +459,11 @@ Built-in deterministic rules (`providers/local_policy.py`):
 | `shell.force_push` | shell | warn | high |
 | `shell.remote_transfer` | shell | block | high |
 | `shell.outbound_network` | shell | warn | medium |
-| `shell.secret_keys_with_network` | shell | high / block-oriented | high |
+| `shell.secret_keys_with_network` | shell | warn | high |
 | `path.credential` | read/write path | block | critical |
-| `write.secret_named_file` | write | block | high |
+| `write.secret_named_file` | write | warn | high |
 | `mcp.risky_tool` | MCP tool name | block | high |
-| `mcp.path_argument` | MCP + credential path keys | block | high |
+| `mcp.path_argument` | MCP + credential path keys | warn | medium |
 
 Credential path patterns include `.env`, `credentials.json`, `*.pem`, `id_rsa`, kube/aws config-style paths, etc.
 

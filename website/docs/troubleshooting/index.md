@@ -6,6 +6,8 @@ description: Symptom-based pages rewritten from the pack wiki for humans.
 
 Match the symptom, open one page. These are the same lessons as `.pipeline/wiki/` with human titles.
 
+Not sure where to start? Use the [troubleshooting flowchart](/docs/troubleshooting/flowchart) or the [FAQ](/docs/troubleshooting/faq). For an exact message, see [Error messages](/docs/troubleshooting/errors); for OS and plugin problems, see [Windows, macOS and Linux](/docs/troubleshooting/platforms) and [Graphify and Archify](/docs/troubleshooting/plugins).
+
 | Symptom | Page |
 |---------|------|
 | Tracker key ran the text ladder, or a bug went through PM/BA | [Tracker intake](/docs/troubleshooting/jira-intake) |

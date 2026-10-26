@@ -11,10 +11,11 @@ const config: Config = {
     v4: true,
   },
 
-  url: 'http://127.0.0.1:3000',
+  // Production host on Vercel. Used for canonical URLs, sitemap, social tags and llms.txt.
+  url: 'https://pipeline.marketing91.shop',
   baseUrl: '/',
 
-  onBrokenLinks: 'warn',
+  onBrokenLinks: 'throw',
 
   i18n: {
     defaultLocale: 'en',
@@ -24,9 +25,22 @@ const config: Config = {
   markdown: {
     mermaid: true,
     hooks: {
-      onBrokenMarkdownLinks: 'warn',
+      onBrokenMarkdownLinks: 'throw',
     },
   },
+
+  // Vercel Web Analytics: cookieless page views, no session replay. It only
+  // reports when the site is served by Vercel with Analytics enabled; elsewhere
+  // the script 404s and nothing is sent.
+  headTags: [
+    {
+      tagName: 'script',
+      attributes: {},
+      innerHTML:
+        'window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };',
+    },
+  ],
+  scripts: [{src: '/_vercel/insights/script.js', defer: true}],
 
   themes: [
     '@docusaurus/theme-mermaid',

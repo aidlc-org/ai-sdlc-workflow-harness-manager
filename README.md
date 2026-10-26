@@ -14,6 +14,9 @@ The repo is grouped by role: two **modes** (`kit/`, `orchestrator/`),
 
 **Documentation site (local):** [website/](./website/) — what the kit is,
 install, capabilities, plugins, knowledge, observability, and CLI.
+Start with the [quick start](./website/docs/getting-started/quick-start.md), the
+[enterprise readiness](./website/docs/guides/enterprise-readiness.md) page, or
+[troubleshooting](./website/docs/troubleshooting/index.md). Runnable [examples](./examples/) live in `examples/`.
 
 ```bash
 cd website
