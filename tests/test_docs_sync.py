@@ -109,3 +109,13 @@ def test_version_has_changelog_heading() -> None:
     assert names and names[0] == "Unreleased", "CHANGELOG.md must start with an [Unreleased] section"
     assert version in names, f"VERSION {version} has no '## [{version}] - YYYY-MM-DD' heading in CHANGELOG.md"
     assert dict(headings)[version], f"CHANGELOG heading for {version} needs a date"
+
+
+def test_llms_txt_links_use_the_configured_site_url() -> None:
+    config = (REPO / "website" / "docusaurus.config.ts").read_text(encoding="utf-8")
+    url = re.search(r"^\s*url:\s*'([^']+)'", config, flags=re.MULTILINE)
+    assert url, "website/docusaurus.config.ts has no url"
+    base = url.group(1).rstrip("/")
+    llms = (REPO / "website" / "static" / "llms.txt").read_text(encoding="utf-8")
+    foreign = sorted({u for u in re.findall(r"\]\((https?://[^)]+)\)", llms) if not u.startswith(base)})
+    assert not foreign, f"llms.txt links outside {base}: {foreign[:3]}"

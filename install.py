@@ -22,6 +22,7 @@ import shutil
 import stat
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -133,7 +134,21 @@ def _sync_website_package_version(pkg: Path, new: str) -> bool:
     return count > 0
 
 
-def write_kit_version(root: Path, new: str) -> list[str]:
+def roll_changelog(changelog: Path, new: str, today: str) -> bool:
+    """Move the `[Unreleased]` entries under a dated `[new]` heading and leave a fresh `[Unreleased]`."""
+    text = changelog.read_text(encoding="utf-8")
+    if re.search(rf"^## \[{re.escape(new)}\]", text, flags=re.MULTILINE):
+        return False
+    heading = re.search(r"^## \[Unreleased\][ \t]*\r?\n", text, flags=re.MULTILINE)
+    if not heading:
+        return False
+    newline = "\r\n" if heading.group(0).endswith("\r\n") else "\n"
+    replacement = f"## [Unreleased]{newline}{newline}## [{new}] - {today}{newline}"
+    changelog.write_text(text[: heading.start()] + replacement + text[heading.end():], encoding="utf-8")
+    return True
+
+
+def write_kit_version(root: Path, new: str, *, changelog: bool = True) -> list[str]:
     parse_semver(new)
     changed: list[str] = []
     version_file = root / "VERSION"
@@ -142,6 +157,10 @@ def write_kit_version(root: Path, new: str) -> list[str]:
     website_pkg = root / "website" / "package.json"
     if website_pkg.is_file() and _sync_website_package_version(website_pkg, new):
         changed.append("website/package.json")
+    changelog_file = root / "CHANGELOG.md"
+    if changelog and changelog_file.is_file():
+        if roll_changelog(changelog_file, new, datetime.now(timezone.utc).strftime("%Y-%m-%d")):
+            changed.append("CHANGELOG.md")
     return changed
 
 
@@ -188,6 +207,7 @@ def cmd_version(
     dry_run: bool = False,
     commit: bool = False,
     tag: bool = False,
+    changelog: bool = True,
 ) -> int:
     if action == "show":
         print(version())
@@ -229,10 +249,12 @@ def cmd_version(
         return 0
     if dry_run:
         print(f"would set {current} -> {new} in {root}")
+        if changelog and (root / "CHANGELOG.md").is_file():
+            print(f"would move [Unreleased] under [{new}] in CHANGELOG.md")
         if commit:
             print(f"would commit 'Release {new}'" + (f" and tag v{new}" if tag else ""))
         return 0
-    changed = write_kit_version(root, new)
+    changed = write_kit_version(root, new, changelog=changelog)
     print(f"{root}: {current} -> {new}")
     print("updated: " + ", ".join(changed))
     if not commit:
@@ -1592,6 +1614,11 @@ def _cli_run(argv: list[str] | None = None) -> int:
         action="store_true",
         help="with --commit, also create the vX.Y.Z tag in the kit checkout",
     )
+    version_parser.add_argument(
+        "--no-changelog",
+        action="store_true",
+        help="leave CHANGELOG.md alone (default: move [Unreleased] under the new version)",
+    )
     version_parser.add_argument("--dry-run", action="store_true")
 
     args = parser.parse_args(argv)
@@ -1606,6 +1633,7 @@ def _cli_run(argv: list[str] | None = None) -> int:
             dry_run=args.dry_run,
             commit=args.commit,
             tag=args.tag,
+            changelog=not args.no_changelog,
         )
     home = Path(args.home).expanduser().resolve() if getattr(args, "home", "") else None
     project = Path(getattr(args, "project", ".")).expanduser().resolve()

@@ -10,6 +10,7 @@ const sidebars: SidebarsConfig = {
         'intro/what-is-pipeline-kit',
         'intro/problems',
         'intro/how-it-works',
+        'intro/architecture',
         'intro/who-it-is-for',
         'intro/repo-layout',
       ],
@@ -68,6 +69,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'getting-started/prerequisites',
         'getting-started/install-cli',
+        'getting-started/quick-start',
         'getting-started/install-scopes',
         'getting-started/ide-adapters',
         'getting-started/first-project',
@@ -94,6 +96,7 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Workflow reference',
       items: [
+        'workflows/tour',
         'workflows/ask',
         'workflows/feature-development',
         'workflows/jira',
@@ -110,6 +113,9 @@ const sidebars: SidebarsConfig = {
       items: [
         'guides/agents-md',
         'guides/config',
+        'guides/team-best-practices',
+        'guides/adapt-to-your-stack',
+        'guides/enterprise-readiness',
         'guides/local-deploy',
         'guides/tests',
         'guides/gitignore',
@@ -146,6 +152,11 @@ const sidebars: SidebarsConfig = {
       label: 'Troubleshooting',
       items: [
         'troubleshooting/index',
+        'troubleshooting/flowchart',
+        'troubleshooting/faq',
+        'troubleshooting/errors',
+        'troubleshooting/platforms',
+        'troubleshooting/plugins',
         'troubleshooting/jira-intake',
         'troubleshooting/slim-handoffs',
         'troubleshooting/interrupted-task',
@@ -163,6 +174,8 @@ const sidebars: SidebarsConfig = {
       items: [
         'maintainers/repo',
         'maintainers/authoring',
+        'maintainers/release',
+        'maintainers/docs-workflow',
       ],
     },
   ],

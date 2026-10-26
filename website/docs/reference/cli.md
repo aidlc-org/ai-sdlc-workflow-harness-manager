@@ -78,7 +78,7 @@ Needs the optional memory extra (`uv tool install -e ".[memory]"` from the kit c
 
 ## Features
 
-`features list | status | enable \| disable` with ids `test-design`, `playwright`, `telemetry`, `tester`, `archify`, `jira-intake`, `github-intake`, `agent-observability`.
+`features list | status | enable \| disable` with ids `test-design`, `playwright`, `telemetry`, `tester`, `archify`, `jira-intake`, `github-intake`, `agent-observability`, `agent-security`.
 
 ## Observability
 

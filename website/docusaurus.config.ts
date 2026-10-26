@@ -29,6 +29,19 @@ const config: Config = {
     },
   },
 
+  // Vercel Web Analytics: cookieless page views, no session replay. It only
+  // reports when the site is served by Vercel with Analytics enabled; elsewhere
+  // the script 404s and nothing is sent.
+  headTags: [
+    {
+      tagName: 'script',
+      attributes: {},
+      innerHTML:
+        'window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };',
+    },
+  ],
+  scripts: [{src: '/_vercel/insights/script.js', defer: true}],
+
   themes: [
     '@docusaurus/theme-mermaid',
     [

@@ -37,8 +37,8 @@ jobs:
       # The workflow installed the package but never ran pytest. The full suite has
       # known failures on develop (feature_flags `_set_jira`, assess catalog, model
       # list, portal_link), so only the docs guards run here until those are fixed.
-      - name: Docs drift tests
-        run: python -m pytest tests/test_docs_sync.py -q
+      - name: Docs drift and examples tests
+        run: python -m pytest tests/test_docs_sync.py tests/test_version_changelog.py tests/test_examples.py -q
 
   docs:
     runs-on: ubuntu-latest

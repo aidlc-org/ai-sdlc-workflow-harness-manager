@@ -3,42 +3,51 @@
 > Portable operating model for coding agents. Process lives in `.pipeline`. Six components, two kits, cookbooks for real use cases.
 
 ## Introduction
-- [What is Pipeline Kit](http://127.0.0.1:3000/docs/intro/what-is-pipeline-kit): Product definition, six components, get started.
-- [Problems we solve](http://127.0.0.1:3000/docs/intro/problems): Context explosion through governance; each links to a cookbook.
-- [How it works](http://127.0.0.1:3000/docs/intro/how-it-works): Pack vs adapter, workflows, allowlists, config overlay.
-- [Who it is for](http://127.0.0.1:3000/docs/intro/who-it-is-for): New users, developers, architects, maintainers.
-- [Repository layout](http://127.0.0.1:3000/docs/intro/repo-layout): Source map of the kit repo.
+- [What is Pipeline Kit](https://pipeline.marketing91.shop/docs/intro/what-is-pipeline-kit): Product definition, six components, get started.
+- [Problems we solve](https://pipeline.marketing91.shop/docs/intro/problems): Context explosion through governance; each links to a cookbook.
+- [Architecture](https://pipeline.marketing91.shop/docs/intro/architecture): Pack, orchestrator, hooks, gates, and what is roadmap.
+- [How it works](https://pipeline.marketing91.shop/docs/intro/how-it-works): Pack vs adapter, workflows, allowlists, config overlay.
+- [Who it is for](https://pipeline.marketing91.shop/docs/intro/who-it-is-for): New users, developers, architects, maintainers.
+- [Repository layout](https://pipeline.marketing91.shop/docs/intro/repo-layout): Source map of the kit repo.
 
 ## Components
-- [Components overview](http://127.0.0.1:3000/docs/components/overview): Workflows, packages, plugins, capabilities, testing, governance.
-- [Packages](http://127.0.0.1:3000/docs/components/packages): assess and memory installable extras.
-- [Testing and evaluation](http://127.0.0.1:3000/docs/components/testing): Product runners + agent-run scores.
-- [Governance and portal](http://127.0.0.1:3000/docs/components/governance): Gates, licensing, enterprise portal.
-- [Capabilities catalog](http://127.0.0.1:3000/docs/capabilities/overview): Core vs opt-in surfaces.
-- [Two kits](http://127.0.0.1:3000/docs/capabilities/modes): Pack vs orchestrator.
-- [Workflows](http://127.0.0.1:3000/docs/capabilities/workflows): Named procedures and change classes.
-- [Plugins](http://127.0.0.1:3000/docs/capabilities/plugins): Graphify, Archify, obs note.
-- [Knowledge](http://127.0.0.1:3000/docs/capabilities/knowledge) · [Memory](http://127.0.0.1:3000/docs/capabilities/memory) · [Observability](http://127.0.0.1:3000/docs/capabilities/observability) · [Portal](http://127.0.0.1:3000/docs/capabilities/portal)
+- [Components overview](https://pipeline.marketing91.shop/docs/components/overview): Workflows, packages, plugins, capabilities, testing, governance.
+- [Packages](https://pipeline.marketing91.shop/docs/components/packages): assess and memory installable extras.
+- [Testing and evaluation](https://pipeline.marketing91.shop/docs/components/testing): Product runners + agent-run scores.
+- [Governance and portal](https://pipeline.marketing91.shop/docs/components/governance): Gates, licensing, enterprise portal.
+- [Capabilities catalog](https://pipeline.marketing91.shop/docs/capabilities/overview): Core vs opt-in surfaces.
+- [Two kits](https://pipeline.marketing91.shop/docs/capabilities/modes): Pack vs orchestrator.
+- [Workflows](https://pipeline.marketing91.shop/docs/capabilities/workflows): Named procedures and change classes.
+- [Plugins](https://pipeline.marketing91.shop/docs/capabilities/plugins): Graphify, Archify, obs note.
+- [Knowledge](https://pipeline.marketing91.shop/docs/capabilities/knowledge) · [Memory](https://pipeline.marketing91.shop/docs/capabilities/memory) · [Observability](https://pipeline.marketing91.shop/docs/capabilities/observability) · [Portal](https://pipeline.marketing91.shop/docs/capabilities/portal)
 
 ## Getting started
-- [Install the CLI](http://127.0.0.1:3000/docs/getting-started/install-cli)
-- [First project](http://127.0.0.1:3000/docs/getting-started/first-project)
-- [First workflow](http://127.0.0.1:3000/docs/getting-started/first-workflow)
-- [Checklist](http://127.0.0.1:3000/docs/getting-started/checklist)
+- [Quick start](https://pipeline.marketing91.shop/docs/getting-started/quick-start): Install to first run in about 10 minutes.
+- [Install the CLI](https://pipeline.marketing91.shop/docs/getting-started/install-cli)
+- [First project](https://pipeline.marketing91.shop/docs/getting-started/first-project)
+- [First workflow](https://pipeline.marketing91.shop/docs/getting-started/first-workflow)
+- [Checklist](https://pipeline.marketing91.shop/docs/getting-started/checklist)
 
 ## Cookbooks
-- [Cookbooks index](http://127.0.0.1:3000/docs/cookbooks/): Problem → tutorial matrix.
-- [First feature end-to-end](http://127.0.0.1:3000/docs/cookbooks/first-feature)
-- [Orchestrator first run](http://127.0.0.1:3000/docs/cookbooks/orchestrator-first-run)
-- [Add a custom workflow](http://127.0.0.1:3000/docs/cookbooks/add-workflow)
-- [Knowledge and plugins](http://127.0.0.1:3000/docs/cookbooks/knowledge-and-plugins)
-- [Observability, eval, testing](http://127.0.0.1:3000/docs/cookbooks/observability-eval-testing)
-- [Memory bank](http://127.0.0.1:3000/docs/cookbooks/memory-bank)
-- [Enterprise governance](http://127.0.0.1:3000/docs/cookbooks/enterprise-governance)
+- [Cookbooks index](https://pipeline.marketing91.shop/docs/cookbooks/): Problem → tutorial matrix.
+- [First feature end-to-end](https://pipeline.marketing91.shop/docs/cookbooks/first-feature)
+- [Orchestrator first run](https://pipeline.marketing91.shop/docs/cookbooks/orchestrator-first-run)
+- [Add a custom workflow](https://pipeline.marketing91.shop/docs/cookbooks/add-workflow)
+- [Knowledge and plugins](https://pipeline.marketing91.shop/docs/cookbooks/knowledge-and-plugins)
+- [Observability, eval, testing](https://pipeline.marketing91.shop/docs/cookbooks/observability-eval-testing)
+- [Memory bank](https://pipeline.marketing91.shop/docs/cookbooks/memory-bank)
+- [Enterprise governance](https://pipeline.marketing91.shop/docs/cookbooks/enterprise-governance)
 
 ## Workflow reference
-- [Ask](http://127.0.0.1:3000/docs/workflows/ask) · [Feature development](http://127.0.0.1:3000/docs/workflows/feature-development) · [Jira](http://127.0.0.1:3000/docs/workflows/jira) · [GitHub](http://127.0.0.1:3000/docs/workflows/github)
-- [Knowledge bootstrap](http://127.0.0.1:3000/docs/workflows/knowledge-bootstrap) · [System architecture](http://127.0.0.1:3000/docs/workflows/system-architecture)
+- [Ask](https://pipeline.marketing91.shop/docs/workflows/ask) · [Feature development](https://pipeline.marketing91.shop/docs/workflows/feature-development) · [Jira](https://pipeline.marketing91.shop/docs/workflows/jira) · [GitHub](https://pipeline.marketing91.shop/docs/workflows/github)
+- [Knowledge bootstrap](https://pipeline.marketing91.shop/docs/workflows/knowledge-bootstrap) · [System architecture](https://pipeline.marketing91.shop/docs/workflows/system-architecture)
 
 ## Guides · Reference · Troubleshooting
-- [Guides](http://127.0.0.1:3000/docs/guides/agents-md) · [CLI](http://127.0.0.1:3000/docs/reference/cli) · [Licensing](http://127.0.0.1:3000/docs/reference/licensing) · [Troubleshooting](http://127.0.0.1:3000/docs/troubleshooting)
+- [Guides](https://pipeline.marketing91.shop/docs/guides/agents-md) · [CLI](https://pipeline.marketing91.shop/docs/reference/cli) · [Licensing](https://pipeline.marketing91.shop/docs/reference/licensing) · [Troubleshooting](https://pipeline.marketing91.shop/docs/troubleshooting)
+## Guides and troubleshooting
+- [Enterprise readiness](https://pipeline.marketing91.shop/docs/guides/enterprise-readiness): Control, cost visibility, guardrails and routing, marked shipped, portal or roadmap.
+- [Team best practices](https://pipeline.marketing91.shop/docs/guides/team-best-practices)
+- [Adapt to your stack](https://pipeline.marketing91.shop/docs/guides/adapt-to-your-stack)
+- [Workflow tour](https://pipeline.marketing91.shop/docs/workflows/tour)
+- [Agent security](https://pipeline.marketing91.shop/docs/capabilities/agent-security)
+- [Troubleshooting flowchart](https://pipeline.marketing91.shop/docs/troubleshooting/flowchart) · [FAQ](https://pipeline.marketing91.shop/docs/troubleshooting/faq) · [Error messages](https://pipeline.marketing91.shop/docs/troubleshooting/errors)
