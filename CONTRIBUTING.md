@@ -59,13 +59,13 @@ npm ci
 npm start
 ```
 
-CI checks two things, and you can run each yourself before pushing (the third row is for your own use):
+Vercel builds the site on every push and PR. Run these yourself before pushing; CI does not run them yet:
 
 | Check | Command | Fails when |
 |-------|---------|------------|
 | Site build | `cd website && npm run build && npm run typecheck` | a link or Markdown link is broken, or the config does not type-check |
 | Drift tests | `python -m pytest tests/test_docs_sync.py -q` | a CLI command in `install.py` is missing from `website/docs/reference/cli.md`, the two guide copies differ, or `VERSION` has no `CHANGELOG.md` heading |
-| Full tests (local only for now) | `python -m pytest -q` | any behaviour change; CI runs only the drift tests until the known failures on `develop` are fixed |
+| Full tests (local only for now) | `python -m pytest -q` | any behaviour change; the suite has known failures on `develop` |
 
 `CUSTOMER-GUIDE.md` exists in several places. **Edit the root file**, then copy it over
 `kit/pipeline/docs/CUSTOMER-GUIDE.md` (the copy `init` ships to customers). The copies under

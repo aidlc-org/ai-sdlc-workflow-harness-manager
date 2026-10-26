@@ -8,8 +8,8 @@ description: How the documentation site is built, checked, deployed and measured
 | Part | Where |
 |------|-------|
 | Source | `website/docs/` (Docusaurus 3.8). Sidebar: `website/sidebars.ts` |
-| Checks | The `docs` and `test` jobs in `.github/workflows/ci.yml` |
-| Deploy and PR previews | Vercel's Git integration, configured by `website/vercel.json` |
+| Checks | The Vercel build (links), and the drift tests you run locally |
+| Deploy and PR previews, and the link check | Vercel's Git integration, configured by `website/vercel.json` |
 | Search | Local index built at `npm run build`; no external service |
 
 ## The checks
@@ -43,4 +43,4 @@ At each release, skim the pages for the features that changed, and update the "L
 
 ## Known gap
 
-CI runs only the docs drift tests, not the full suite, because the suite has failures on `develop`. When those are fixed, change the CI step back to `python -m pytest -q`.
+`.github/workflows/ci.yml` does not run the drift tests or the example tests, and the full suite has failures on `develop`. Run them locally (see [Contributing](https://github.com/aidlc-org/ai-sdlc-workflow-harness-manager/blob/main/CONTRIBUTING.md)) until CI is extended.
