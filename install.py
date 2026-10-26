@@ -928,6 +928,20 @@ def _obs_commands():
     return cmd_flush, cmd_install, cmd_report, cmd_status, cmd_uninstall
 
 
+def _security_commands():
+    _ensure_pkg_path()
+    from pipeline_agent_security.commands import (  # noqa: WPS433
+        cmd_doctor,
+        cmd_flush,
+        cmd_install,
+        cmd_scan,
+        cmd_status,
+        cmd_uninstall,
+    )
+
+    return cmd_doctor, cmd_flush, cmd_install, cmd_scan, cmd_status, cmd_uninstall
+
+
 def _memory_pkg_path() -> None:
     _ensure_pkg_path()
     mem = HERE / "packages" / "pipeline-kit-memory"
@@ -1006,6 +1020,14 @@ def doctor(
     info_lines.extend(obs_info)
     required.update(arch_required)
     required.update(obs_required)
+    try:
+        from pipeline_agent_security.commands import security_doctor_checks
+
+        sec_info, sec_required = security_doctor_checks(pack)
+        info_lines.extend(sec_info)
+        required.update(sec_required)
+    except Exception:
+        info_lines.append("agent_security doctor checks unavailable")
     try:
         _memory_pkg_path()
         from pipeline_memory.resolve import load_config as _mem_load
@@ -1380,6 +1402,7 @@ def _cli_run(argv: list[str] | None = None) -> int:
             "jira-intake",
             "github-intake",
             "agent-observability",
+            "agent-security",
         ),
     )
     f_enable.add_argument("project", nargs="?", default=".")
@@ -1395,6 +1418,7 @@ def _cli_run(argv: list[str] | None = None) -> int:
             "jira-intake",
             "github-intake",
             "agent-observability",
+            "agent-security",
         ),
     )
     f_disable.add_argument("project", nargs="?", default=".")
@@ -1417,6 +1441,26 @@ def _cli_run(argv: list[str] | None = None) -> int:
     o_flush.add_argument("project", nargs="?", default=".")
     o_report = obs_commands.add_parser("report", help="print local scores without network")
     o_report.add_argument("project", nargs="?", default=".")
+
+    security_parser = commands.add_parser(
+        "security",
+        help="agentic detection and response (audit/warn/block + session scan)",
+    )
+    security_commands = security_parser.add_subparsers(dest="security_command", required=True)
+    s_install = security_commands.add_parser("install", help="enable agent_security in config")
+    s_install.add_argument("project", nargs="?", default=".")
+    s_install.add_argument("--mode", choices=("audit", "warn", "block"), default="audit")
+    s_uninstall = security_commands.add_parser("uninstall", help="disable agent_security; keep ledgers")
+    s_uninstall.add_argument("project", nargs="?", default=".")
+    s_status = security_commands.add_parser("status", help="mode, providers, ledger sizes")
+    s_status.add_argument("project", nargs="?", default=".")
+    s_scan = security_commands.add_parser("scan", help="run session collectors (ADR + Copilot CLI)")
+    s_scan.add_argument("project", nargs="?", default=".")
+    s_scan.add_argument("--source", action="append", dest="sources", help="repeatable source filter")
+    s_flush = security_commands.add_parser("flush", help="project findings into obs ledger")
+    s_flush.add_argument("project", nargs="?", default=".")
+    s_doctor = security_commands.add_parser("doctor", help="validate config, providers, source paths")
+    s_doctor.add_argument("project", nargs="?", default=".")
 
     eval_parser = commands.add_parser(
         "eval",
@@ -1752,6 +1796,7 @@ def _cli_run(argv: list[str] | None = None) -> int:
             return docs_cmds["link-index"](project, config=cfg)
         if args.docs_command == "link-agents":
             return docs_cmds["link-agents"](
+
                 project,
                 dry_run=bool(getattr(args, "dry_run", False)),
                 config=cfg,
@@ -1905,6 +1950,25 @@ def _cli_run(argv: list[str] | None = None) -> int:
             return cmd_report(project)
         parser.error("unknown obs command")
         return 2
+    if args.command == "security":
+        cmd_doctor, cmd_flush, cmd_install, cmd_scan, cmd_status, cmd_uninstall = _security_commands()
+        if not project.is_dir():
+            print(f"not a directory: {project}", file=sys.stderr)
+            return 64
+        if args.security_command == "install":
+            return cmd_install(project, mode=args.mode)
+        if args.security_command == "uninstall":
+            return cmd_uninstall(project)
+        if args.security_command == "status":
+            return cmd_status(project)
+        if args.security_command == "scan":
+            return cmd_scan(project, sources=args.sources)
+        if args.security_command == "flush":
+            return cmd_flush(project)
+        if args.security_command == "doctor":
+            return cmd_doctor(project)
+        parser.error("unknown security command")
+        return 2
     if args.command == "eval":
         from pipeline_eval.commands import cmd_judges_sync  # noqa: WPS433
 
@@ -1971,4 +2035,10 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    # Legacy bare installer stays available for `python install.py` / flags.
+    # Any multi-command invocation (pipeline-kit shape) uses cli_main.
+    _argv = sys.argv[1:]
+    _first = _argv[0] if _argv else ""
+    if _first and not _first.startswith("-"):
+        raise SystemExit(cli_main())
     raise SystemExit(main())

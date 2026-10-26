@@ -199,6 +199,59 @@ def emit_followup(message: str) -> int:
     return 0
 
 
+def apply_agent_security(
+    payload: dict[str, Any],
+    *,
+    event_type: str,
+    operation: str,
+    guardrail_denied: bool = False,
+    guardrail_reason: str = "",
+) -> tuple[bool, str]:
+    """Run optional agent_security evaluator. Never weakens an existing deny.
+
+    Returns (allow, reason). Fail-open on import/config errors so hooks stay safe
+    when the capability package is absent.
+    """
+    if portal_owns_gate() or os.environ.get("PIPELINE_ALLOW_ALL") == "1":
+        return (not guardrail_denied), (guardrail_reason or "allow")
+    if guardrail_denied:
+        # Still record the security view when enabled, but keep the deny.
+        try:
+            from pipeline_agent_security.evaluate import evaluate_payload
+
+            decision = evaluate_payload(
+                payload,
+                event_type=event_type,
+                operation=operation,
+                guardrail_denied=True,
+                persist=True,
+            )
+            return False, guardrail_reason or decision.reason or "deny"
+        except Exception:
+            return False, guardrail_reason or "deny"
+    try:
+        from pipeline_agent_security.evaluate import (
+            decision_allows,
+            decision_message,
+            evaluate_payload,
+        )
+
+        decision = evaluate_payload(
+            payload,
+            event_type=event_type,
+            operation=operation,
+            guardrail_denied=False,
+            persist=True,
+        )
+        allow = decision_allows(decision)
+        reason = decision_message(decision)
+        if decision.action.value == "warn" and allow:
+            # Surface warning while still allowing.
+            reason = reason if reason.startswith("warning") else f"warning: {reason}"
+        return allow, reason
+    except Exception:
+        return True, guardrail_reason or "allow"
+
 def subagent_type(payload: dict[str, Any]) -> str:
     for key in ("subagent_type", "subagentType", "agent_type", "agentType", "type"):
         val = payload.get(key)
@@ -335,29 +388,6 @@ def feature_slug(payload: dict[str, Any] | None = None) -> str:
     return ""
 
 
-def feature_base(slug: str, cfg: dict[str, Any] | None = None, repo: Path | None = None) -> Path:
-    """Absolute feature slug directory (local features/ or linked memory root)."""
-    repo = (repo or Path(__file__).resolve().parents[2]).resolve()
-    cfg = cfg if cfg is not None else load_config()
-    safe = (slug or "").strip().strip("/\\")
-    if not safe:
-        return artifact_zone_roots(cfg, repo)[0] if artifact_zone_roots(cfg, repo) else repo / "features"
-    # Prefer memory-aware zones; fall back to local features/{slug}
-    for zone in artifact_zone_roots(cfg, repo):
-        candidate = zone / safe
-        if candidate.is_dir():
-            return candidate
-    name = artifact_dir_name(cfg)
-    mem = memory_root_from_config(cfg, repo)
-    if mem is not None:
-        layout = mem_cfg_layout(cfg)
-        pid = mem_cfg_project_id(cfg)
-        if layout == "namespaced" and pid:
-            return (mem / "projects" / pid / name / safe).resolve()
-        return (mem / name / safe).resolve()
-    return (repo / name / safe).resolve()
-
-
 def _deps_from_state(path: Path) -> set[str]:
     try:
         with path.open(encoding="utf-8") as handle:
@@ -406,13 +436,8 @@ def declared_dependencies(slug: str) -> set[str]:
         parent = slug.split("/", 1)[0]
         if parent and parent != slug:
             seen.append(parent)
-    cfg = load_config()
-    repo = Path(__file__).resolve().parents[2]
     for candidate in seen:
-        base = feature_base(candidate, cfg, repo)
-        # Also check local features/ during memory transition
-        local = repo / artifact_dir_name(cfg) / candidate
-        for root in (base, local):
-            names |= _deps_from_state(root / "state" / "architect-agent.json")
-            names |= _deps_from_handoff(root / "HANDOFF-architect.md")
+        base = ARTIFACT_ROOT / candidate
+        names |= _deps_from_state(base / "state" / "architect-agent.json")
+        names |= _deps_from_handoff(base / "HANDOFF-architect.md")
     return {n for n in names if n and n != "none" and "{" not in n}

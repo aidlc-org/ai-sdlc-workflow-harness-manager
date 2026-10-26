@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib import portal_owns_gate, emit_permission, load_payload, tool_path
+from lib import portal_owns_gate, apply_agent_security, emit_permission, load_payload, tool_path
 from pack_gate import decide_read
 
 
@@ -52,8 +52,15 @@ def main() -> int:
             pack=_active_pack(),
         )
     except Exception:
-        return emit_permission(True, "allow", extra)
-    return emit_permission(allow, reason, extra)
+        allow, reason = True, "allow"
+    final_allow, sec_reason = apply_agent_security(
+        payload,
+        event_type="pre_read",
+        operation="read",
+        guardrail_denied=not allow,
+        guardrail_reason=reason,
+    )
+    return emit_permission(final_allow, sec_reason if not final_allow or not allow else reason, extra)
 
 
 if __name__ == "__main__":

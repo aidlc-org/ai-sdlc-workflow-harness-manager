@@ -11,6 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import (
     portal_owns_gate,
+    apply_agent_security,
     declared_dependencies,
     emit_permission,
     feature_slug,
@@ -102,65 +103,55 @@ def main() -> int:
     if not cmd.strip():
         return emit_permission(True, "allow", extra)
 
+    denied = False
+    reason = "allow"
+
     if DESTROY.search(cmd) or PIPE_SHELL.search(cmd):
-        return emit_permission(
-            False,
-            "Blocked destructive or curl|sh command. Autonomous agents must not wipe disks or pipe remote scripts to a shell.",
-            extra,
+        denied = True
+        reason = (
+            "Blocked destructive or curl|sh command. Autonomous agents must not wipe disks or pipe remote scripts to a shell."
         )
-    if os.environ.get("PIPELINE_ALLOW_GIT") != "1" and VCS.search(cmd):
-        return emit_permission(
-            False,
-            "Blocked commit/push/publish. Set PIPELINE_ALLOW_GIT=1 only when the user asked to ship.",
-            extra,
-        )
-    if os.environ.get("PIPELINE_ALLOW_DEPS") != "1" and DEPS.search(cmd):
-        # No package argument means "restore what the manifest already pins" — nothing new.
+    elif os.environ.get("PIPELINE_ALLOW_GIT") != "1" and VCS.search(cmd):
+        denied = True
+        reason = "Blocked commit/push/publish. Set PIPELINE_ALLOW_GIT=1 only when the user asked to ship."
+    elif os.environ.get("PIPELINE_ALLOW_DEPS") != "1" and DEPS.search(cmd):
         wanted = install_packages(cmd)
         slug = feature_slug(payload)
         declared = declared_dependencies(slug)
         missing = [name for name in wanted if normalize_package(name) not in declared]
         if missing and (slug or declared):
-            return emit_permission(
-                False,
+            denied = True
+            reason = (
                 "Blocked undeclared dependency: %s. Architect must declare it in "
                 "features/%s/state/architect-agent.json context.new_dependencies "
                 "(name + why_nothing_existing_works) and mirror it in HANDOFF-architect.md. "
                 "Otherwise use the native or already-installed alternative. See minimalism-policy.md."
-                % (", ".join(missing), slug or "{slug}"),
-                extra,
+                % (", ".join(missing), slug or "{slug}")
             )
-        if missing:
-            return emit_permission(
-                False,
-                "Blocked new dependency install. Reuse existing libraries or set PIPELINE_ALLOW_DEPS=1 after a spec/security note.",
-                extra,
-            )
-    if REMOTE.search(cmd):
-        return emit_permission(
-            False,
-            "Blocked ssh/scp/rsync to a remote host from the agent session.",
-            extra,
-        )
-    if os.environ.get("PIPELINE_ALLOW_NET") != "1" and NET.search(cmd) and not LOCAL_NET.search(cmd):
-        return emit_permission(
-            False,
-            "Blocked non-localhost network command (possible exfil). Use 127.0.0.1 or set PIPELINE_ALLOW_NET=1.",
-            extra,
-        )
-    if os.environ.get("PIPELINE_ALLOW_JIRA") != "1" and JIRA_MUTATE.search(cmd):
-        return emit_permission(
-            False,
-            "Blocked Jira CLI/api-script mutation. Set PIPELINE_ALLOW_JIRA=1 only when the user asked to mutate Jira issues.",
-            extra,
-        )
-    if os.environ.get("PIPELINE_ALLOW_GITHUB") != "1" and GITHUB_MUTATE.search(cmd):
-        return emit_permission(
-            False,
-            "Blocked GitHub CLI/api-script mutation. Set PIPELINE_ALLOW_GITHUB=1 only when the user asked to mutate GitHub issues.",
-            extra,
-        )
-    return emit_permission(True, "allow", extra)
+        elif missing:
+            denied = True
+            reason = "Blocked new dependency install. Reuse existing libraries or set PIPELINE_ALLOW_DEPS=1 after a spec/security note."
+    elif REMOTE.search(cmd):
+        denied = True
+        reason = "Blocked ssh/scp/rsync to a remote host from the agent session."
+    elif os.environ.get("PIPELINE_ALLOW_NET") != "1" and NET.search(cmd) and not LOCAL_NET.search(cmd):
+        denied = True
+        reason = "Blocked non-localhost network command (possible exfil). Use 127.0.0.1 or set PIPELINE_ALLOW_NET=1."
+    elif os.environ.get("PIPELINE_ALLOW_JIRA") != "1" and JIRA_MUTATE.search(cmd):
+        denied = True
+        reason = "Blocked Jira CLI/api-script mutation. Set PIPELINE_ALLOW_JIRA=1 only when the user asked to mutate Jira issues."
+    elif os.environ.get("PIPELINE_ALLOW_GITHUB") != "1" and GITHUB_MUTATE.search(cmd):
+        denied = True
+        reason = "Blocked GitHub CLI/api-script mutation. Set PIPELINE_ALLOW_GITHUB=1 only when the user asked to mutate GitHub issues."
+
+    allow, sec_reason = apply_agent_security(
+        payload,
+        event_type="pre_shell",
+        operation="shell",
+        guardrail_denied=denied,
+        guardrail_reason=reason,
+    )
+    return emit_permission(allow, sec_reason if not allow or sec_reason != "allow" else reason, extra)
 
 
 if __name__ == "__main__":

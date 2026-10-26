@@ -25,6 +25,7 @@ FEATURE_IDS = (
     "jira-intake",
     "github-intake",
     "agent-observability",
+    "agent-security",
 )
 
 TELEMETRY_WORKFLOWS = ("feature-development", "jira-story", "jira-epic", "github-story", "github-epic")
@@ -46,6 +47,7 @@ def cmd_list() -> int:
         ("jira-intake", "Tracker intake from issue keys"),
         ("github-intake", "GitHub Issues/PR intake (gh CLI, API, or MCP)"),
         ("agent-observability", "Agent-run traces/scores (not telemetry-agent)"),
+        ("agent-security", "Agentic detection/response (audit/warn/block + session scan)"),
     )
     for ident, note in rows:
         print(f"{ident}\t{note}")
@@ -89,6 +91,7 @@ def _toggle(project: Path, name: str, *, on: bool) -> int:
         "jira-intake": _set_jira,
         "github-intake": _set_github,
         "agent-observability": _set_obs,
+        "agent-security": _set_security,
     }
     try:
         handlers[name](project, on)
@@ -143,6 +146,10 @@ def _snapshot(project: Path) -> dict[str, tuple[str, str]]:
         "agent-observability": (
             "on" if _obs_on(cfg) else "off",
             "agent_observability.enabled",
+        ),
+        "agent-security": (
+            "on" if _security_on(cfg) else "off",
+            "agent_security.enabled",
         ),
     }
 
@@ -221,6 +228,11 @@ def _obs_on(cfg: dict[str, Any]) -> bool:
     return isinstance(block, dict) and block.get("enabled") is True
 
 
+def _security_on(cfg: dict[str, Any]) -> bool:
+    block = cfg.get("agent_security")
+    return isinstance(block, dict) and block.get("enabled") is True
+
+
 def _set_obs(project: Path, on: bool) -> None:
     data = _load_config(project)
     block = data.get("agent_observability")
@@ -239,60 +251,23 @@ def _set_obs(project: Path, on: bool) -> None:
     _write_config(project, data)
 
 
-def _set_jira(project: Path, on: bool) -> None:
+def _set_security(project: Path, on: bool) -> None:
     data = _load_config(project)
-    intake = data.get("intake")
-    if not isinstance(intake, dict):
-        intake = {}
-    jira = intake.get("jira")
-    if not isinstance(jira, dict):
-        jira = {}
-    jira["enabled"] = on
-    intake["jira"] = jira
-    data["intake"] = intake
+    block = data.get("agent_security")
+    if not isinstance(block, dict):
+        block = {
+            "enabled": False,
+            "mode": "audit",
+            "sources": ["cursor", "copilot-cli"],
+            "inline_timeout_ms": 100,
+            "fail_mode": "open",
+            "block": {"minimum_severity": "high", "minimum_confidence": 0.9},
+            "export_observability_projection": True,
+            "state_dir": ".pipeline/state/security",
+        }
+    block["enabled"] = on
+    data["agent_security"] = block
     _write_config(project, data)
-
-
-def _set_github(project: Path, on: bool) -> None:
-    data = _load_config(project)
-    intake = data.get("intake")
-    if not isinstance(intake, dict):
-        intake = {}
-    github = intake.get("github")
-    if not isinstance(github, dict):
-        github = {}
-    github["enabled"] = on
-    intake["github"] = github
-    data["intake"] = intake
-    _write_config(project, data)
-
-
-def _telemetry_off(cfg: dict[str, Any]) -> bool:
-    workflows = cfg.get("workflows")
-    if not isinstance(workflows, dict):
-        return True
-    flags = []
-    for name in TELEMETRY_WORKFLOWS:
-        entry = workflows.get(name)
-        skips = entry.get("skips") if isinstance(entry, dict) else None
-        if isinstance(skips, dict):
-            flags.append(skips.get("skip_telemetry") is True)
-    return bool(flags) and all(flags)
-
-
-def _tester_on(project: Path) -> bool:
-    path = project / ".pipeline" / TESTER_POLICY
-    if not path.is_file():
-        return True
-    text = path.read_text(encoding="utf-8")
-    found = re.findall(
-        r"^\| (?:micro|minor|feature) \| (true|false) \|",
-        text,
-        flags=re.M,
-    )
-    if not found:
-        return True
-    return all(value == "true" for value in found)
 
 
 def _load_config(project: Path) -> dict[str, Any]:
